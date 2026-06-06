@@ -24,6 +24,7 @@ export interface Database {
           phone: string | null
           display_name: string
           avatar_color: string
+          avatar_url: string | null
           created_at: string
           updated_at: string
         }
@@ -37,6 +38,7 @@ export interface Database {
           phone?: string | null
           display_name: string
           avatar_color?: string
+          avatar_url?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -50,6 +52,7 @@ export interface Database {
           phone?: string | null
           display_name?: string
           avatar_color?: string
+          avatar_url?: string | null
           updated_at?: string
         }
       }
@@ -61,6 +64,7 @@ export interface Database {
           location: string | null
           invite_code: string
           banner_color: string
+          banner_image_url: string | null
           created_by: string
           created_at: string
           updated_at: string
@@ -72,6 +76,7 @@ export interface Database {
           location?: string | null
           invite_code: string
           banner_color?: string
+          banner_image_url?: string | null
           created_by: string
           created_at?: string
           updated_at?: string
@@ -81,6 +86,7 @@ export interface Database {
           description?: string | null
           location?: string | null
           banner_color?: string
+          banner_image_url?: string | null
           updated_at?: string
         }
       }

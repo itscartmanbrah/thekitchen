@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { BANNER_COLORS } from '@/lib/utils'
+import { ImagePlus, X } from 'lucide-react'
 import type { League } from '@/types/database'
 
 export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHeadAdmin: boolean }) {
@@ -21,10 +22,52 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
   const [description, setDescription] = useState(league.description ?? '')
   const [location, setLocation] = useState(league.location ?? '')
   const [bannerColor, setBannerColor] = useState<string>(league.banner_color)
+  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>((league as any).banner_image_url ?? null)
+  const [uploadingBanner, setUploadingBanner] = useState(false)
   const [saving, setSaving] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
   const supabase = createClient()
+
+  async function handleBannerUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Image too large', description: 'Please choose an image under 5MB.', variant: 'destructive' })
+      return
+    }
+
+    setUploadingBanner(true)
+    const ext = file.name.split('.').pop()
+    const path = `${league.id}/banner.${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('league-banners')
+      .upload(path, file, { upsert: true })
+
+    if (uploadError) {
+      toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' })
+      setUploadingBanner(false)
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from('league-banners').getPublicUrl(path)
+    const urlWithBust = `${publicUrl}?t=${Date.now()}`
+
+    await supabase.from('leagues').update({ banner_image_url: urlWithBust } as any).eq('id', league.id)
+    setBannerImageUrl(urlWithBust)
+    toast({ title: 'Banner image updated!' })
+    router.refresh()
+    setUploadingBanner(false)
+  }
+
+  async function handleRemoveBanner() {
+    await supabase.from('leagues').update({ banner_image_url: null } as any).eq('id', league.id)
+    setBannerImageUrl(null)
+    toast({ title: 'Banner image removed' })
+    router.refresh()
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
@@ -85,6 +128,39 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
                   />
                 ))}
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Banner image <span className="text-gray-400 font-normal text-xs">(optional — replaces the color strip)</span></Label>
+              {bannerImageUrl ? (
+                <div className="relative rounded-lg overflow-hidden border">
+                  <img src={bannerImageUrl} alt="Banner" className="w-full h-24 object-cover" />
+                  <button
+                    type="button"
+                    onClick={handleRemoveBanner}
+                    className="absolute top-2 right-2 w-6 h-6 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex items-center gap-3 p-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-green-400 hover:bg-green-50 transition-colors">
+                  <ImagePlus className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">
+                      {uploadingBanner ? 'Uploading…' : 'Upload banner image'}
+                    </p>
+                    <p className="text-xs text-gray-400">PNG, JPG, WEBP up to 5MB</p>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleBannerUpload}
+                    disabled={uploadingBanner}
+                  />
+                </label>
+              )}
             </div>
             <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save changes'}</Button>
           </form>

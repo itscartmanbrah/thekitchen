@@ -61,7 +61,13 @@ export default async function LeaguePage({ params }: { params: { id: string } })
     <div>
       {/* League header */}
       <div className="mb-5">
-        <div className="h-3 rounded-lg mb-4" style={{ backgroundColor: league.banner_color }} />
+        {(league as any).banner_image_url ? (
+          <div className="h-28 sm:h-36 rounded-lg mb-4 overflow-hidden">
+            <img src={(league as any).banner_image_url} alt="" className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="h-3 rounded-lg mb-4" style={{ backgroundColor: league.banner_color }} />
+        )}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-3 mb-1">

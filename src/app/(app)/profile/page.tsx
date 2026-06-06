@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
 import { AVATAR_COLORS, formatElo, getEloTier, getPickleballRating } from '@/lib/utils'
-import { Trophy, ExternalLink } from 'lucide-react'
+import { Trophy, ExternalLink, Camera } from 'lucide-react'
 import type { Profile } from '@/types/database'
 
 export default function ProfilePage() {
@@ -24,6 +24,8 @@ export default function ProfilePage() {
   const [birthday, setBirthday] = useState('')
   const [phone, setPhone] = useState('')
   const [avatarColor, setAvatarColor] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const router = useRouter()
@@ -44,6 +46,7 @@ export default function ProfilePage() {
         setBirthday(p.birthday ?? '')
         setPhone(p.phone ?? '')
         setAvatarColor(p.avatar_color)
+        setAvatarUrl((p as any).avatar_url ?? null)
       }
 
       // Fetch league stats
@@ -73,6 +76,39 @@ export default function ProfilePage() {
       // non-fatal — profile edit still works without league stats
     })
   }, [])
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !profile) return
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: 'Image too large', description: 'Please choose an image under 2MB.', variant: 'destructive' })
+      return
+    }
+
+    setUploadingAvatar(true)
+    const ext = file.name.split('.').pop()
+    const path = `${profile.id}/avatar.${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true })
+
+    if (uploadError) {
+      toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' })
+      setUploadingAvatar(false)
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
+    // Bust cache with timestamp
+    const urlWithBust = `${publicUrl}?t=${Date.now()}`
+
+    await supabase.from('profiles').update({ avatar_url: urlWithBust } as any).eq('id', profile.id)
+    setAvatarUrl(urlWithBust)
+    toast({ title: 'Profile picture updated!' })
+    setUploadingAvatar(false)
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
@@ -171,12 +207,27 @@ export default function ProfilePage() {
         <CardContent>
           <form onSubmit={handleSave} className="space-y-5">
 
-            {/* Avatar preview */}
+            {/* Avatar preview + upload */}
             <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-              <PlayerAvatar name={previewName} color={avatarColor} size="lg" />
+              <div className="relative shrink-0">
+                <PlayerAvatar name={previewName} color={avatarColor} imageUrl={avatarUrl} size="lg" />
+                <label className="absolute -bottom-1 -right-1 w-6 h-6 bg-white border border-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-100 shadow-sm">
+                  <Camera className="w-3 h-3 text-gray-600" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                    disabled={uploadingAvatar}
+                  />
+                </label>
+              </div>
               <div>
                 <p className="font-semibold text-gray-900">{previewName}</p>
                 <p className="text-xs text-gray-500">{profile.email}</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {uploadingAvatar ? 'Uploading…' : 'Click the camera icon to change photo'}
+                </p>
               </div>
             </div>
 
