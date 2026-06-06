@@ -131,7 +131,14 @@ export default function ProfilePage() {
       .eq('id', profile.id)
 
     if (error) {
-      toast({ title: 'Save failed', description: error.message, variant: 'destructive' })
+      const isDuplicate = error.message.includes('profiles_display_name_unique') || error.code === '23505'
+      toast({
+        title: isDuplicate ? 'Nickname already taken' : 'Save failed',
+        description: isDuplicate
+          ? `"${displayName}" is already in use. Please choose a different nickname.`
+          : error.message,
+        variant: 'destructive',
+      })
     } else {
       toast({ title: 'Profile updated' })
       setProfile({ ...profile, first_name: firstName, last_name: lastName, nickname: nickname || null, birthday: birthday || null, phone: phone || null, display_name: displayName, avatar_color: avatarColor })
