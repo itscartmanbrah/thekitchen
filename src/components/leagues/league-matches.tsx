@@ -168,6 +168,10 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
             const canSubmitScore = match.status !== 'completed' && match.status !== 'cancelled' &&
               (isAdmin || match.officiator_id === currentUserId)
 
+            const isCompleted = match.status === 'completed'
+            // Admin can delete any match. Officiator can only delete matches with no score yet.
+            const canDelete = isAdmin || (!isCompleted && match.officiator_id === currentUserId)
+
             const scheduledDate = match.scheduled_at
               ? new Date(match.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
               : null
@@ -232,7 +236,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                       {match.status === 'completed' && isAdmin && (
                         <RematchButton match={match} onCreated={fetchMatches} />
                       )}
-                      {(isAdmin || match.officiator_id === currentUserId || match.created_by === currentUserId) && (
+                      {canDelete && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-600 hover:bg-red-50 px-2">
