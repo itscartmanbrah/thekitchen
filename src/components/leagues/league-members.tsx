@@ -89,7 +89,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
           <Card key={m.id}>
             <CardContent className="py-3 px-4">
               <div className="flex items-center gap-3">
-                <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} size="sm" />
+                <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} imageUrl={m.profiles.avatar_url} size="sm" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-sm truncate">{m.profiles.display_name}</span>

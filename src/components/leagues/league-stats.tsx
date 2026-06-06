@@ -10,10 +10,10 @@ import { BarChart3, Trophy, Zap, TrendingUp, Target, Swords } from 'lucide-react
 interface Stats {
   totalMatches: number
   avgScore: string
-  mostActive: { name: string; color: string; userId: string; count: number } | null
-  topWinRate: { name: string; color: string; userId: string; rate: number; wins: number; losses: number } | null
-  biggestUpset: { winner: string; winnerColor: string; winnerId: string; winnerElo: number; loserElo: number; diff: number } | null
-  longestStreak: { name: string; color: string; userId: string; streak: number } | null
+  mostActive: { name: string; color: string; avatarUrl: string | null; userId: string; count: number } | null
+  topWinRate: { name: string; color: string; avatarUrl: string | null; userId: string; rate: number; wins: number; losses: number } | null
+  biggestUpset: { winner: string; winnerColor: string; winnerAvatarUrl: string | null; winnerId: string; winnerElo: number; loserElo: number; diff: number } | null
+  longestStreak: { name: string; color: string; avatarUrl: string | null; userId: string; streak: number } | null
 }
 
 function StatCard({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
@@ -61,16 +61,16 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
         : '–'
 
       // Most active player (appeared in most matches)
-      const playCount: Record<string, { count: number; name: string; color: string }> = {}
+      const playCount: Record<string, { count: number; name: string; color: string; avatarUrl: string | null }> = {}
       for (const m of matches) {
         for (const p of (m as any).match_players ?? []) {
-          if (!playCount[p.user_id]) playCount[p.user_id] = { count: 0, name: p.profiles.display_name, color: p.profiles.avatar_color }
+          if (!playCount[p.user_id]) playCount[p.user_id] = { count: 0, name: p.profiles.display_name, color: p.profiles.avatar_color, avatarUrl: p.profiles.avatar_url ?? null }
           playCount[p.user_id].count++
         }
       }
       const mostActiveEntry = Object.entries(playCount).sort((a, b) => b[1].count - a[1].count)[0]
       const mostActive = mostActiveEntry
-        ? { name: mostActiveEntry[1].name, color: mostActiveEntry[1].color, userId: mostActiveEntry[0], count: mostActiveEntry[1].count }
+        ? { name: mostActiveEntry[1].name, color: mostActiveEntry[1].color, avatarUrl: mostActiveEntry[1].avatarUrl, userId: mostActiveEntry[0], count: mostActiveEntry[1].count }
         : null
 
       // Top win rate (min 3 matches)
@@ -81,6 +81,7 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
         ? {
             name: topWinRateMember.profiles.display_name,
             color: topWinRateMember.profiles.avatar_color,
+            avatarUrl: topWinRateMember.profiles.avatar_url ?? null,
             userId: topWinRateMember.user_id,
             rate: Math.round((topWinRateMember.wins / (topWinRateMember.wins + topWinRateMember.losses)) * 100),
             wins: topWinRateMember.wins,
@@ -106,6 +107,7 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
           biggestUpset = {
             winner: winnerPlayers[0].profiles.display_name,
             winnerColor: winnerPlayers[0].profiles.avatar_color,
+            winnerAvatarUrl: winnerPlayers[0].profiles.avatar_url ?? null,
             winnerId: winnerPlayers[0].user_id,
             winnerElo: Math.round(winnerAvg),
             loserElo: Math.round(loserAvg),
@@ -115,12 +117,12 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
       }
 
       // Longest current win streak
-      const streaks: Record<string, { streak: number; name: string; color: string }> = {}
+      const streaks: Record<string, { streak: number; name: string; color: string; avatarUrl: string | null }> = {}
       // Iterate matches oldest-first to build streaks
       const chronological = [...matches].reverse()
       for (const m of chronological) {
         for (const p of (m as any).match_players ?? []) {
-          if (!streaks[p.user_id]) streaks[p.user_id] = { streak: 0, name: p.profiles.display_name, color: p.profiles.avatar_color }
+          if (!streaks[p.user_id]) streaks[p.user_id] = { streak: 0, name: p.profiles.display_name, color: p.profiles.avatar_color, avatarUrl: p.profiles.avatar_url ?? null }
           const won = p.team === 1
             ? (m as any).team1_score > (m as any).team2_score
             : (m as any).team2_score > (m as any).team1_score
@@ -130,7 +132,7 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
       }
       const topStreak = Object.entries(streaks).sort((a, b) => b[1].streak - a[1].streak)[0]
       const longestStreak = topStreak && topStreak[1].streak >= 2
-        ? { name: topStreak[1].name, color: topStreak[1].color, userId: topStreak[0], streak: topStreak[1].streak }
+        ? { name: topStreak[1].name, color: topStreak[1].color, avatarUrl: topStreak[1].avatarUrl, userId: topStreak[0], streak: topStreak[1].streak }
         : null
 
       setStats({ totalMatches, avgScore, mostActive, topWinRate, biggestUpset, longestStreak })
@@ -158,7 +160,7 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
         <StatCard icon={<Zap className="w-4 h-4 text-yellow-500" />} label="Most active">
           <div className="flex items-center gap-2">
             <Link href={`/players/${stats.mostActive.userId}`}>
-              <PlayerAvatar name={stats.mostActive.name} color={stats.mostActive.color} size="sm" />
+              <PlayerAvatar name={stats.mostActive.name} color={stats.mostActive.color} imageUrl={stats.mostActive.avatarUrl} size="sm" />
             </Link>
             <div>
               <Link href={`/players/${stats.mostActive.userId}`} className="font-semibold text-sm hover:underline">
@@ -174,7 +176,7 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
         <StatCard icon={<Trophy className="w-4 h-4 text-green-500" />} label="Best win rate">
           <div className="flex items-center gap-2">
             <Link href={`/players/${stats.topWinRate.userId}`}>
-              <PlayerAvatar name={stats.topWinRate.name} color={stats.topWinRate.color} size="sm" />
+              <PlayerAvatar name={stats.topWinRate.name} color={stats.topWinRate.color} imageUrl={stats.topWinRate.avatarUrl} size="sm" />
             </Link>
             <div>
               <Link href={`/players/${stats.topWinRate.userId}`} className="font-semibold text-sm hover:underline">
@@ -190,7 +192,7 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
         <StatCard icon={<TrendingUp className="w-4 h-4 text-purple-500" />} label="Current win streak">
           <div className="flex items-center gap-2">
             <Link href={`/players/${stats.longestStreak.userId}`}>
-              <PlayerAvatar name={stats.longestStreak.name} color={stats.longestStreak.color} size="sm" />
+              <PlayerAvatar name={stats.longestStreak.name} color={stats.longestStreak.color} imageUrl={stats.longestStreak.avatarUrl} size="sm" />
             </Link>
             <div>
               <Link href={`/players/${stats.longestStreak.userId}`} className="font-semibold text-sm hover:underline">
@@ -206,7 +208,7 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
         <StatCard icon={<Target className="w-4 h-4 text-red-500" />} label="Biggest upset">
           <div className="flex items-center gap-2">
             <Link href={`/players/${stats.biggestUpset.winnerId}`}>
-              <PlayerAvatar name={stats.biggestUpset.winner} color={stats.biggestUpset.winnerColor} size="sm" />
+              <PlayerAvatar name={stats.biggestUpset.winner} color={stats.biggestUpset.winnerColor} imageUrl={stats.biggestUpset.winnerAvatarUrl} size="sm" />
             </Link>
             <div>
               <Link href={`/players/${stats.biggestUpset.winnerId}`} className="font-semibold text-sm hover:underline">

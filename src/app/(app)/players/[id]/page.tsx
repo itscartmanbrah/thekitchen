@@ -91,7 +91,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
         <div className="h-2" style={{ backgroundColor: rankedMemberships[0]?.leagues?.banner_color ?? '#16a34a' }} />
         <CardContent className="pt-6 pb-6">
           <div className="flex items-start gap-5">
-            <PlayerAvatar name={profile.display_name} color={profile.avatar_color} size="lg" />
+            <PlayerAvatar name={profile.display_name} color={profile.avatar_color} imageUrl={(profile as any).avatar_url} size="lg" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-bold text-gray-900">{profile.display_name}</h1>

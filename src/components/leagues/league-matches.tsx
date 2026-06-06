@@ -166,7 +166,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                         {team1.map((p: any) => (
                           <div key={p.id} className="flex items-center gap-1">
                             <Link href={`/players/${p.user_id}`}>
-                              <PlayerAvatar name={p.profiles.display_name} color={p.profiles.avatar_color} size="sm" />
+                              <PlayerAvatar name={p.profiles.display_name} color={p.profiles.avatar_color} imageUrl={p.profiles.avatar_url} size="sm" />
                             </Link>
                             <span className="text-sm font-medium hidden sm:block">{p.profiles.display_name.split(' ')[0]}</span>
                           </div>
@@ -195,7 +195,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                         {team2.map((p: any) => (
                           <div key={p.id} className="flex items-center gap-1">
                             <Link href={`/players/${p.user_id}`}>
-                              <PlayerAvatar name={p.profiles.display_name} color={p.profiles.avatar_color} size="sm" />
+                              <PlayerAvatar name={p.profiles.display_name} color={p.profiles.avatar_color} imageUrl={p.profiles.avatar_url} size="sm" />
                             </Link>
                             <span className="text-sm font-medium hidden sm:block">{p.profiles.display_name.split(' ')[0]}</span>
                           </div>

@@ -12,8 +12,8 @@ interface FeedItem {
   matchId: string
   time: string
   format: string
-  team1: { name: string; color: string; userId: string; delta: number }[]
-  team2: { name: string; color: string; userId: string; delta: number }[]
+  team1: { name: string; color: string; avatarUrl: string | null; userId: string; delta: number }[]
+  team2: { name: string; color: string; avatarUrl: string | null; userId: string; delta: number }[]
   score1: number
   score2: number
 }
@@ -46,12 +46,14 @@ export function LeagueActivity({ leagueId }: { leagueId: string }) {
       team1: m.match_players.filter((p: any) => p.team === 1).map((p: any) => ({
         name: p.profiles.display_name,
         color: p.profiles.avatar_color,
+        avatarUrl: p.profiles.avatar_url ?? null,
         userId: p.user_id,
         delta: p.elo_after != null ? p.elo_after - p.elo_before : 0,
       })),
       team2: m.match_players.filter((p: any) => p.team === 2).map((p: any) => ({
         name: p.profiles.display_name,
         color: p.profiles.avatar_color,
+        avatarUrl: p.profiles.avatar_url ?? null,
         userId: p.user_id,
         delta: p.elo_after != null ? p.elo_after - p.elo_before : 0,
       })),
@@ -91,7 +93,7 @@ export function LeagueActivity({ leagueId }: { leagueId: string }) {
                 <div className="flex -space-x-1 shrink-0 mt-0.5">
                   {[...item.team1, ...item.team2].slice(0, 4).map((p, i) => (
                     <Link key={i} href={`/players/${p.userId}`}>
-                      <PlayerAvatar name={p.name} color={p.color} size="sm" />
+                      <PlayerAvatar name={p.name} color={p.color} imageUrl={p.avatarUrl} size="sm" />
                     </Link>
                   ))}
                 </div>

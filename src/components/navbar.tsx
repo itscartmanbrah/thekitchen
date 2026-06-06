@@ -35,11 +35,17 @@ export function Navbar({ profile }: { profile: Profile | null }) {
           {profile ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: profile.avatar_color ?? '#16a34a' }}
-                >
-                  {getInitials(profile.display_name)}
+                <button className="w-8 h-8 rounded-full overflow-hidden cursor-pointer hover:opacity-90 transition-opacity shrink-0">
+                  {(profile as any).avatar_url ? (
+                    <img src={(profile as any).avatar_url} alt={profile.display_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div
+                      className="w-full h-full flex items-center justify-center text-white text-sm font-semibold"
+                      style={{ backgroundColor: profile.avatar_color ?? '#16a34a' }}
+                    >
+                      {getInitials(profile.display_name)}
+                    </div>
+                  )}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">

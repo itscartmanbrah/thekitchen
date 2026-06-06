@@ -155,7 +155,7 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
                       if (!m) return null
                       return (
                         <div key={userId} className="flex items-center gap-2 bg-gray-50 rounded px-2 py-1">
-                          <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} size="sm" />
+                          <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} imageUrl={m.profiles.avatar_url} size="sm" />
                           <span className="text-xs flex-1 truncate">{m.profiles.display_name}</span>
                           <button onClick={() => removeFromTeam(teamNum, userId)} className="text-gray-400 hover:text-gray-600">
                             <X className="w-3 h-3" />

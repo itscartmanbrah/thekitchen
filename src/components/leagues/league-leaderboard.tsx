@@ -163,7 +163,7 @@ export function LeagueLeaderboard({ leagueId, currentUserId }: { leagueId: strin
                     )}
                   </div>
                   <Link href={`/players/${m.user_id}`} className="shrink-0">
-                    <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} size="sm" />
+                    <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} imageUrl={m.profiles.avatar_url} size="sm" />
                   </Link>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
