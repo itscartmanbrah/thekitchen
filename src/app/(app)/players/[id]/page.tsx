@@ -61,6 +61,14 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
           .limit(50),
       ])
 
+      // Season results for this player in this league
+      const { data: seasonRows } = await supabase
+        .from('season_results')
+        .select('final_elo, final_rank, wins, losses, seasons(name, ended_at)')
+        .eq('user_id', params.id)
+        .eq('league_id', m.league_id)
+        .order('created_at', { ascending: false })
+
       const eloHistory = (txRows ?? []).map((t: any) => ({
         elo: t.points_after,
         date: new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -72,6 +80,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
         rank: (count ?? 0) + 1,
         totalPlayers: total ?? 1,
         eloHistory,
+        seasonHistory: seasonRows ?? [],
       }
     })
   )
@@ -294,6 +303,32 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                       </p>
                     </div>
                   </div>
+
+                  {/* Season history */}
+                  {m.seasonHistory.length > 0 && (
+                    <div className="border-t pt-3 mt-2 space-y-1.5">
+                      <p className="text-xs text-gray-400 font-medium mb-2">Season history</p>
+                      {m.seasonHistory.map((sr: any, i: number) => {
+                        const sWR = sr.wins + sr.losses > 0
+                          ? Math.round((sr.wins / (sr.wins + sr.losses)) * 100)
+                          : null
+                        return (
+                          <div key={i} className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-2">
+                              {i === 0 && sr.final_rank === 1 && <span>🏆</span>}
+                              {i === 0 && sr.final_rank === 2 && <span>🥈</span>}
+                              <span className="text-gray-600 font-medium">{sr.seasons?.name ?? 'Season'}</span>
+                              <span className="text-gray-400">· Final #{sr.final_rank}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-gray-500">
+                              <span className="font-semibold text-gray-700">{sr.final_elo} ELO</span>
+                              <span>{sr.wins}W {sr.losses}L{sWR !== null ? ` (${sWR}%)` : ''}</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
 
                   {/* Per-league ELO chart */}
                   {m.eloHistory.length >= 2 ? (

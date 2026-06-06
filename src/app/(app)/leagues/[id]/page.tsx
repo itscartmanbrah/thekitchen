@@ -12,6 +12,7 @@ import { LeagueAnnouncements } from '@/components/leagues/league-announcements'
 import { LeagueWaitlist } from '@/components/leagues/league-waitlist'
 import { LeagueInviteLinks } from '@/components/leagues/league-invite-links'
 import { LeagueInviteScreen } from '@/components/leagues/league-invite-screen'
+import { LeagueSeasonManager } from '@/components/leagues/league-season-manager'
 import { MapPin } from 'lucide-react'
 import { CopyInviteButton } from '@/components/leagues/copy-invite-button'
 import type { League, LeagueMember } from '@/types/database'
@@ -52,6 +53,14 @@ export default async function LeaguePage({ params }: { params: { id: string } })
   const isAdmin = membership.role === 'head_admin' || membership.role === 'admin'
   const isHeadAdmin = membership.role === 'head_admin'
 
+  // Active season
+  const { data: activeSeason } = await supabase
+    .from('seasons')
+    .select('id, name, status')
+    .eq('league_id', params.id)
+    .eq('status', 'active')
+    .single()
+
   // Pending count for admin badge
   const { count: pendingCount } = await supabase
     .from('league_members')
@@ -79,6 +88,11 @@ export default async function LeaguePage({ params }: { params: { id: string } })
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl font-bold text-gray-900">{league.name}</h1>
               <Badge variant="outline">{roleLabels[membership.role]}</Badge>
+              {activeSeason && (
+                <span className="text-xs bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded-full">
+                  {activeSeason.name}
+                </span>
+              )}
             </div>
             {league.description && <p className="text-gray-600 mb-1">{league.description}</p>}
             {league.location && (
@@ -117,7 +131,7 @@ export default async function LeaguePage({ params }: { params: { id: string } })
         </TabsList>
 
         <TabsContent value="leaderboard">
-          <LeagueLeaderboard leagueId={params.id} currentUserId={user.id} />
+          <LeagueLeaderboard leagueId={params.id} currentUserId={user.id} activeSeason={activeSeason as any} />
         </TabsContent>
 
         <TabsContent value="matches">
@@ -167,6 +181,7 @@ export default async function LeaguePage({ params }: { params: { id: string } })
         {isAdmin && (
           <TabsContent value="settings" className="space-y-6">
             <LeagueSettings league={league} isHeadAdmin={isHeadAdmin} />
+            <LeagueSeasonManager leagueId={params.id} currentUserId={user.id} />
             <div className="max-w-lg">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Invite links</h3>
               <LeagueInviteLinks leagueId={params.id} />

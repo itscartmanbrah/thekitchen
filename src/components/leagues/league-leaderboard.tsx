@@ -11,6 +11,29 @@ import { Trophy } from 'lucide-react'
 import type { LeagueMemberWithProfile, MatchFormat } from '@/types/database'
 
 
+function SeasonSelector({ allSeasons, selected, onChange, activeSeason }: {
+  allSeasons: { id: string; name: string; status: string }[]
+  selected: string
+  onChange: (id: string) => void
+  activeSeason?: { id: string; name: string } | null
+}) {
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      <span className="text-xs text-gray-500 shrink-0">Season:</span>
+      <select
+        value={selected}
+        onChange={e => onChange(e.target.value)}
+        className="text-xs border rounded-lg px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
+      >
+        <option value="current">{activeSeason ? `${activeSeason.name} (current)` : 'Current'}</option>
+        {allSeasons.filter(s => s.status === 'ended').map(s => (
+          <option key={s.id} value={s.id}>{s.name} · Final</option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
 const formatLabels: Record<string, string> = {
   all: 'All', singles: 'Singles', doubles: 'Doubles', mixed_doubles: 'Mixed', round_robin: 'Round Robin',
 }
@@ -30,12 +53,34 @@ function FormDots({ results }: { results: ('W' | 'L')[] }) {
   )
 }
 
-export function LeagueLeaderboard({ leagueId, currentUserId }: { leagueId: string; currentUserId: string }) {
+interface Season { id: string; name: string; status: string }
+
+interface SeasonResult {
+  user_id: string
+  final_elo: number
+  final_rank: number
+  wins: number
+  losses: number
+  profiles: { display_name: string; avatar_color: string; avatar_url: string | null }
+}
+
+export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
+  leagueId: string
+  currentUserId: string
+  activeSeason?: Season | null
+}) {
   const [members, setMembers] = useState<LeagueMemberWithProfile[]>([])
   const [formMap, setFormMap] = useState<Record<string, ('W' | 'L')[]>>({})
   const [loading, setLoading] = useState(true)
   const [formatFilter, setFormatFilter] = useState<MatchFormat | 'all'>('all')
   const [usedFormats, setUsedFormats] = useState<MatchFormat[]>([])
+
+  // Season selector
+  const [allSeasons, setAllSeasons] = useState<Season[]>([])
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('current')
+  const [seasonResults, setSeasonResults] = useState<SeasonResult[] | null>(null)
+  const [seasonLoading, setSeasonLoading] = useState(false)
+
   const supabase = createClient()
 
   async function fetchMembers() {
@@ -78,6 +123,31 @@ export function LeagueLeaderboard({ leagueId, currentUserId }: { leagueId: strin
     }
     setFormMap(map)
   }
+
+  // Fetch all seasons for selector
+  useEffect(() => {
+    supabase
+      .from('seasons')
+      .select('id, name, status')
+      .eq('league_id', leagueId)
+      .order('started_at', { ascending: false })
+      .then(({ data }) => setAllSeasons((data as Season[]) ?? []))
+  }, [leagueId])
+
+  // Fetch snapshot when a past season is selected
+  useEffect(() => {
+    if (selectedSeasonId === 'current') { setSeasonResults(null); return }
+    setSeasonLoading(true)
+    supabase
+      .from('season_results')
+      .select('user_id, final_elo, final_rank, wins, losses, profiles(display_name, avatar_color, avatar_url)')
+      .eq('season_id', selectedSeasonId)
+      .order('final_rank', { ascending: true })
+      .then(({ data }) => {
+        setSeasonResults((data as SeasonResult[]) ?? [])
+        setSeasonLoading(false)
+      })
+  }, [selectedSeasonId, leagueId])
 
   useEffect(() => {
     fetchMembers()
@@ -122,8 +192,62 @@ export function LeagueLeaderboard({ leagueId, currentUserId }: { leagueId: strin
     ? members.filter(m => formatMemberIds.has(m.user_id))
     : members
 
+  // ── Past season view ──────────────────────────────────────────────────────
+  if (selectedSeasonId !== 'current') {
+    const season = allSeasons.find(s => s.id === selectedSeasonId)
+    return (
+      <div>
+        {/* Season selector */}
+        <SeasonSelector allSeasons={allSeasons} selected={selectedSeasonId} onChange={setSelectedSeasonId} activeSeason={activeSeason} />
+        {seasonLoading ? (
+          <div className="text-center py-12 text-gray-500">Loading…</div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-xs text-gray-400 mb-3">Final standings — {season?.name}</p>
+            {(seasonResults ?? []).map((r, idx) => {
+              const isMe = r.user_id === currentUserId
+              const winRate = r.wins + r.losses > 0 ? Math.round((r.wins / (r.wins + r.losses)) * 100) : null
+              return (
+                <Card key={r.user_id} className={isMe ? 'border-green-300 bg-green-50/50' : ''}>
+                  <CardContent className="py-3 px-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 text-center shrink-0">
+                        {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : <span className="text-sm font-medium text-gray-500">#{idx + 1}</span>}
+                      </div>
+                      <Link href={`/players/${r.user_id}`} className="shrink-0">
+                        <PlayerAvatar name={r.profiles.display_name} color={r.profiles.avatar_color} imageUrl={r.profiles.avatar_url} size="sm" />
+                      </Link>
+                      <div className="flex-1 min-w-0">
+                        <Link href={`/players/${r.user_id}`} className="font-medium text-sm hover:underline">
+                          {r.profiles.display_name}
+                        </Link>
+                        {isMe && <Badge variant="outline" className="text-xs py-0 ml-2">You</Badge>}
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-bold text-base">{formatElo(r.final_elo)}</div>
+                        <div className="text-xs text-gray-500">
+                          {r.wins}W {r.losses}L
+                          {winRate !== null && <span className="ml-1">({winRate}%)</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div>
+      {/* Season selector */}
+      {allSeasons.length > 0 && (
+        <SeasonSelector allSeasons={allSeasons} selected={selectedSeasonId} onChange={setSelectedSeasonId} activeSeason={activeSeason} />
+      )}
+
       {/* Format tabs */}
       {usedFormats.length > 1 && (
         <div className="flex gap-1 p-1 bg-gray-100 rounded-lg mb-4 w-fit">
