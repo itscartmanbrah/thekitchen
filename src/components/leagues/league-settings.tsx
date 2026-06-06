@@ -9,9 +9,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import { BANNER_COLORS } from '@/lib/utils'
 import { ImagePlus, X } from 'lucide-react'
@@ -22,6 +21,10 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
   const [description, setDescription] = useState(league.description ?? '')
   const [location, setLocation] = useState(league.location ?? '')
   const [bannerColor, setBannerColor] = useState<string>(league.banner_color)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteError, setDeleteError] = useState('')
+  const [deleting, setDeleting] = useState(false)
   const [bannerImageUrl, setBannerImageUrl] = useState<string | null>((league as any).banner_image_url ?? null)
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -86,11 +89,35 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
   }
 
   async function handleDelete() {
+    setDeleteError('')
+    setDeleting(true)
+
+    // Re-authenticate with password before deleting
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user?.email) {
+      setDeleteError('Could not verify your identity. Please refresh and try again.')
+      setDeleting(false)
+      return
+    }
+
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: deletePassword,
+    })
+
+    if (authError) {
+      setDeleteError('Incorrect password. Please try again.')
+      setDeleting(false)
+      return
+    }
+
     const { error } = await supabase.from('leagues').delete().eq('id', league.id)
     if (error) {
       toast({ title: 'Failed to delete league', description: error.message, variant: 'destructive' })
+      setDeleting(false)
       return
     }
+
     router.push('/dashboard')
     router.refresh()
   }
@@ -174,28 +201,48 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
           </CardHeader>
           <CardContent>
             <p className="text-sm text-gray-600 mb-4">Permanently delete this league and all its data. This cannot be undone.</p>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">Delete league</Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete {league.name}?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete the league, all matches, and all rankings. This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                    Yes, delete league
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <Button variant="destructive" size="sm" onClick={() => { setShowDeleteDialog(true); setDeletePassword(''); setDeleteError('') }}>
+              Delete league
+            </Button>
           </CardContent>
         </Card>
       )}
+
+      {/* Password confirmation dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={open => { setShowDeleteDialog(open); setDeletePassword(''); setDeleteError('') }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Delete {league.name}?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-gray-600">
+              This will permanently delete the league, all matches, and all rankings. <strong>This cannot be undone.</strong>
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="delete-password">Enter your password to confirm</Label>
+              <Input
+                id="delete-password"
+                type="password"
+                placeholder="Your account password"
+                value={deletePassword}
+                onChange={e => { setDeletePassword(e.target.value); setDeleteError('') }}
+                autoFocus
+              />
+              {deleteError && <p className="text-sm text-red-600">{deleteError}</p>}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting || !deletePassword.trim()}
+            >
+              {deleting ? 'Deleting…' : 'Yes, delete league'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
