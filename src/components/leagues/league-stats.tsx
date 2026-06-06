@@ -40,13 +40,13 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
       const [{ data: matches }, { data: members }] = await Promise.all([
         supabase
           .from('matches')
-          .select('id, team1_score, team2_score, format, completed_at, match_players(user_id, team, elo_before, elo_after, profiles(display_name, avatar_color))')
+          .select('id, team1_score, team2_score, format, completed_at, match_players(user_id, team, elo_before, elo_after, profiles(display_name, avatar_color, avatar_url))')
           .eq('league_id', leagueId)
           .eq('status', 'completed')
           .order('completed_at', { ascending: false }),
         supabase
           .from('league_members')
-          .select('user_id, wins, losses, profiles(display_name, avatar_color)')
+          .select('user_id, wins, losses, profiles(display_name, avatar_color, avatar_url)')
           .eq('league_id', leagueId),
       ])
 

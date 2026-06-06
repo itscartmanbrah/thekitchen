@@ -30,7 +30,7 @@ export function LeagueActivity({ leagueId }: { leagueId: string }) {
   async function fetchActivity() {
     const { data } = await supabase
       .from('matches')
-      .select('id, format, team1_score, team2_score, completed_at, match_players(user_id, team, elo_before, elo_after, profiles(display_name, avatar_color))')
+      .select('id, format, team1_score, team2_score, completed_at, match_players(user_id, team, elo_before, elo_after, profiles(display_name, avatar_color, avatar_url))')
       .eq('league_id', leagueId)
       .eq('status', 'completed')
       .order('completed_at', { ascending: false })
