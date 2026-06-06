@@ -9,7 +9,7 @@ import { PlayerAvatar } from '@/components/player-avatar'
 import { CreateMatchDialog } from '@/components/matches/create-match-dialog'
 import { SubmitScoreDialog } from '@/components/matches/submit-score-dialog'
 import { RematchButton } from '@/components/matches/rematch-button'
-import { Calendar, Swords, StickyNote, TrendingUp, TrendingDown, Trash2 } from 'lucide-react'
+import { Calendar, Swords, StickyNote, TrendingUp, TrendingDown, Trash2, ChevronDown, ChevronUp, Shield } from 'lucide-react'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -38,8 +38,6 @@ const statusVariants: Record<string, 'default' | 'secondary' | 'outline' | 'succ
   cancelled: 'outline',
 }
 
-
-
 function EloDelta({ delta }: { delta: number }) {
   if (delta === 0) return <span className="text-xs text-gray-400">±0</span>
   if (delta > 0) return (
@@ -60,13 +58,19 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
   const [formatFilter, setFormatFilter] = useState<MatchFormat | 'all'>('all')
   const [playerFilter, setPlayerFilter] = useState<string>('all')
   const [members, setMembers] = useState<any[]>([])
+  const [expandedId, setExpandedId] = useState<string | null>(null)
   const supabase = createClient()
   const { toast } = useToast()
 
   async function fetchMatches() {
     const { data } = await supabase
       .from('matches')
-      .select('*, match_players(*, profiles(*))')
+      .select(`
+        *,
+        match_players(*, profiles(*)),
+        officiator:profiles!officiator_id(id, display_name, avatar_color, avatar_url),
+        creator:profiles!created_by(id, display_name, avatar_color, avatar_url)
+      `)
       .eq('league_id', leagueId)
       .order('created_at', { ascending: false })
     setMatches(data ?? [])
@@ -84,6 +88,11 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
     return () => { supabase.removeChannel(channel) }
   }, [leagueId])
 
+  // Build a rank map: user_id → rank (by current ELO in this league)
+  const rankMap: Record<string, number> = {}
+  const sorted = [...members].sort((a, b) => b.elo_rating - a.elo_rating)
+  sorted.forEach((m, i) => { rankMap[m.user_id] = i + 1 })
+
   const filtered = matches.filter(m => {
     if (formatFilter !== 'all' && m.format !== formatFilter) return false
     if (playerFilter !== 'all' && !m.match_players?.some((p: any) => p.user_id === playerFilter)) return false
@@ -100,7 +109,6 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
     fetchMatches()
   }
 
-  // Formats that actually have matches
   const usedFormats = Array.from(new Set(matches.map(m => m.format))) as MatchFormat[]
 
   if (loading) return <div className="text-center py-12 text-gray-500">Loading matches…</div>
@@ -116,7 +124,6 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
       {/* Filters */}
       {matches.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
-          {/* Format filter tabs */}
           <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
             <button
               onClick={() => setFormatFilter('all')}
@@ -135,7 +142,6 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
             ))}
           </div>
 
-          {/* Player filter */}
           <select
             value={playerFilter}
             onChange={e => setPlayerFilter(e.target.value)}
@@ -169,17 +175,21 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
               (isAdmin || match.officiator_id === currentUserId)
 
             const isCompleted = match.status === 'completed'
-            // Admin can delete any match. Officiator can only delete matches with no score yet.
             const canDelete = isAdmin || (!isCompleted && match.officiator_id === currentUserId)
 
             const scheduledDate = match.scheduled_at
               ? new Date(match.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
               : null
 
+            const isExpanded = expandedId === match.id
+
+            // Officiator: assigned official → fallback to match creator
+            const official = match.officiator ?? match.creator ?? null
+
             return (
-              <Card key={match.id}>
+              <Card key={match.id} className="overflow-hidden">
+                {/* ── Collapsed row (always visible) ── */}
                 <CardContent className="py-3 px-4">
-                  {/* Top row: teams + score */}
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       {/* Team 1 */}
@@ -264,10 +274,18 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                           </AlertDialogContent>
                         </AlertDialog>
                       )}
+                      {/* Expand toggle */}
+                      <button
+                        onClick={() => setExpandedId(isExpanded ? null : match.id)}
+                        className="text-gray-400 hover:text-gray-600 p-1"
+                        aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                      >
+                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
 
-                  {/* Bottom row: scheduled time + notes */}
+                  {/* Scheduled / notes row */}
                   {(scheduledDate || match.notes) && (
                     <div className="flex flex-wrap gap-3 mt-2 pt-2 border-t border-gray-100">
                       {scheduledDate && (
@@ -285,6 +303,78 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                     </div>
                   )}
                 </CardContent>
+
+                {/* ── Expanded detail panel ── */}
+                {isExpanded && (
+                  <div className="border-t border-gray-100 bg-gray-50 px-4 py-4 space-y-4">
+
+                    {/* Players breakdown */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {[{ players: team1, score: match.team1_score, otherScore: match.team2_score },
+                        { players: team2, score: match.team2_score, otherScore: match.team1_score }]
+                        .map(({ players, score, otherScore }, teamIdx) => {
+                          const won = isCompleted && score > otherScore
+                          return (
+                            <div
+                              key={teamIdx}
+                              className={`rounded-lg border p-3 bg-white ${isCompleted ? (won ? 'border-green-200' : 'border-gray-100') : 'border-gray-100'}`}
+                            >
+                              <p className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                                Team {teamIdx + 1}{isCompleted && (won ? ' · 🏆 Winner' : ' · Runner-up')}
+                              </p>
+                              <div className="space-y-2">
+                                {players.map((p: any) => {
+                                  const rank = rankMap[p.user_id]
+                                  const delta = p.elo_after != null ? p.elo_after - p.elo_before : null
+                                  return (
+                                    <Link key={p.id} href={`/players/${p.user_id}`} className="flex items-center gap-2 group">
+                                      <PlayerAvatar name={p.profiles.display_name} color={p.profiles.avatar_color} imageUrl={p.profiles.avatar_url} size="sm" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-medium text-gray-800 group-hover:text-green-700 truncate">
+                                          {p.profiles.display_name}
+                                        </p>
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                          {rank && <span className="text-xs text-gray-400">#{rank}</span>}
+                                          <span className="text-xs text-gray-500 font-medium">
+                                            {p.elo_before} ELO
+                                          </span>
+                                          {delta !== null && <EloDelta delta={delta} />}
+                                        </div>
+                                      </div>
+                                    </Link>
+                                  )
+                                })}
+                              </div>
+                              {isCompleted && (
+                                <div className={`mt-2 pt-2 border-t text-center text-2xl font-bold ${won ? 'text-green-600 border-green-100' : 'text-gray-400 border-gray-100'}`}>
+                                  {score}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                    </div>
+
+                    {/* Match meta: official + format + points */}
+                    <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+                      {/* Officiator or creator */}
+                      {official && (
+                        <div className="flex items-center gap-1.5">
+                          <Shield className="w-3 h-3 text-gray-400" />
+                          <PlayerAvatar name={official.display_name} color={official.avatar_color} imageUrl={official.avatar_url} size="xs" />
+                          <span>
+                            {match.officiator ? 'Officiated by' : 'Created by'}{' '}
+                            <span className="font-medium text-gray-700">{official.display_name}</span>
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <Swords className="w-3 h-3 text-gray-400" />
+                        <span>{formatLabels[match.format]} · Playing to {match.max_points ?? 11}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </Card>
             )
           })}
