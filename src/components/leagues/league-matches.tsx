@@ -9,7 +9,12 @@ import { PlayerAvatar } from '@/components/player-avatar'
 import { CreateMatchDialog } from '@/components/matches/create-match-dialog'
 import { SubmitScoreDialog } from '@/components/matches/submit-score-dialog'
 import { RematchButton } from '@/components/matches/rematch-button'
-import { Calendar, Swords, StickyNote, TrendingUp, TrendingDown } from 'lucide-react'
+import { Calendar, Swords, StickyNote, TrendingUp, TrendingDown, Trash2 } from 'lucide-react'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 import type { MatchFormat } from '@/types/database'
 
 interface Props {
@@ -82,6 +87,11 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
     if (playerFilter !== 'all' && !m.match_players?.some((p: any) => p.user_id === playerFilter)) return false
     return true
   })
+
+  async function handleDelete(matchId: string) {
+    await supabase.from('matches').delete().eq('id', matchId)
+    fetchMatches()
+  }
 
   // Formats that actually have matches
   const usedFormats = Array.from(new Set(matches.map(m => m.format))) as MatchFormat[]
@@ -214,6 +224,34 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                       {canSubmitScore && <SubmitScoreDialog match={match} onSubmitted={fetchMatches} />}
                       {match.status === 'completed' && isAdmin && (
                         <RematchButton match={match} onCreated={fetchMatches} />
+                      )}
+                      {(isAdmin || match.officiator_id === currentUserId || match.created_by === currentUserId) && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-600 hover:bg-red-50 px-2">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete match?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete the match record.
+                                {match.status === 'completed' && ' Note: ELO ratings from this completed match will NOT be reversed — players will keep their current ratings.'}
+                                {' '}This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-red-600 hover:bg-red-700"
+                                onClick={() => handleDelete(match.id)}
+                              >
+                                Delete match
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       )}
                     </div>
                   </div>
