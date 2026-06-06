@@ -100,12 +100,15 @@ export function SubmitScoreDialog({ match, onSubmitted }: Props) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3 xs:gap-4">
             <div className="space-y-2">
-              <div className="flex items-center gap-1.5 mb-1">
+              <div className="flex flex-col items-center gap-1 mb-1">
                 {team1.map((p: any) => (
-                  <PlayerAvatar key={p.id} name={p.profiles.display_name} color={p.profiles.avatar_color} size="sm" />
+                  <div key={p.id} className="flex items-center gap-2">
+                    <PlayerAvatar name={p.profiles.display_name} color={p.profiles.avatar_color} size="sm" />
+                    <span className="text-sm font-medium text-gray-700 truncate">{p.profiles.display_name}</span>
+                  </div>
                 ))}
               </div>
-              <Label>Team 1 score</Label>
+              <Label className="text-center block">Team 1 score</Label>
               <Input
                 type="number"
                 min={0}
@@ -117,12 +120,15 @@ export function SubmitScoreDialog({ match, onSubmitted }: Props) {
               />
             </div>
             <div className="space-y-2">
-              <div className="flex items-center gap-1.5 mb-1">
+              <div className="flex flex-col items-center gap-1 mb-1">
                 {team2.map((p: any) => (
-                  <PlayerAvatar key={p.id} name={p.profiles.display_name} color={p.profiles.avatar_color} size="sm" />
+                  <div key={p.id} className="flex items-center gap-2">
+                    <PlayerAvatar name={p.profiles.display_name} color={p.profiles.avatar_color} size="sm" />
+                    <span className="text-sm font-medium text-gray-700 truncate">{p.profiles.display_name}</span>
+                  </div>
                 ))}
               </div>
-              <Label>Team 2 score</Label>
+              <Label className="text-center block">Team 2 score</Label>
               <Input
                 type="number"
                 min={0}
