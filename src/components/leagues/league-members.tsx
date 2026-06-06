@@ -91,16 +91,19 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
               <div className="flex items-center gap-3">
                 <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">{m.profiles.display_name}</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium text-sm truncate">{m.profiles.display_name}</span>
                     {isMe && <Badge variant="outline" className="text-xs py-0">You</Badge>}
                   </div>
-                  <span className="text-xs text-gray-500">{m.profiles.email}</span>
+                  <span className="text-xs text-gray-500 hidden sm:block">{m.profiles.email}</span>
+                  <Badge variant={m.role === 'head_admin' ? 'default' : m.role === 'admin' ? 'secondary' : 'outline'} className="text-xs sm:hidden mt-0.5">
+                    {roleLabels[m.role] ?? m.role}
+                  </Badge>
                 </div>
-                <Badge variant={m.role === 'head_admin' ? 'default' : m.role === 'admin' ? 'secondary' : 'outline'} className="text-xs">
+                <Badge variant={m.role === 'head_admin' ? 'default' : m.role === 'admin' ? 'secondary' : 'outline'} className="text-xs hidden sm:inline-flex">
                   {roleLabels[m.role] ?? m.role}
                 </Badge>
-                <div className="text-sm font-medium text-right w-16">
+                <div className="text-sm font-medium text-right shrink-0">
                   {formatElo(m.elo_rating)}
                 </div>
                 {canEdit && (

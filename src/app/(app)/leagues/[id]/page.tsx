@@ -83,7 +83,7 @@ export default async function LeaguePage({ params }: { params: { id: string } })
       <LeagueAnnouncements leagueId={params.id} isAdmin={isAdmin} />
 
       <Tabs defaultValue="leaderboard">
-        <TabsList className="mb-6 flex-wrap h-auto gap-1">
+        <TabsList className="mb-6 w-full overflow-x-auto flex h-auto gap-1 justify-start">
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           <TabsTrigger value="matches">Matches</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>

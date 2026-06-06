@@ -40,7 +40,7 @@ function Step({ number, title, children }: { number: number; title: string; chil
 
 function CodeBlock({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-gray-950 text-green-400 rounded-lg px-4 py-3 font-mono text-xs leading-relaxed overflow-x-auto my-2">
+    <div className="bg-gray-950 text-green-400 rounded-lg px-4 py-3 font-mono text-xs leading-relaxed overflow-x-auto my-2 break-words whitespace-pre-wrap">
       {children}
     </div>
   )
@@ -227,22 +227,19 @@ export default function EloPage() {
         </div>
 
         <div className="rounded-xl border overflow-hidden">
-          <div className="grid grid-cols-[56px_56px_1fr] text-xs font-semibold text-gray-500 bg-gray-50 px-4 py-2 border-b">
-            <span>Rating</span>
-            <span>ELO</span>
-            <span>What it means</span>
-          </div>
           {PB_LEVELS.map((row) => {
             const pb = getPickleballRating(parseInt(row.elo))
             return (
               <div
                 key={row.rating}
-                className="grid grid-cols-[56px_56px_1fr] items-start px-4 py-3 border-b last:border-b-0 gap-x-2"
+                className="flex items-start gap-3 px-4 py-3 border-b last:border-b-0"
               >
-                <span className={`font-bold text-sm ${pb.color}`}>{row.rating}</span>
-                <span className="text-xs text-gray-400 pt-0.5">{row.eloRange.split('–')[0].trim()}</span>
-                <div>
-                  <p className="text-sm font-medium text-gray-800">{row.label}</p>
+                <span className={`font-bold text-base w-10 shrink-0 ${pb.color}`}>{row.rating}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-medium text-gray-800">{row.label}</p>
+                    <span className="text-xs text-gray-400">{row.eloRange}</span>
+                  </div>
                   <p className="text-xs text-gray-500 mt-0.5">{row.desc}</p>
                 </div>
               </div>
