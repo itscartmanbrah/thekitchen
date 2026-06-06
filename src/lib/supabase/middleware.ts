@@ -5,7 +5,7 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Beta gate — skip for the gate page itself and the API route that sets the cookie
-  const isBetaExempt = pathname === '/beta' || pathname.startsWith('/api/beta-access')
+  const isBetaExempt = pathname === '/beta' || pathname === '/contact' || pathname.startsWith('/api/beta-access')
   if (!isBetaExempt && process.env.BETA_ACCESS_CODE) {
     const hasBetaAccess = request.cookies.get('beta_access')?.value === 'true'
     if (!hasBetaAccess) {

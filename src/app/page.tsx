@@ -17,6 +17,9 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild>
+              <Link href="/contact">Contact</Link>
+            </Button>
+            <Button variant="ghost" asChild>
               <Link href="/login">Sign in</Link>
             </Button>
             <Button asChild>
@@ -137,6 +140,9 @@ export default function LandingPage() {
           <span className="font-semibold text-gray-700">The Kitchen</span>
         </div>
         <p>© {new Date().getFullYear()} The Kitchen. Built for pickleball players.</p>
+        <div className="mt-2">
+          <Link href="/contact" className="text-green-600 hover:underline text-sm">Contact us</Link>
+        </div>
       </footer>
     </div>
   )

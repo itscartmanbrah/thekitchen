@@ -87,7 +87,11 @@ export default function BetaGatePage() {
         </Card>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          Don&apos;t have a code? Contact the administrator to request beta access.
+          Don&apos;t have a code?{' '}
+          <a href="/contact" className="text-green-600 hover:underline">
+            Contact the administrator
+          </a>{' '}
+          to request beta access.
         </p>
       </div>
     </div>
