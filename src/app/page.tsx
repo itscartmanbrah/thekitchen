@@ -1,101 +1,143 @@
-import Image from "next/image";
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Trophy, Users, Zap, BarChart3, Shield, Star } from 'lucide-react'
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
+      {/* Nav */}
+      <nav className="border-b bg-white/80 backdrop-blur sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">TK</span>
+            </div>
+            <span className="font-bold text-xl text-gray-900">The Kitchen</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" asChild>
+              <Link href="/login">Sign in</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/signup">Get started free</Link>
+            </Button>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </nav>
+
+      {/* Hero */}
+      <section className="max-w-6xl mx-auto px-4 pt-24 pb-16 text-center">
+        <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
+          <Zap className="w-4 h-4" />
+          ELO-powered pickleball rankings
+        </div>
+        <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+          Run your pickleball league<br />
+          <span className="text-green-600">like a pro.</span>
+        </h1>
+        <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+          The Kitchen tracks every dink, drive, and drop shot. Create leagues, log matches,
+          and watch your ELO rating climb with a fair, margin-aware ranking system.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button size="lg" asChild className="text-base px-8">
+            <Link href="/signup">Start your league →</Link>
+          </Button>
+          <Button size="lg" variant="outline" asChild className="text-base px-8">
+            <Link href="/login">Sign in</Link>
+          </Button>
+        </div>
+        <p className="text-sm text-gray-500 mt-4">Free to create. Invite your crew with a 6-character code.</p>
+      </section>
+
+      {/* How it works */}
+      <section className="max-w-6xl mx-auto px-4 py-20">
+        <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">How it works</h2>
+        <p className="text-center text-gray-600 mb-12 max-w-xl mx-auto">
+          Three steps from signup to leaderboard.
+        </p>
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            {
+              step: '1',
+              icon: <Shield className="w-6 h-6 text-green-600" />,
+              title: 'Create your league',
+              desc: "Set a name, location, and banner color. You're automatically the Head Admin with full control.",
+            },
+            {
+              step: '2',
+              icon: <Users className="w-6 h-6 text-green-600" />,
+              title: 'Invite players',
+              desc: 'Share your unique 6-character invite code. Players join instantly and start at 1000 ELO.',
+            },
+            {
+              step: '3',
+              icon: <Trophy className="w-6 h-6 text-green-600" />,
+              title: 'Log matches & rank up',
+              desc: 'Admins create matches, officiators confirm scores, and ELO updates automatically.',
+            },
+          ].map(item => (
+            <Card key={item.step} className="relative overflow-hidden">
+              <CardContent className="pt-6">
+                <div className="absolute top-4 right-4 text-6xl font-bold text-gray-100 select-none">{item.step}</div>
+                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                  {item.icon}
+                </div>
+                <h3 className="font-semibold text-lg text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-gray-600 text-sm">{item.desc}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="bg-gray-50 py-20">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Everything your league needs</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { icon: <BarChart3 className="w-5 h-5" />, title: 'ELO Rankings', desc: 'Margin-aware ELO with a score multiplier so blowouts move more points than squeakers.' },
+              { icon: <Users className="w-5 h-5" />, title: 'Multiple Roles', desc: 'Head Admin, Admin, Officiator, and Player — each with the right level of access.' },
+              { icon: <Trophy className="w-5 h-5" />, title: 'Match Formats', desc: 'Singles, Doubles, Mixed Doubles, and Round Robin tournaments all supported.' },
+              { icon: <Zap className="w-5 h-5" />, title: 'Instant Updates', desc: 'Real-time leaderboard updates the moment a match is confirmed.' },
+              { icon: <Star className="w-5 h-5" />, title: 'Multi-League', desc: 'Players can join multiple leagues with separate rankings in each.' },
+              { icon: <Shield className="w-5 h-5" />, title: 'Invite Codes', desc: 'Simple 6-character codes make it easy to bring the whole crew in.' },
+            ].map(f => (
+              <div key={f.title} className="flex gap-4 p-4">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0 text-green-600">
+                  {f.icon}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">{f.title}</h3>
+                  <p className="text-sm text-gray-600">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="max-w-6xl mx-auto px-4 py-24 text-center">
+        <h2 className="text-4xl font-bold text-gray-900 mb-4">Ready to dominate the kitchen?</h2>
+        <p className="text-gray-600 mb-8 text-lg">Create your free league in under a minute.</p>
+        <Button size="lg" asChild className="text-base px-10">
+          <Link href="/signup">Create your league →</Link>
+        </Button>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t py-8 text-center text-sm text-gray-500">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="w-5 h-5 bg-green-600 rounded flex items-center justify-center">
+            <span className="text-white font-bold text-xs">TK</span>
+          </div>
+          <span className="font-semibold text-gray-700">The Kitchen</span>
+        </div>
+        <p>© {new Date().getFullYear()} The Kitchen. Built for pickleball players.</p>
       </footer>
     </div>
-  );
+  )
 }

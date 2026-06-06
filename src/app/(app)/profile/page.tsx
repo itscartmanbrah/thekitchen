@@ -1,0 +1,198 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { PlayerAvatar } from '@/components/player-avatar'
+import { useToast } from '@/hooks/use-toast'
+import { AVATAR_COLORS } from '@/lib/utils'
+import type { Profile } from '@/types/database'
+
+export default function ProfilePage() {
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [nickname, setNickname] = useState('')
+  const [birthday, setBirthday] = useState('')
+  const [phone, setPhone] = useState('')
+  const [avatarColor, setAvatarColor] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const router = useRouter()
+  const { toast } = useToast()
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return router.push('/login')
+      supabase.from('profiles').select('*').eq('id', user.id).single().then(({ data }) => {
+        if (data) {
+          const p = data as unknown as Profile
+          setProfile(p)
+          setFirstName(p.first_name ?? '')
+          setLastName(p.last_name ?? '')
+          setNickname(p.nickname ?? '')
+          setBirthday(p.birthday ?? '')
+          setPhone(p.phone ?? '')
+          setAvatarColor(p.avatar_color)
+        }
+      })
+    })
+  }, [])
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    if (!profile) return
+    setSaving(true)
+
+    const displayName = nickname.trim() || `${firstName} ${lastName}`.trim()
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        first_name: firstName,
+        last_name: lastName,
+        nickname: nickname || null,
+        birthday: birthday || null,
+        phone: phone || null,
+        display_name: displayName,
+        avatar_color: avatarColor,
+      } as any)
+      .eq('id', profile.id)
+
+    if (error) {
+      toast({ title: 'Save failed', description: error.message, variant: 'destructive' })
+    } else {
+      toast({ title: 'Profile updated' })
+      setProfile({ ...profile, first_name: firstName, last_name: lastName, nickname: nickname || null, birthday: birthday || null, phone: phone || null, display_name: displayName, avatar_color: avatarColor })
+      router.refresh()
+    }
+    setSaving(false)
+  }
+
+  if (!profile) return <div className="text-center py-12 text-gray-500">Loading…</div>
+
+  const previewName = nickname.trim() || `${firstName} ${lastName}`.trim() || profile.display_name
+
+  return (
+    <div className="max-w-lg">
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Profile</h1>
+
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base">Player details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSave} className="space-y-5">
+
+            {/* Avatar preview */}
+            <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+              <PlayerAvatar name={previewName} color={avatarColor} size="lg" />
+              <div>
+                <p className="font-semibold text-gray-900">{previewName}</p>
+                <p className="text-xs text-gray-500">{profile.email}</p>
+              </div>
+            </div>
+
+            {/* Name */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Name</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="firstName">First name *</Label>
+                  <Input
+                    id="firstName"
+                    value={firstName}
+                    onChange={e => setFirstName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="lastName">Last name *</Label>
+                  <Input
+                    id="lastName"
+                    value={lastName}
+                    onChange={e => setLastName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="nickname">
+                Nickname <span className="text-gray-400 font-normal text-xs">(shown on leaderboard if set)</span>
+              </Label>
+              <Input
+                id="nickname"
+                placeholder="e.g. The Dink King"
+                value={nickname}
+                onChange={e => setNickname(e.target.value)}
+              />
+            </div>
+
+            <Separator />
+
+            {/* Contact */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Contact</p>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label>Email address</Label>
+                  <Input value={profile.email} disabled className="bg-gray-50 text-gray-500" />
+                  <p className="text-xs text-gray-400">Email cannot be changed here.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="phone">Phone number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+1 (555) 000-0000"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="birthday">Date of birth</Label>
+                  <Input
+                    id="birthday"
+                    type="date"
+                    value={birthday}
+                    onChange={e => setBirthday(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Avatar color */}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Avatar color</p>
+              <div className="flex gap-2 flex-wrap">
+                {AVATAR_COLORS.map(color => (
+                  <button
+                    key={color}
+                    type="button"
+                    className={`w-8 h-8 rounded-full border-2 transition-all ${avatarColor === color ? 'border-gray-800 scale-110' : 'border-transparent'}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => setAvatarColor(color)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <Button type="submit" disabled={saving} className="w-full">
+              {saving ? 'Saving…' : 'Save changes'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
