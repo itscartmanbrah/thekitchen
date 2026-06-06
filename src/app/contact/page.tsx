@@ -32,7 +32,7 @@ export default function ContactPage() {
                   <span className="text-white font-bold text-sm">CC</span>
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">Charleston Clyde Villaruz</p>
+                  <p className="font-semibold text-gray-900">Clyde Villaruz</p>
                   <p className="text-xs text-gray-500">Developer & Founder, The Kitchen</p>
                 </div>
               </div>
