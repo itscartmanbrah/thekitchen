@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { EloHistoryChart } from '@/components/elo-history-chart'
 import { formatElo, getEloTier, getPickleballRating } from '@/lib/utils'
-import { Trophy, MapPin, TrendingUp, Swords } from 'lucide-react'
+import { Trophy, MapPin, TrendingUp } from 'lucide-react'
 
 const roleLabels: Record<string, string> = {
   head_admin: 'Head Admin',
@@ -27,7 +27,10 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     .eq('id', params.id)
     .single()
 
-  if (!profile) notFound()
+  if (!profile) {
+    console.error(`[players/${params.id}] profile not found — user auth uid: ${user?.id}`)
+    notFound()
+  }
 
   // Memberships + league details
   const { data: memberships } = await supabase
@@ -40,47 +43,64 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
   // Rank position per league + per-league ELO history
   const rankedMemberships = await Promise.all(
     (memberships ?? []).map(async (m: any) => {
-      const [{ count }, { count: total }, { data: txRows }] = await Promise.all([
-        supabase
-          .from('league_members')
-          .select('*', { count: 'exact', head: true })
-          .eq('league_id', m.league_id)
-          .eq('status', 'active')
-          .gt('elo_rating', m.elo_rating),
-        supabase
-          .from('league_members')
-          .select('*', { count: 'exact', head: true })
-          .eq('league_id', m.league_id)
-          .eq('status', 'active'),
-        supabase
-          .from('point_transactions')
-          .select('points_after, created_at')
-          .eq('user_id', params.id)
-          .eq('league_id', m.league_id)
-          .order('created_at', { ascending: true })
-          .limit(50),
-      ])
+      try {
+        const [{ count }, { count: total }, { data: txRows }] = await Promise.all([
+          supabase
+            .from('league_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('league_id', m.league_id)
+            .eq('status', 'active')
+            .gt('elo_rating', m.elo_rating),
+          supabase
+            .from('league_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('league_id', m.league_id)
+            .eq('status', 'active'),
+          supabase
+            .from('point_transactions')
+            .select('points_after, created_at')
+            .eq('user_id', params.id)
+            .eq('league_id', m.league_id)
+            .order('created_at', { ascending: true })
+            .limit(50),
+        ])
 
-      // Season results for this player in this league
-      const { data: seasonRows } = await supabase
-        .from('season_results')
-        .select('final_elo, final_rank, wins, losses, seasons(name, ended_at)')
-        .eq('user_id', params.id)
-        .eq('league_id', m.league_id)
-        .order('created_at', { ascending: false })
+        // Season results for this player in this league (wrapped separately in case table doesn't exist yet)
+        let seasonRows = null
+        try {
+          const { data } = await supabase
+            .from('season_results')
+            .select('final_elo, final_rank, wins, losses, seasons(name, ended_at)')
+            .eq('user_id', params.id)
+            .eq('league_id', m.league_id)
+            .order('created_at', { ascending: false })
+          seasonRows = data
+        } catch {
+          seasonRows = null
+        }
 
-      const eloHistory = (txRows ?? []).map((t: any) => ({
-        elo: t.points_after,
-        date: new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        label: new Date(t.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
-      }))
+        const eloHistory = (txRows ?? []).map((t: any) => ({
+          elo: t.points_after,
+          date: new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          label: new Date(t.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+        }))
 
-      return {
-        ...m,
-        rank: (count ?? 0) + 1,
-        totalPlayers: total ?? 1,
-        eloHistory,
-        seasonHistory: seasonRows ?? [],
+        return {
+          ...m,
+          rank: (count ?? 0) + 1,
+          totalPlayers: total ?? 1,
+          eloHistory,
+          seasonHistory: seasonRows ?? [],
+        }
+      } catch {
+        // If any query fails for this membership, return safe defaults
+        return {
+          ...m,
+          rank: 1,
+          totalPlayers: 1,
+          eloHistory: [],
+          seasonHistory: [],
+        }
       }
     })
   )
@@ -95,48 +115,52 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
   // ── Head-to-head vs the logged-in viewer ─────────────────────────────────
   let h2h: { myWins: number; theirWins: number; total: number } | null = null
   if (user && !isOwn) {
-    // Find all matches where both players appear
-    const { data: myMatches } = await supabase
-      .from('match_players')
-      .select('match_id, team')
-      .eq('user_id', user.id)
-
-    const myMatchIds = (myMatches ?? []).map((r: any) => r.match_id)
-
-    if (myMatchIds.length > 0) {
-      const { data: sharedRows } = await supabase
+    try {
+      // Find all matches where both players appear
+      const { data: myMatches } = await supabase
         .from('match_players')
-        .select('match_id, team, matches(status, team1_score, team2_score)')
-        .eq('user_id', params.id)
-        .in('match_id', myMatchIds)
+        .select('match_id, team')
+        .eq('user_id', user.id)
 
-      let myWins = 0
-      let theirWins = 0
+      const myMatchIds = (myMatches ?? []).map((r: any) => r.match_id)
 
-      for (const row of (sharedRows ?? []) as any[]) {
-        const match = row.matches
-        if (match?.status !== 'completed') continue
+      if (myMatchIds.length > 0) {
+        const { data: sharedRows } = await supabase
+          .from('match_players')
+          .select('match_id, team, matches(status, team1_score, team2_score)')
+          .eq('user_id', params.id)
+          .in('match_id', myMatchIds)
 
-        // Which team is the viewed player on?
-        const theirTeam: number = row.team
-        // Which team am I on?
-        const meRow = (myMatches ?? []).find((r: any) => r.match_id === row.match_id)
-        if (!meRow) continue
-        const myTeam: number = meRow.team
+        let myWins = 0
+        let theirWins = 0
 
-        // Skip if same team (doubles partner — not a head-to-head)
-        if (myTeam === theirTeam) continue
+        for (const row of (sharedRows ?? []) as any[]) {
+          const match = row.matches
+          if (match?.status !== 'completed') continue
 
-        const t1 = match.team1_score
-        const t2 = match.team2_score
-        const winningTeam = t1 > t2 ? 1 : 2
+          // Which team is the viewed player on?
+          const theirTeam: number = row.team
+          // Which team am I on?
+          const meRow = (myMatches ?? []).find((r: any) => r.match_id === row.match_id)
+          if (!meRow) continue
+          const myTeam: number = meRow.team
 
-        if (winningTeam === myTeam) myWins++
-        else theirWins++
+          // Skip if same team (doubles partner — not a head-to-head)
+          if (myTeam === theirTeam) continue
+
+          const t1 = match.team1_score
+          const t2 = match.team2_score
+          const winningTeam = t1 > t2 ? 1 : 2
+
+          if (winningTeam === myTeam) myWins++
+          else theirWins++
+        }
+
+        const total = myWins + theirWins
+        if (total > 0) h2h = { myWins, theirWins, total }
       }
-
-      const total = myWins + theirWins
-      if (total > 0) h2h = { myWins, theirWins, total }
+    } catch {
+      // h2h stays null — non-critical, just skip the section
     }
   }
 

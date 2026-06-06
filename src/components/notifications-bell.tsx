@@ -28,17 +28,20 @@ function timeAgo(iso: string) {
 }
 
 function NotifIcon({ type }: { type: string }) {
-  if (type === 'match_scheduled') return <Swords className="w-4 h-4 text-green-600" />
-  if (type === 'match_result')    return <Trophy className="w-4 h-4 text-yellow-500" />
+  if (type === 'match_scheduled')    return <Swords className="w-4 h-4 text-green-600" />
+  if (type === 'match_result')       return <Trophy className="w-4 h-4 text-yellow-500" />
   if (type === 'league_announcement') return <Megaphone className="w-4 h-4 text-blue-500" />
-  if (type === 'league_invite')   return <Bell className="w-4 h-4 text-green-500" />
+  if (type === 'league_invite')      return <Bell className="w-4 h-4 text-green-500" />
+  if (type === 'challenge_officiate') return <Swords className="w-4 h-4 text-orange-500" />
+  if (type === 'challenge_received') return <Swords className="w-4 h-4 text-red-500" />
   return <Bell className="w-4 h-4 text-gray-400" />
 }
 
 export function NotificationsBell({ userId }: { userId: string }) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [open, setOpen] = useState(false)
-  const [inviteLoading, setInviteLoading] = useState<Record<string, 'accept' | 'decline' | null>>({})
+  const [inviteLoading, setInviteLoading]       = useState<Record<string, 'accept' | 'decline' | null>>({})
+  const [challengeLoading, setChallengeLoading] = useState<Record<string, 'accept' | 'decline' | null>>({})
   const ref = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const supabase = createClient()
@@ -56,9 +59,10 @@ export function NotificationsBell({ userId }: { userId: string }) {
   }
 
   async function markAllRead() {
-    // Only mark non-invite notifications as read — invite stays unread until acted on
+    // Keep action-required notifications unread until the user acts on them
+    const actionTypes = ['league_invite', 'challenge_officiate', 'challenge_received']
     const unreadIds = notifications
-      .filter(n => !n.read && n.type !== 'league_invite')
+      .filter(n => !n.read && !actionTypes.includes(n.type))
       .map(n => n.id)
     if (!unreadIds.length) return
     await supabase.from('notifications').update({ read: true } as any).in('id', unreadIds)
@@ -172,6 +176,135 @@ export function NotificationsBell({ userId }: { userId: string }) {
     setInviteLoading(prev => ({ ...prev, [n.id]: null }))
   }
 
+  // ── Challenge: officiator accepts ───────────────────────────────────────────
+  async function acceptOfficiate(n: Notification) {
+    const { challenge_id, league_id, challenger_id, challenger_name, challenged_id, challenged_name, format } = n.data ?? {}
+    if (!challenge_id) return
+    setChallengeLoading(prev => ({ ...prev, [n.id]: 'accept' }))
+
+    await supabase.from('challenges').update({ status: 'pending_player' } as any).eq('id', challenge_id)
+
+    // Notify the challenged player
+    await supabase.from('notifications').insert({
+      user_id: challenged_id,
+      type:    'challenge_received',
+      title:   '⚔️ You have been challenged!',
+      body:    `${challenger_name} has challenged you to a ${format} match. An officiator is already confirmed.`,
+      data: { challenge_id, league_id, challenger_id, challenger_name, format },
+    } as any)
+
+    await supabase.from('notifications').delete().eq('id', n.id)
+    setNotifications(prev => prev.filter(x => x.id !== n.id))
+    setChallengeLoading(prev => ({ ...prev, [n.id]: null }))
+  }
+
+  async function declineOfficiate(n: Notification) {
+    const { challenge_id, league_id, challenger_id, challenger_name, challenged_name } = n.data ?? {}
+    if (!challenge_id) return
+    setChallengeLoading(prev => ({ ...prev, [n.id]: 'decline' }))
+
+    await supabase.from('challenges').update({ status: 'declined_officiator' } as any).eq('id', challenge_id)
+
+    // Notify the challenger
+    await supabase.from('notifications').insert({
+      user_id: challenger_id,
+      type:    'challenge_update',
+      title:   'Officiating request declined',
+      body:    `The officiator declined your challenge vs ${challenged_name}. Try selecting a different officiator.`,
+      data:    { challenge_id, league_id },
+    } as any)
+
+    await supabase.from('notifications').delete().eq('id', n.id)
+    setNotifications(prev => prev.filter(x => x.id !== n.id))
+    setChallengeLoading(prev => ({ ...prev, [n.id]: null }))
+  }
+
+  // ── Challenge: challenged player accepts ─────────────────────────────────
+  async function acceptChallenge(n: Notification) {
+    const { challenge_id, league_id, challenger_id, challenger_name, format } = n.data ?? {}
+    if (!challenge_id) return
+    setChallengeLoading(prev => ({ ...prev, [n.id]: 'accept' }))
+
+    // Fetch the full challenge to get officiator_id and proposed_at
+    const { data: challenge } = await supabase
+      .from('challenges').select('*').eq('id', challenge_id).single()
+
+    if (!challenge) {
+      setChallengeLoading(prev => ({ ...prev, [n.id]: null }))
+      return
+    }
+
+    // Create the actual match
+    const { data: match, error } = await supabase
+      .from('matches')
+      .insert({
+        league_id,
+        format:        challenge.format,
+        status:        'scheduled',
+        officiator_id: challenge.officiator_id,
+        created_by:    challenge.challenger_id,
+        scheduled_at:  challenge.proposed_at ?? null,
+        max_points:    11,
+      } as any)
+      .select('id')
+      .single()
+
+    if (error || !match) {
+      setChallengeLoading(prev => ({ ...prev, [n.id]: null }))
+      return
+    }
+
+    // Add both players to match_players
+    await supabase.from('match_players').insert([
+      { match_id: match.id, user_id: challenge.challenger_id, team: 1 },
+      { match_id: match.id, user_id: challenge.challenged_id, team: 2 },
+    ] as any)
+
+    // Update challenge record
+    await supabase.from('challenges')
+      .update({ status: 'accepted', match_id: match.id } as any)
+      .eq('id', challenge_id)
+
+    // Notify challenger
+    const { data: myProfile } = await supabase.from('profiles').select('display_name').eq('id', userId).single()
+    await supabase.from('notifications').insert({
+      user_id: challenger_id,
+      type:    'challenge_update',
+      title:   '✅ Challenge accepted!',
+      body:    `${(myProfile as any)?.display_name ?? 'Your opponent'} accepted your challenge. The match has been scheduled.`,
+      data:    { challenge_id, league_id, match_id: match.id },
+    } as any)
+
+    await supabase.from('notifications').delete().eq('id', n.id)
+    setNotifications(prev => prev.filter(x => x.id !== n.id))
+    setChallengeLoading(prev => ({ ...prev, [n.id]: null }))
+    setOpen(false)
+    router.push(`/leagues/${league_id}`)
+    router.refresh()
+  }
+
+  async function declineChallenge(n: Notification) {
+    const { challenge_id, league_id, challenger_id, challenger_name } = n.data ?? {}
+    if (!challenge_id) return
+    setChallengeLoading(prev => ({ ...prev, [n.id]: 'decline' }))
+
+    await supabase.from('challenges').update({ status: 'declined_player' } as any).eq('id', challenge_id)
+
+    // Notify challenger
+    const { data: myProfile } = await supabase.from('profiles').select('display_name').eq('id', userId).single()
+    await supabase.from('notifications').insert({
+      user_id: challenger_id,
+      type:    'challenge_update',
+      title:   'Challenge declined',
+      body:    `${(myProfile as any)?.display_name ?? 'Your opponent'} declined your challenge.`,
+      data:    { challenge_id, league_id },
+    } as any)
+
+    await supabase.from('notifications').delete().eq('id', n.id)
+    setNotifications(prev => prev.filter(x => x.id !== n.id))
+    setChallengeLoading(prev => ({ ...prev, [n.id]: null }))
+  }
+
   // Close on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -262,12 +395,12 @@ export function NotificationsBell({ userId }: { userId: string }) {
                   {n.body && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{n.body}</p>}
                   <p className="text-xs text-gray-400 mt-1">{timeAgo(n.created_at)}</p>
 
-                  {/* Accept / Decline for invite notifications */}
+                  {/* League invite: Accept / Decline */}
                   {n.type === 'league_invite' && (
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={() => acceptInvite(n)}
-                        disabled={inviteLoading[n.id] !== undefined && inviteLoading[n.id] !== null}
+                        disabled={!!inviteLoading[n.id]}
                         className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
                       >
                         <CheckCircle className="w-3 h-3" />
@@ -275,7 +408,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
                       </button>
                       <button
                         onClick={() => declineInvite(n)}
-                        disabled={inviteLoading[n.id] !== undefined && inviteLoading[n.id] !== null}
+                        disabled={!!inviteLoading[n.id]}
                         className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50"
                       >
                         <XCircle className="w-3 h-3" />
@@ -284,8 +417,52 @@ export function NotificationsBell({ userId }: { userId: string }) {
                     </div>
                   )}
 
-                  {/* Regular notifications are clickable to mark read */}
-                  {n.type !== 'league_invite' && !n.read && (
+                  {/* Challenge officiate request: Accept / Decline */}
+                  {n.type === 'challenge_officiate' && (
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => acceptOfficiate(n)}
+                        disabled={!!challengeLoading[n.id]}
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md bg-orange-500 text-white hover:bg-orange-600 disabled:opacity-50"
+                      >
+                        <CheckCircle className="w-3 h-3" />
+                        {challengeLoading[n.id] === 'accept' ? 'Accepting…' : 'Accept officiating'}
+                      </button>
+                      <button
+                        onClick={() => declineOfficiate(n)}
+                        disabled={!!challengeLoading[n.id]}
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50"
+                      >
+                        <XCircle className="w-3 h-3" />
+                        {challengeLoading[n.id] === 'decline' ? 'Declining…' : 'Decline'}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Challenge received: Accept / Decline */}
+                  {n.type === 'challenge_received' && (
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => acceptChallenge(n)}
+                        disabled={!!challengeLoading[n.id]}
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                      >
+                        <CheckCircle className="w-3 h-3" />
+                        {challengeLoading[n.id] === 'accept' ? 'Accepting…' : 'Accept challenge'}
+                      </button>
+                      <button
+                        onClick={() => declineChallenge(n)}
+                        disabled={!!challengeLoading[n.id]}
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50"
+                      >
+                        <XCircle className="w-3 h-3" />
+                        {challengeLoading[n.id] === 'decline' ? 'Declining…' : 'Decline'}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Regular notifications: mark read */}
+                  {!['league_invite', 'challenge_officiate', 'challenge_received'].includes(n.type) && !n.read && (
                     <button onClick={() => markOneRead(n.id)} className="text-xs text-gray-400 hover:text-gray-600 mt-1">
                       Mark read
                     </button>

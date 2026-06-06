@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
@@ -52,17 +52,22 @@ function EloDelta({ delta }: { delta: number }) {
   )
 }
 
+const PAGE_SIZE = 20
+
 export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
   const [matches, setMatches] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(false)
   const [formatFilter, setFormatFilter] = useState<MatchFormat | 'all'>('all')
   const [playerFilter, setPlayerFilter] = useState<string>('all')
   const [members, setMembers] = useState<any[]>([])
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const supabase = createClient()
   const { toast } = useToast()
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  async function fetchMatches() {
+  async function fetchMatches(replace = true) {
     const { data } = await supabase
       .from('matches')
       .select(`
@@ -73,19 +78,54 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
       `)
       .eq('league_id', leagueId)
       .order('created_at', { ascending: false })
-    setMatches(data ?? [])
+      .limit(PAGE_SIZE)
+    const rows = data ?? []
+    setMatches(rows)
+    setHasMore(rows.length === PAGE_SIZE)
     setLoading(false)
+  }
+
+  async function loadMore() {
+    if (loadingMore || !hasMore) return
+    setLoadingMore(true)
+    const oldest = matches[matches.length - 1]?.created_at
+    const { data } = await supabase
+      .from('matches')
+      .select(`
+        *,
+        match_players(*, profiles(*)),
+        officiator:profiles!officiator_id(id, display_name, avatar_color, avatar_url),
+        creator:profiles!created_by(id, display_name, avatar_color, avatar_url)
+      `)
+      .eq('league_id', leagueId)
+      .order('created_at', { ascending: false })
+      .lt('created_at', oldest)
+      .limit(PAGE_SIZE)
+    const rows = data ?? []
+    setMatches(prev => [...prev, ...rows])
+    setHasMore(rows.length === PAGE_SIZE)
+    setLoadingMore(false)
+  }
+
+  // Debounced refetch — prevents rapid cascading refetches from realtime
+  function scheduleRefetch() {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => fetchMatches(), 800)
   }
 
   useEffect(() => {
     fetchMatches()
-    supabase.from('league_members').select('*, profiles(*)').eq('league_id', leagueId)
+    supabase.from('league_members').select('user_id, elo_rating, profiles(id, display_name, avatar_color, avatar_url)')
+      .eq('league_id', leagueId).eq('status', 'active')
       .then(({ data }) => setMembers(data ?? []))
 
     const channel = supabase.channel(`matches:${leagueId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches', filter: `league_id=eq.${leagueId}` }, fetchMatches)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches', filter: `league_id=eq.${leagueId}` }, scheduleRefetch)
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      supabase.removeChannel(channel)
+    }
   }, [leagueId])
 
   // Build a rank map: user_id → rank (by current ELO in this league)
@@ -378,6 +418,15 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
               </Card>
             )
           })}
+        </div>
+      )}
+
+      {/* Load more — shown regardless of filters */}
+      {hasMore && (
+        <div className="mt-4 text-center">
+          <Button variant="outline" size="sm" onClick={loadMore} disabled={loadingMore}>
+            {loadingMore ? 'Loading…' : 'Load more matches'}
+          </Button>
         </div>
       )}
     </div>

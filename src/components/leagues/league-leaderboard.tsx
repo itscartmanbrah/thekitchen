@@ -1,13 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { PlayerAvatar } from '@/components/player-avatar'
+import { ChallengeDialog } from '@/components/leagues/challenge-dialog'
 import { formatElo, getEloTier, getPickleballRating } from '@/lib/utils'
-import { Trophy } from 'lucide-react'
+import { Trophy, Swords } from 'lucide-react'
 import type { LeagueMemberWithProfile, MatchFormat } from '@/types/database'
 
 
@@ -82,26 +83,31 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
   const [seasonLoading, setSeasonLoading] = useState(false)
 
   const supabase = createClient()
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Challenge dialog state
+  const [challengeTarget, setChallengeTarget] = useState<{ id: string; name: string } | null>(null)
 
   async function fetchMembers() {
     const { data } = await supabase
       .from('league_members')
       .select('*, profiles(*)')
       .eq('league_id', leagueId)
+      .eq('status', 'active')
       .order('elo_rating', { ascending: false })
     setMembers((data as LeagueMemberWithProfile[]) ?? [])
     setLoading(false)
   }
 
   async function fetchForm() {
-    // Get last 5 completed matches per player in this league
+    // Fetch only the fields needed to compute form dots — smaller payload
     const { data: matches } = await supabase
       .from('matches')
       .select('id, team1_score, team2_score, format, match_players(user_id, team)')
       .eq('league_id', leagueId)
       .eq('status', 'completed')
       .order('completed_at', { ascending: false })
-      .limit(100)
+      .limit(50)
 
     if (!matches) return
 
@@ -122,6 +128,14 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
       }
     }
     setFormMap(map)
+  }
+
+  function scheduleRefresh() {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      fetchMembers()
+      fetchForm()
+    }, 800)
   }
 
   // Fetch all seasons for selector
@@ -154,12 +168,12 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
     fetchForm()
     const channel = supabase
       .channel(`leaderboard:${leagueId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'league_members', filter: `league_id=eq.${leagueId}` }, () => {
-        fetchMembers()
-        fetchForm()
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'league_members', filter: `league_id=eq.${leagueId}` }, scheduleRefresh)
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      supabase.removeChannel(channel)
+    }
   }, [leagueId])
 
   // Per-format leaderboard: filter members by who played in that format
@@ -303,11 +317,22 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
                       <span className={`text-xs ${tier.color}`}>{tier.label}</span>
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <div className="font-bold text-base">{formatElo(m.elo_rating)}</div>
-                    <div className="text-xs text-gray-500">
-                      {m.wins}W {m.losses}L
-                      {winRate !== null && <span className="ml-1">({winRate}%)</span>}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {!isMe && (
+                      <button
+                        onClick={() => setChallengeTarget({ id: m.user_id, name: m.profiles.display_name })}
+                        title={`Challenge ${m.profiles.display_name}`}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                      >
+                        <Swords className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    <div className="text-right">
+                      <div className="font-bold text-base">{formatElo(m.elo_rating)}</div>
+                      <div className="text-xs text-gray-500">
+                        {m.wins}W {m.losses}L
+                        {winRate !== null && <span className="ml-1">({winRate}%)</span>}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -322,6 +347,19 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
           </div>
         )}
       </div>
+
+      {/* Challenge dialog */}
+      {challengeTarget && (
+        <ChallengeDialog
+          open={!!challengeTarget}
+          onOpenChange={v => { if (!v) setChallengeTarget(null) }}
+          leagueId={leagueId}
+          challengedId={challengeTarget.id}
+          challengedName={challengeTarget.name}
+          currentUserId={currentUserId}
+          members={members as any}
+        />
+      )}
     </div>
   )
 }
