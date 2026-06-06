@@ -180,10 +180,10 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
 
           <div className="space-y-2">
             <Label>Officiator (optional)</Label>
-            <Select value={officiatorId} onValueChange={setOfficiatorId}>
+            <Select value={officiatorId || 'none'} onValueChange={v => setOfficiatorId(v === 'none' ? '' : v)}>
               <SelectTrigger><SelectValue placeholder="Select officiator…" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 {members.map(m => (
                   <SelectItem key={m.user_id} value={m.user_id}>
                     {m.profiles.display_name}
