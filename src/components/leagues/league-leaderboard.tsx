@@ -317,14 +317,14 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
                       <span className={`text-xs ${tier.color}`}>{tier.label}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-3 shrink-0">
                     {!isMe && (
                       <button
                         onClick={() => setChallengeTarget({ id: m.user_id, name: m.profiles.display_name })}
-                        title={`Challenge ${m.profiles.display_name}`}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700 hover:bg-green-50 transition-colors"
                       >
-                        <Swords className="w-3.5 h-3.5" />
+                        <Swords className="w-3 h-3" />
+                        Challenge
                       </button>
                     )}
                     <div className="text-right">
