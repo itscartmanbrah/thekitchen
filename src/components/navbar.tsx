@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { getInitials } from '@/lib/utils'
+import { NotificationsBell } from '@/components/notifications-bell'
 import type { Profile } from '@/types/database'
 
 export function Navbar({ profile }: { profile: Profile | null }) {
@@ -32,6 +33,7 @@ export function Navbar({ profile }: { profile: Profile | null }) {
         </Link>
 
         <div className="flex items-center gap-2">
+          {profile && <NotificationsBell userId={profile.id} />}
           {profile ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -47,7 +47,7 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
     if (!open) return
     supabase
       .from('league_members')
-      .select('*, profiles(*)')
+      .select('*, profiles(*), leagues(name)')
       .eq('league_id', leagueId)
       .then(({ data }) => setMembers((data as LeagueMemberWithProfile[]) ?? []))
   }, [open, leagueId])
@@ -110,6 +110,38 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
     ]
 
     await supabase.from('match_players').insert(playerInserts as any)
+
+    // Send notifications if a date/time was set
+    if (scheduledAt) {
+      const scheduledDate = new Date(scheduledAt).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+      })
+      const league = members[0] // we have league context from members
+      const leagueName = (league as any)?.leagues?.name ?? 'your league'
+
+      // Notify all players
+      const playerNotifications = [...team1, ...team2].map(userId => ({
+        user_id: userId,
+        type: 'match_scheduled',
+        title: '📅 Match scheduled',
+        body: `You have a ${formatConfig[format].label} match on ${scheduledDate}${notes ? ` — "${notes}"` : ''}.`,
+        data: { match_id: (match as any).id, league_id: leagueId },
+      }))
+
+      // Notify officiator separately
+      if (officiatorId && !usedIds.includes(officiatorId)) {
+        playerNotifications.push({
+          user_id: officiatorId,
+          type: 'match_scheduled',
+          title: '🏅 You are officiating a match',
+          body: `You have been assigned to officiate a ${formatConfig[format].label} match on ${scheduledDate} in ${leagueName}.`,
+          data: { match_id: (match as any).id, league_id: leagueId },
+        })
+      }
+
+      await supabase.from('notifications').insert(playerNotifications as any)
+    }
 
     toast({ title: 'Match created!' })
     setOpen(false)
