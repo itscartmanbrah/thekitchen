@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Bell, Trophy, Swords, Megaphone, Check, CheckCircle, XCircle } from 'lucide-react'
+import { Bell, Trophy, Swords, Megaphone, Check, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 
 interface Notification {
   id: string
@@ -221,58 +221,33 @@ export function NotificationsBell({ userId }: { userId: string }) {
 
   // ── Challenge: challenged player accepts ─────────────────────────────────
   async function acceptChallenge(n: Notification) {
-    const { challenge_id, league_id, challenger_id, challenger_name, format } = n.data ?? {}
+    const { challenge_id, league_id, challenger_id } = n.data ?? {}
     if (!challenge_id) return
     setChallengeLoading(prev => ({ ...prev, [n.id]: 'accept' }))
 
-    // Fetch the full challenge to get officiator_id and proposed_at
-    const { data: challenge } = await supabase
-      .from('challenges').select('*').eq('id', challenge_id).single()
+    // Use a security definer RPC so a regular player can create the match
+    const { data: matchId, error } = await supabase
+      .rpc('accept_challenge', { p_challenge_id: challenge_id })
 
-    if (!challenge) {
+    if (error || !matchId) {
       setChallengeLoading(prev => ({ ...prev, [n.id]: null }))
+      // Show error in bell panel
+      setNotifications(prev => prev.map(x =>
+        x.id === n.id ? { ...x, body: `Failed to accept: ${error?.message ?? 'unknown error'}` } : x
+      ))
       return
     }
 
-    // Create the actual match
-    const { data: match, error } = await supabase
-      .from('matches')
-      .insert({
-        league_id,
-        format:        challenge.format,
-        status:        'scheduled',
-        officiator_id: challenge.officiator_id,
-        created_by:    challenge.challenger_id,
-        scheduled_at:  challenge.proposed_at ?? null,
-        max_points:    11,
-      } as any)
-      .select('id')
-      .single()
+    // Notify the challenger
+    const { data: myProfile } = await supabase
+      .from('profiles').select('display_name').eq('id', userId).single()
 
-    if (error || !match) {
-      setChallengeLoading(prev => ({ ...prev, [n.id]: null }))
-      return
-    }
-
-    // Add both players to match_players
-    await supabase.from('match_players').insert([
-      { match_id: match.id, user_id: challenge.challenger_id, team: 1 },
-      { match_id: match.id, user_id: challenge.challenged_id, team: 2 },
-    ] as any)
-
-    // Update challenge record
-    await supabase.from('challenges')
-      .update({ status: 'accepted', match_id: match.id } as any)
-      .eq('id', challenge_id)
-
-    // Notify challenger
-    const { data: myProfile } = await supabase.from('profiles').select('display_name').eq('id', userId).single()
     await supabase.from('notifications').insert({
       user_id: challenger_id,
       type:    'challenge_update',
       title:   '✅ Challenge accepted!',
       body:    `${(myProfile as any)?.display_name ?? 'Your opponent'} accepted your challenge. The match has been scheduled.`,
-      data:    { challenge_id, league_id, match_id: match.id },
+      data:    { challenge_id, league_id, match_id: matchId },
     } as any)
 
     await supabase.from('notifications').delete().eq('id', n.id)
