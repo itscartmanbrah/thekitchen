@@ -13,6 +13,8 @@ import { LeagueWaitlist } from '@/components/leagues/league-waitlist'
 import { LeagueInviteLinks } from '@/components/leagues/league-invite-links'
 import { LeagueInviteScreen } from '@/components/leagues/league-invite-screen'
 import { LeagueSeasonManager } from '@/components/leagues/league-season-manager'
+import { LeagueChallenges } from '@/components/leagues/league-challenges'
+import { LeagueOfficiated } from '@/components/leagues/league-officiated'
 import { MapPin } from 'lucide-react'
 import { CopyInviteButton } from '@/components/leagues/copy-invite-button'
 import type { League, LeagueMember } from '@/types/database'
@@ -50,8 +52,9 @@ export default async function LeaguePage({ params }: { params: { id: string } })
     return <LeagueInviteScreen league={league} membershipId={membership.id} userId={user.id} />
   }
 
-  const isAdmin = membership.role === 'head_admin' || membership.role === 'admin'
-  const isHeadAdmin = membership.role === 'head_admin'
+  const isAdmin      = membership.role === 'head_admin' || membership.role === 'admin'
+  const isHeadAdmin  = membership.role === 'head_admin'
+  const isOfficiator = membership.role === 'officiator' || isAdmin
 
   // Active season
   const { data: activeSeason } = await supabase
@@ -115,6 +118,10 @@ export default async function LeaguePage({ params }: { params: { id: string } })
           <TabsTrigger value="activity">Activity</TabsTrigger>
           <TabsTrigger value="stats">Stats</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
+          <TabsTrigger value="challenges">Challenges</TabsTrigger>
+          {isOfficiator && (
+            <TabsTrigger value="officiated">Officiated</TabsTrigger>
+          )}
           {isAdmin && (
             <TabsTrigger value="requests" className="relative flex items-center gap-1.5">
               Requests
@@ -149,6 +156,16 @@ export default async function LeaguePage({ params }: { params: { id: string } })
         <TabsContent value="stats">
           <LeagueStats leagueId={params.id} />
         </TabsContent>
+
+        <TabsContent value="challenges">
+          <LeagueChallenges leagueId={params.id} currentUserId={user.id} />
+        </TabsContent>
+
+        {isOfficiator && (
+          <TabsContent value="officiated">
+            <LeagueOfficiated leagueId={params.id} currentUserId={user.id} />
+          </TabsContent>
+        )}
 
         <TabsContent value="members">
           <LeagueMembers

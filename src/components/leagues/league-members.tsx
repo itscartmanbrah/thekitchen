@@ -6,12 +6,13 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PlayerAvatar } from '@/components/player-avatar'
+import { ChallengeDialog } from '@/components/leagues/challenge-dialog'
 import { formatElo } from '@/lib/utils'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/hooks/use-toast'
-import { MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal, Swords } from 'lucide-react'
 import { InvitePlayerDialog } from '@/components/leagues/invite-player-dialog'
 import type { LeagueMemberWithProfile, LeagueRole } from '@/types/database'
 
@@ -34,6 +35,7 @@ const roleOrder: Record<string, number> = { head_admin: 0, admin: 1, officiator:
 export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }: Props) {
   const [members, setMembers] = useState<LeagueMemberWithProfile[]>([])
   const [loading, setLoading] = useState(true)
+  const [challengeTarget, setChallengeTarget] = useState<{ id: string; name: string } | null>(null)
   const { toast } = useToast()
   const supabase = createClient()
 
@@ -115,6 +117,15 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
                 <div className="text-sm font-medium text-right shrink-0">
                   {formatElo(m.elo_rating)}
                 </div>
+                {!isMe && (
+                  <button
+                    onClick={() => setChallengeTarget({ id: m.user_id, name: m.profiles.display_name })}
+                    className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700 hover:bg-green-50 transition-colors shrink-0"
+                  >
+                    <Swords className="w-3 h-3" />
+                    Challenge
+                  </button>
+                )}
                 {canEdit && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -157,6 +168,18 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
         )
       })}
       </div>
+
+      {challengeTarget && (
+        <ChallengeDialog
+          open={!!challengeTarget}
+          onOpenChange={v => { if (!v) setChallengeTarget(null) }}
+          leagueId={leagueId}
+          challengedId={challengeTarget.id}
+          challengedName={challengeTarget.name}
+          currentUserId={currentUserId}
+          members={members as any}
+        />
+      )}
     </div>
   )
 }

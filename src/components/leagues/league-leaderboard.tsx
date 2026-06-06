@@ -6,9 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { PlayerAvatar } from '@/components/player-avatar'
-import { ChallengeDialog } from '@/components/leagues/challenge-dialog'
 import { formatElo, getEloTier, getPickleballRating } from '@/lib/utils'
-import { Trophy, Swords } from 'lucide-react'
+import { Trophy } from 'lucide-react'
 import type { LeagueMemberWithProfile, MatchFormat } from '@/types/database'
 
 
@@ -84,9 +83,6 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
 
   const supabase = createClient()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  // Challenge dialog state
-  const [challengeTarget, setChallengeTarget] = useState<{ id: string; name: string } | null>(null)
 
   async function fetchMembers() {
     const { data } = await supabase
@@ -317,22 +313,11 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
                       <span className={`text-xs ${tier.color}`}>{tier.label}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    {!isMe && (
-                      <button
-                        onClick={() => setChallengeTarget({ id: m.user_id, name: m.profiles.display_name })}
-                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700 hover:bg-green-50 transition-colors"
-                      >
-                        <Swords className="w-3 h-3" />
-                        Challenge
-                      </button>
-                    )}
-                    <div className="text-right">
-                      <div className="font-bold text-base">{formatElo(m.elo_rating)}</div>
-                      <div className="text-xs text-gray-500">
-                        {m.wins}W {m.losses}L
-                        {winRate !== null && <span className="ml-1">({winRate}%)</span>}
-                      </div>
+                  <div className="text-right shrink-0">
+                    <div className="font-bold text-base">{formatElo(m.elo_rating)}</div>
+                    <div className="text-xs text-gray-500">
+                      {m.wins}W {m.losses}L
+                      {winRate !== null && <span className="ml-1">({winRate}%)</span>}
                     </div>
                   </div>
                 </div>
@@ -348,18 +333,6 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
         )}
       </div>
 
-      {/* Challenge dialog */}
-      {challengeTarget && (
-        <ChallengeDialog
-          open={!!challengeTarget}
-          onOpenChange={v => { if (!v) setChallengeTarget(null) }}
-          leagueId={leagueId}
-          challengedId={challengeTarget.id}
-          challengedName={challengeTarget.name}
-          currentUserId={currentUserId}
-          members={members as any}
-        />
-      )}
     </div>
   )
 }
