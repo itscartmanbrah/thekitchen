@@ -5,20 +5,17 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { CreateMatchDialog } from '@/components/matches/create-match-dialog'
 import { SubmitScoreDialog } from '@/components/matches/submit-score-dialog'
 import { RematchButton } from '@/components/matches/rematch-button'
 import { Calendar, Swords, StickyNote, TrendingUp, TrendingDown } from 'lucide-react'
-import type { LeagueMember, MatchFormat } from '@/types/database'
+import type { MatchFormat } from '@/types/database'
 
 interface Props {
   leagueId: string
   currentUserId: string
   isAdmin: boolean
-  isOfficiator: boolean
-  membership: LeagueMember
 }
 
 const formatLabels: Record<string, string> = {
@@ -35,7 +32,7 @@ const statusVariants: Record<string, 'default' | 'secondary' | 'outline' | 'succ
   cancelled: 'outline',
 }
 
-const ALL_FORMATS: (MatchFormat | 'all')[] = ['all', 'singles', 'doubles', 'mixed_doubles', 'round_robin']
+
 
 function EloDelta({ delta }: { delta: number }) {
   if (delta === 0) return <span className="text-xs text-gray-400">±0</span>
@@ -51,7 +48,7 @@ function EloDelta({ delta }: { delta: number }) {
   )
 }
 
-export function LeagueMatches({ leagueId, currentUserId, isAdmin, isOfficiator, membership }: Props) {
+export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
   const [matches, setMatches] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [formatFilter, setFormatFilter] = useState<MatchFormat | 'all'>('all')

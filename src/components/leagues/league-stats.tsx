@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { BarChart3, Trophy, Zap, TrendingUp, Target, Swords } from 'lucide-react'
 

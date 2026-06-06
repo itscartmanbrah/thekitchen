@@ -126,7 +126,7 @@ export default function EloPage() {
 
           <Step number={1} title="Before the match: work out who is expected to win">
             <p>
-              We look at both players' current points and calculate the probability that each one wins.
+              We look at both players&apos; current points and calculate the probability that each one wins.
               The bigger the gap between players, the more lopsided those probabilities are.
             </p>
             <CodeBlock>
@@ -178,7 +178,7 @@ export default function EloPage() {
 
           <Step number={4} title="Doubles & Mixed Doubles">
             <p>
-              For team formats, each <strong className="text-gray-800">team's average points</strong> are
+              For team formats, each <strong className="text-gray-800">team&apos;s average points</strong> are
               used to calculate the expected score. The same points change is then applied to every
               individual on the team.
             </p>

@@ -8,17 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
 import { AVATAR_COLORS, formatElo, getEloTier, getPickleballRating } from '@/lib/utils'
-import { Trophy, MapPin, ExternalLink } from 'lucide-react'
+import { Trophy, ExternalLink } from 'lucide-react'
 import type { Profile } from '@/types/database'
-
-const roleLabels: Record<string, string> = {
-  head_admin: 'Head Admin', admin: 'Admin', officiator: 'Officiator', player: 'Player',
-}
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -112,9 +107,6 @@ export default function ProfilePage() {
   if (!profile) return <div className="text-center py-12 text-gray-500">Loading…</div>
 
   const previewName = nickname.trim() || `${firstName} ${lastName}`.trim() || profile.display_name
-  const bestElo = memberships.length > 0 ? memberships[0].elo_rating : 1000
-  const pb   = getPickleballRating(bestElo)
-  const tier = getEloTier(bestElo)
 
   return (
     <div className="max-w-lg">

@@ -10,7 +10,7 @@ import { formatElo, getEloTier, getPickleballRating } from '@/lib/utils'
 import { Trophy } from 'lucide-react'
 import type { LeagueMemberWithProfile, MatchFormat } from '@/types/database'
 
-const ALL_FORMATS: (MatchFormat | 'all')[] = ['all', 'singles', 'doubles', 'mixed_doubles', 'round_robin']
+
 const formatLabels: Record<string, string> = {
   all: 'All', singles: 'Singles', doubles: 'Doubles', mixed_doubles: 'Mixed', round_robin: 'Round Robin',
 }

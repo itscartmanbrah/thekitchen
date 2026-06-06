@@ -1,13 +1,12 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CreateLeagueDialog } from '@/components/leagues/create-league-dialog'
 import { JoinLeagueDialog } from '@/components/leagues/join-league-dialog'
 import { formatElo } from '@/lib/utils'
-import { Trophy, Users, MapPin, TrendingUp } from 'lucide-react'
+import { Trophy, MapPin, TrendingUp } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()

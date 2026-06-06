@@ -110,8 +110,6 @@ export default async function LeaguePage({ params }: { params: { id: string } })
             leagueId={params.id}
             currentUserId={user.id}
             isAdmin={isAdmin}
-            isOfficiator={membership.role === 'officiator'}
-            membership={membership}
           />
         </TabsContent>
 
