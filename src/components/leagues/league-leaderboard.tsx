@@ -144,7 +144,7 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
       .eq('season_id', selectedSeasonId)
       .order('final_rank', { ascending: true })
       .then(({ data }) => {
-        setSeasonResults((data as SeasonResult[]) ?? [])
+        setSeasonResults((data as unknown as SeasonResult[]) ?? [])
         setSeasonLoading(false)
       })
   }, [selectedSeasonId, leagueId])
