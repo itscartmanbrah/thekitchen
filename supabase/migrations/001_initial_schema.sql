@@ -9,7 +9,7 @@ create type match_format as enum ('singles', 'doubles', 'mixed_doubles', 'round_
 create type match_status as enum ('scheduled', 'in_progress', 'completed', 'cancelled');
 
 -- ─────────────────────────────────────────────
--- profiles (mirrors auth.users)
+-- profiles
 -- ─────────────────────────────────────────────
 create table profiles (
   id            uuid primary key references auth.users on delete cascade,
@@ -52,7 +52,7 @@ create trigger on_auth_user_created
   for each row execute procedure handle_new_user();
 
 -- ─────────────────────────────────────────────
--- leagues
+-- leagues (no cross-ref policies yet)
 -- ─────────────────────────────────────────────
 create table leagues (
   id            uuid primary key default uuid_generate_v4(),
@@ -68,39 +68,9 @@ create table leagues (
 
 alter table leagues enable row level security;
 
-create policy "League members can view their leagues"
-  on leagues for select using (
-    exists (
-      select 1 from league_members
-      where league_members.league_id = leagues.id
-        and league_members.user_id = auth.uid()
-    )
-  );
-
-create policy "Admins can update leagues"
-  on leagues for update using (
-    exists (
-      select 1 from league_members
-      where league_members.league_id = leagues.id
-        and league_members.user_id = auth.uid()
-        and league_members.role in ('head_admin', 'admin')
-    )
-  );
-
 create policy "Authenticated users can create leagues"
   on leagues for insert with check (auth.uid() = created_by);
 
-create policy "Head admin can delete leagues"
-  on leagues for delete using (
-    exists (
-      select 1 from league_members
-      where league_members.league_id = leagues.id
-        and league_members.user_id = auth.uid()
-        and league_members.role = 'head_admin'
-    )
-  );
-
--- Allow invite code lookup for joining
 create policy "Anyone can look up leagues by invite code"
   on leagues for select using (true);
 
@@ -153,6 +123,39 @@ create policy "Admins can remove members"
       where lm2.league_id = league_members.league_id
         and lm2.user_id = auth.uid()
         and lm2.role in ('head_admin', 'admin')
+    )
+  );
+
+-- ─────────────────────────────────────────────
+-- leagues RLS policies that reference league_members
+-- (added after league_members exists)
+-- ─────────────────────────────────────────────
+create policy "League members can view their leagues"
+  on leagues for select using (
+    exists (
+      select 1 from league_members
+      where league_members.league_id = leagues.id
+        and league_members.user_id = auth.uid()
+    )
+  );
+
+create policy "Admins can update leagues"
+  on leagues for update using (
+    exists (
+      select 1 from league_members
+      where league_members.league_id = leagues.id
+        and league_members.user_id = auth.uid()
+        and league_members.role in ('head_admin', 'admin')
+    )
+  );
+
+create policy "Head admin can delete leagues"
+  on leagues for delete using (
+    exists (
+      select 1 from league_members
+      where league_members.league_id = leagues.id
+        and league_members.user_id = auth.uid()
+        and league_members.role = 'head_admin'
     )
   );
 
@@ -286,7 +289,7 @@ create policy "Users can view their own transactions"
     )
   );
 
-create policy "Admins can insert transactions"
+create policy "Admins and officiators can insert transactions"
   on point_transactions for insert with check (
     exists (
       select 1 from league_members
