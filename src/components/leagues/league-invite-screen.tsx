@@ -59,6 +59,14 @@ export function LeagueInviteScreen({ league, membershipId, userId }: Props) {
       )
     }
 
+    // Delete the invite notification so the bell doesn't still show it
+    await supabase
+      .from('notifications')
+      .delete()
+      .eq('user_id', userId)
+      .eq('type', 'league_invite')
+      .eq('data->>league_id', league.id)
+
     toast({ title: `Welcome to ${league.name}!` })
     router.refresh()
   }
@@ -101,6 +109,14 @@ export function LeagueInviteScreen({ league, membershipId, userId }: Props) {
         })) as any
       )
     }
+
+    // Delete the invite notification so the bell clears it too
+    await supabase
+      .from('notifications')
+      .delete()
+      .eq('user_id', userId)
+      .eq('type', 'league_invite')
+      .eq('data->>league_id', league.id)
 
     toast({ title: 'Invitation declined' })
     router.push('/dashboard')
