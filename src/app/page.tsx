@@ -140,7 +140,7 @@ export default function LandingPage() {
           <span className="font-semibold text-gray-700">The Kitchen</span>
         </div>
         <p className="font-medium text-gray-700">© {new Date().getFullYear()} The Kitchen. All rights reserved.</p>
-        <p className="mt-1 text-xs">Developed and owned by Charleston Clyde Villaruz. Unauthorised use or reproduction is prohibited.</p>
+        <p className="mt-1 text-xs">Developed and owned by Clyde Villaruz. Unauthorised use or reproduction is prohibited.</p>
         <div className="mt-2">
           <Link href="/contact" className="text-green-600 hover:underline text-sm">Contact us</Link>
         </div>
