@@ -10,7 +10,7 @@ import { UserCheck, UserX, Clock } from 'lucide-react'
 
 interface PendingMember {
   id: string; user_id: string; joined_at: string
-  profiles: { display_name: string; avatar_color: string; email: string }
+  profiles: { display_name: string; avatar_color: string; avatar_url: string | null; email: string }
 }
 
 export function LeagueWaitlist({ leagueId }: { leagueId: string }) {
