@@ -42,6 +42,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
       .from('league_members')
       .select('*, profiles(*)')
       .eq('league_id', leagueId)
+      .eq('status', 'active')
       .order('elo_rating', { ascending: false })
     const sorted = [...(data ?? [])].sort((a, b) => roleOrder[a.role] - roleOrder[b.role])
     setMembers(sorted as LeagueMemberWithProfile[])

@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Bell, Trophy, Swords, Megaphone, Check } from 'lucide-react'
+import { Bell, Trophy, Swords, Megaphone, Check, CheckCircle, XCircle } from 'lucide-react'
 
 interface Notification {
   id: string
@@ -28,15 +29,18 @@ function timeAgo(iso: string) {
 
 function NotifIcon({ type }: { type: string }) {
   if (type === 'match_scheduled') return <Swords className="w-4 h-4 text-green-600" />
-  if (type === 'match_result') return <Trophy className="w-4 h-4 text-yellow-500" />
+  if (type === 'match_result')    return <Trophy className="w-4 h-4 text-yellow-500" />
   if (type === 'league_announcement') return <Megaphone className="w-4 h-4 text-blue-500" />
+  if (type === 'league_invite')   return <Bell className="w-4 h-4 text-green-500" />
   return <Bell className="w-4 h-4 text-gray-400" />
 }
 
 export function NotificationsBell({ userId }: { userId: string }) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [open, setOpen] = useState(false)
+  const [inviteLoading, setInviteLoading] = useState<Record<string, 'accept' | 'decline' | null>>({})
   const ref = useRef<HTMLDivElement>(null)
+  const router = useRouter()
   const supabase = createClient()
 
   const unread = notifications.filter(n => !n.read).length
@@ -52,10 +56,15 @@ export function NotificationsBell({ userId }: { userId: string }) {
   }
 
   async function markAllRead() {
-    const unreadIds = notifications.filter(n => !n.read).map(n => n.id)
+    // Only mark non-invite notifications as read — invite stays unread until acted on
+    const unreadIds = notifications
+      .filter(n => !n.read && n.type !== 'league_invite')
+      .map(n => n.id)
     if (!unreadIds.length) return
     await supabase.from('notifications').update({ read: true } as any).in('id', unreadIds)
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+    setNotifications(prev => prev.map(n =>
+      unreadIds.includes(n.id) ? { ...n, read: true } : n
+    ))
   }
 
   async function markOneRead(id: string) {
@@ -68,6 +77,101 @@ export function NotificationsBell({ userId }: { userId: string }) {
     setNotifications([])
   }
 
+  async function acceptInvite(n: Notification) {
+    const leagueId = n.data?.league_id
+    if (!leagueId) return
+    setInviteLoading(prev => ({ ...prev, [n.id]: 'accept' }))
+
+    const { error } = await supabase
+      .from('league_members')
+      .update({ status: 'active' } as any)
+      .eq('league_id', leagueId)
+      .eq('user_id', userId)
+      .eq('status', 'invited')
+
+    if (error) {
+      setInviteLoading(prev => ({ ...prev, [n.id]: null }))
+      return
+    }
+
+    // Notify admins
+    const { data: admins } = await supabase
+      .from('league_members')
+      .select('user_id')
+      .eq('league_id', leagueId)
+      .in('role', ['head_admin', 'admin'])
+      .eq('status', 'active')
+
+    const { data: profile } = await supabase
+      .from('profiles').select('display_name').eq('id', userId).single()
+
+    const { data: leagueData } = await supabase
+      .from('leagues').select('name').eq('id', leagueId).single()
+
+    if (admins && admins.length > 0) {
+      await supabase.from('notifications').insert(
+        admins.map((a: any) => ({
+          user_id: a.user_id,
+          type: 'invite_accepted',
+          title: '✅ Invite accepted',
+          body: `${(profile as any)?.display_name ?? 'A player'} accepted their invitation to join ${(leagueData as any)?.name ?? 'your league'}.`,
+          data: { league_id: leagueId },
+        })) as any
+      )
+    }
+
+    // Mark notification read and remove it
+    await supabase.from('notifications').delete().eq('id', n.id)
+    setNotifications(prev => prev.filter(x => x.id !== n.id))
+    setInviteLoading(prev => ({ ...prev, [n.id]: null }))
+    setOpen(false)
+    router.push(`/leagues/${leagueId}`)
+    router.refresh()
+  }
+
+  async function declineInvite(n: Notification) {
+    const leagueId = n.data?.league_id
+    if (!leagueId) return
+    setInviteLoading(prev => ({ ...prev, [n.id]: 'decline' }))
+
+    await supabase
+      .from('league_members')
+      .delete()
+      .eq('league_id', leagueId)
+      .eq('user_id', userId)
+      .eq('status', 'invited')
+
+    // Notify admins
+    const { data: admins } = await supabase
+      .from('league_members')
+      .select('user_id')
+      .eq('league_id', leagueId)
+      .in('role', ['head_admin', 'admin'])
+      .eq('status', 'active')
+
+    const { data: profile } = await supabase
+      .from('profiles').select('display_name').eq('id', userId).single()
+
+    const { data: leagueData } = await supabase
+      .from('leagues').select('name').eq('id', leagueId).single()
+
+    if (admins && admins.length > 0) {
+      await supabase.from('notifications').insert(
+        admins.map((a: any) => ({
+          user_id: a.user_id,
+          type: 'invite_declined',
+          title: '❌ Invite declined',
+          body: `${(profile as any)?.display_name ?? 'A player'} declined their invitation to join ${(leagueData as any)?.name ?? 'your league'}.`,
+          data: { league_id: leagueId },
+        })) as any
+      )
+    }
+
+    await supabase.from('notifications').delete().eq('id', n.id)
+    setNotifications(prev => prev.filter(x => x.id !== n.id))
+    setInviteLoading(prev => ({ ...prev, [n.id]: null }))
+  }
+
   // Close on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -77,24 +181,22 @@ export function NotificationsBell({ userId }: { userId: string }) {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  // Initial fetch + realtime subscription
+  // Initial fetch + realtime
   useEffect(() => {
     fetchNotifications()
     const ch = supabase
       .channel(`notifications:${userId}`)
       .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
+        event: 'INSERT', schema: 'public', table: 'notifications',
         filter: `user_id=eq.${userId}`,
       }, () => fetchNotifications())
       .subscribe()
     return () => { supabase.removeChannel(ch) }
   }, [userId])
 
-  // Mark all read when dropdown opens
+  // Mark non-invite notifications read when dropdown opens
   useEffect(() => {
-    if (open && unread > 0) markAllRead()
+    if (open) markAllRead()
   }, [open])
 
   return (
@@ -133,35 +235,64 @@ export function NotificationsBell({ userId }: { userId: string }) {
           </div>
 
           {/* List */}
-          <div className="max-h-96 overflow-y-auto divide-y divide-gray-50">
+          <div className="max-h-[28rem] overflow-y-auto divide-y divide-gray-50">
             {notifications.length === 0 ? (
               <div className="py-10 text-center text-gray-400 text-sm">
                 <Bell className="w-6 h-6 mx-auto mb-2 text-gray-300" />
                 No notifications yet
               </div>
-            ) : (
-              notifications.map(n => (
-                <button
-                  key={n.id}
-                  onClick={() => markOneRead(n.id)}
-                  className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-start gap-3 ${!n.read ? 'bg-green-50/60' : ''}`}
-                >
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0 mt-0.5">
-                    <NotifIcon type={n.type} />
+            ) : notifications.map(n => (
+              <div
+                key={n.id}
+                className={`px-4 py-3 flex items-start gap-3 ${!n.read ? 'bg-green-50/60' : ''}`}
+              >
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <NotifIcon type={n.type} />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className={`text-sm leading-snug ${!n.read ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
+                      {n.title}
+                    </p>
+                    {!n.read && n.type !== 'league_invite' && (
+                      <span className="w-2 h-2 bg-green-500 rounded-full shrink-0 mt-1" />
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className={`text-sm leading-snug ${!n.read ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
-                        {n.title}
-                      </p>
-                      {!n.read && <span className="w-2 h-2 bg-green-500 rounded-full shrink-0 mt-1" />}
+                  {n.body && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{n.body}</p>}
+                  <p className="text-xs text-gray-400 mt-1">{timeAgo(n.created_at)}</p>
+
+                  {/* Accept / Decline for invite notifications */}
+                  {n.type === 'league_invite' && (
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => acceptInvite(n)}
+                        disabled={inviteLoading[n.id] !== undefined && inviteLoading[n.id] !== null}
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                      >
+                        <CheckCircle className="w-3 h-3" />
+                        {inviteLoading[n.id] === 'accept' ? 'Accepting…' : 'Accept'}
+                      </button>
+                      <button
+                        onClick={() => declineInvite(n)}
+                        disabled={inviteLoading[n.id] !== undefined && inviteLoading[n.id] !== null}
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50"
+                      >
+                        <XCircle className="w-3 h-3" />
+                        {inviteLoading[n.id] === 'decline' ? 'Declining…' : 'Decline'}
+                      </button>
                     </div>
-                    {n.body && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{n.body}</p>}
-                    <p className="text-xs text-gray-400 mt-1">{timeAgo(n.created_at)}</p>
-                  </div>
-                </button>
-              ))
-            )}
+                  )}
+
+                  {/* Regular notifications are clickable to mark read */}
+                  {n.type !== 'league_invite' && !n.read && (
+                    <button onClick={() => markOneRead(n.id)} className="text-xs text-gray-400 hover:text-gray-600 mt-1">
+                      Mark read
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

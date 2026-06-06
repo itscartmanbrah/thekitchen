@@ -11,6 +11,7 @@ import { LeagueStats } from '@/components/leagues/league-stats'
 import { LeagueAnnouncements } from '@/components/leagues/league-announcements'
 import { LeagueWaitlist } from '@/components/leagues/league-waitlist'
 import { LeagueInviteLinks } from '@/components/leagues/league-invite-links'
+import { LeagueInviteScreen } from '@/components/leagues/league-invite-screen'
 import { MapPin } from 'lucide-react'
 import { CopyInviteButton } from '@/components/leagues/copy-invite-button'
 import type { League, LeagueMember } from '@/types/database'
@@ -41,6 +42,11 @@ export default async function LeaguePage({ params }: { params: { id: string } })
         <p className="text-gray-500 text-sm">Your request to join <strong>{league.name}</strong> is pending. An admin will approve it soon.</p>
       </div>
     )
+  }
+
+  // Show accept/decline screen for invited members
+  if ((membership as any).status === 'invited') {
+    return <LeagueInviteScreen league={league} membershipId={membership.id} userId={user.id} />
   }
 
   const isAdmin = membership.role === 'head_admin' || membership.role === 'admin'

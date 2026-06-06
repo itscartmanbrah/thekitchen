@@ -105,13 +105,13 @@ export function InvitePlayerDialog({ leagueId, onInvited }: Props) {
     if (!selected) return
     setLoading(true)
 
-    // Add directly as active member with chosen role
+    // Add as 'invited' — player must accept before becoming active
     const { error } = await supabase.from('league_members').insert({
       league_id: leagueId,
       user_id: selected.id,
       role,
       elo_rating: 1000,
-      status: 'active',
+      status: 'invited',
     } as any)
 
     if (error) {
@@ -129,13 +129,13 @@ export function InvitePlayerDialog({ leagueId, onInvited }: Props) {
 
     await supabase.from('notifications').insert({
       user_id: selected.id,
-      type: 'join_approved',
-      title: '🎉 You were invited to a league!',
-      body: `You have been added to ${(leagueData as any)?.name ?? 'a league'} as a ${roleLabels[role]}.`,
-      data: { league_id: leagueId },
+      type: 'league_invite',
+      title: '🎾 You have been invited to a league!',
+      body: `You've been invited to join ${(leagueData as any)?.name ?? 'a league'} as a ${roleLabels[role]}. Accept or decline below.`,
+      data: { league_id: leagueId, role },
     } as any)
 
-    toast({ title: `${selected.display_name} invited as ${roleLabels[role]}!` })
+    toast({ title: `Invite sent to ${selected.display_name}!`, description: 'They will need to accept before joining.' })
     reset()
     setOpen(false)
     onInvited()
@@ -227,7 +227,7 @@ export function InvitePlayerDialog({ leagueId, onInvited }: Props) {
               </SelectContent>
             </Select>
             <p className="text-xs text-gray-400">
-              They will be added directly — no approval step needed.
+              They will receive a notification and must accept to join.
             </p>
           </div>
         </div>
