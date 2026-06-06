@@ -15,6 +15,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { useToast } from '@/hooks/use-toast'
 import type { MatchFormat } from '@/types/database'
 
 interface Props {
@@ -60,6 +61,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
   const [playerFilter, setPlayerFilter] = useState<string>('all')
   const [members, setMembers] = useState<any[]>([])
   const supabase = createClient()
+  const { toast } = useToast()
 
   async function fetchMatches() {
     const { data } = await supabase
@@ -89,7 +91,12 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
   })
 
   async function handleDelete(matchId: string) {
-    await supabase.from('matches').delete().eq('id', matchId)
+    const { error } = await supabase.from('matches').delete().eq('id', matchId)
+    if (error) {
+      toast({ title: 'Failed to delete match', description: error.message, variant: 'destructive' })
+      return
+    }
+    toast({ title: 'Match deleted' })
     fetchMatches()
   }
 
