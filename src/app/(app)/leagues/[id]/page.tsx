@@ -96,14 +96,17 @@ export default async function LeaguePage({ params }: { params: { id: string } })
           <TabsTrigger value="stats">Stats</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
           {isAdmin && (
-            <TabsTrigger value="settings" className="relative">
-              Settings
+            <TabsTrigger value="requests" className="relative flex items-center gap-1.5">
+              Requests
               {(pendingCount ?? 0) > 0 && (
-                <span className="ml-1.5 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                <span className="bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
                   {pendingCount}
                 </span>
               )}
             </TabsTrigger>
+          )}
+          {isAdmin && (
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           )}
         </TabsList>
 
@@ -137,27 +140,31 @@ export default async function LeaguePage({ params }: { params: { id: string } })
         </TabsContent>
 
         {isAdmin && (
+          <TabsContent value="requests">
+            <div className="max-w-lg">
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="font-semibold text-gray-900">Join requests</h2>
+                {(pendingCount ?? 0) > 0 && (
+                  <span className="bg-red-100 text-red-600 text-xs font-bold rounded-full px-2 py-0.5">
+                    {pendingCount} pending
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-gray-500 mb-4">
+                Review players who have requested to join. Assign their role before approving.
+              </p>
+              <LeagueWaitlist leagueId={params.id} />
+            </div>
+          </TabsContent>
+        )}
+
+        {isAdmin && (
           <TabsContent value="settings" className="space-y-6">
             <LeagueSettings league={league} isHeadAdmin={isHeadAdmin} />
-
-            {/* Invite links */}
             <div className="max-w-lg">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Invite links</h3>
               <LeagueInviteLinks leagueId={params.id} />
             </div>
-
-            {/* Waitlist */}
-            {(pendingCount ?? 0) > 0 && (
-              <div className="max-w-lg">
-                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  Join requests
-                  <span className="bg-red-100 text-red-600 text-xs font-bold rounded-full px-2 py-0.5">
-                    {pendingCount}
-                  </span>
-                </h3>
-                <LeagueWaitlist leagueId={params.id} />
-              </div>
-            )}
           </TabsContent>
         )}
       </Tabs>

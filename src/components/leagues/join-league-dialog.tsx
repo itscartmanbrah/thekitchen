@@ -53,39 +53,50 @@ export function JoinLeagueDialog() {
       return
     }
 
-    // Check if league uses waitlist (invite_links table with approval mode)
-    // For now: check if there are any invite_links rows for this league
-    // If yes → join as pending, else join as active (legacy invite_code flow)
-    const { count: linkCount } = await supabase
-      .from('invite_links')
-      .select('*', { count: 'exact', head: true })
-      .eq('league_id', league.id)
-      .eq('is_active', true)
-
-    const useWaitlist = (linkCount ?? 0) > 0
-
-    // If using invite links, validate the code against invite_links table too
-    // (the legacy leagues.invite_code still works as an always-active bypass)
-
+    // Always join as pending — admin must approve and assign a role
     const { error: joinError } = await supabase.from('league_members').insert({
       league_id: league.id,
       user_id: user.id,
       role: 'player',
       elo_rating: 1000,
-      status: useWaitlist ? 'pending' : 'active',
+      status: 'pending',
     } as any)
 
     if (joinError) {
       toast({ title: 'Failed to join', description: joinError.message, variant: 'destructive' })
-    } else if (useWaitlist) {
-      toast({ title: `Request sent to ${league.name}`, description: 'Waiting for admin approval.' })
-      setOpen(false); setCode('')
-    } else {
-      toast({ title: `Joined ${league.name}!`, description: 'Welcome to the league.' })
-      setOpen(false); setCode('')
-      router.refresh()
-      router.push(`/leagues/${league.id}`)
+      setLoading(false)
+      return
     }
+
+    // Notify all admins in the league
+    const { data: admins } = await supabase
+      .from('league_members')
+      .select('user_id')
+      .eq('league_id', league.id)
+      .in('role', ['head_admin', 'admin'])
+      .eq('status', 'active')
+
+    const { data: requester } = await supabase
+      .from('profiles')
+      .select('display_name')
+      .eq('id', user.id)
+      .single()
+
+    if (admins && admins.length > 0) {
+      await supabase.from('notifications').insert(
+        admins.map((a: any) => ({
+          user_id: a.user_id,
+          type: 'join_request',
+          title: '🙋 New join request',
+          body: `${(requester as any)?.display_name ?? 'Someone'} has requested to join ${league.name}.`,
+          data: { league_id: league.id, user_id: user.id },
+        })) as any
+      )
+    }
+
+    toast({ title: `Request sent to ${league.name}!`, description: 'An admin will review your request shortly.' })
+    setOpen(false)
+    setCode('')
     setLoading(false)
   }
 
