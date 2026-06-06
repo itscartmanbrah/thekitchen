@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/hooks/use-toast'
 import { MoreHorizontal } from 'lucide-react'
+import { InvitePlayerDialog } from '@/components/leagues/invite-player-dialog'
 import type { LeagueMemberWithProfile, LeagueRole } from '@/types/database'
 
 interface Props {
@@ -80,7 +81,14 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
   if (loading) return <div className="text-center py-12 text-gray-500">Loading members…</div>
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
+      {isAdmin && (
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-gray-500">{members.length} member{members.length !== 1 ? 's' : ''}</p>
+          <InvitePlayerDialog leagueId={leagueId} onInvited={fetchMembers} />
+        </div>
+      )}
+      <div className="space-y-2">
       {members.map(m => {
         const isMe = m.user_id === currentUserId
         const canEdit = isAdmin && !isMe && m.role !== 'head_admin'
@@ -147,6 +155,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
           </Card>
         )
       })}
+      </div>
     </div>
   )
 }
