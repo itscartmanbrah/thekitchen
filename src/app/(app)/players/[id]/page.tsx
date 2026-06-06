@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { EloHistoryChart } from '@/components/elo-history-chart'
 import { formatElo, getEloTier, getPickleballRating } from '@/lib/utils'
-import { Trophy, MapPin, TrendingUp } from 'lucide-react'
+import { Trophy, MapPin, TrendingUp, Swords } from 'lucide-react'
 
 const roleLabels: Record<string, string> = {
   head_admin: 'Head Admin',
@@ -83,6 +83,54 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
   const tier        = getEloTier(bestElo)
   const memberSince = new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
+  // ── Head-to-head vs the logged-in viewer ─────────────────────────────────
+  let h2h: { myWins: number; theirWins: number; total: number } | null = null
+  if (user && !isOwn) {
+    // Find all matches where both players appear
+    const { data: myMatches } = await supabase
+      .from('match_players')
+      .select('match_id, team')
+      .eq('user_id', user.id)
+
+    const myMatchIds = (myMatches ?? []).map((r: any) => r.match_id)
+
+    if (myMatchIds.length > 0) {
+      const { data: sharedRows } = await supabase
+        .from('match_players')
+        .select('match_id, team, matches(status, team1_score, team2_score)')
+        .eq('user_id', params.id)
+        .in('match_id', myMatchIds)
+
+      let myWins = 0
+      let theirWins = 0
+
+      for (const row of (sharedRows ?? []) as any[]) {
+        const match = row.matches
+        if (match?.status !== 'completed') continue
+
+        // Which team is the viewed player on?
+        const theirTeam: number = row.team
+        // Which team am I on?
+        const meRow = (myMatches ?? []).find((r: any) => r.match_id === row.match_id)
+        if (!meRow) continue
+        const myTeam: number = meRow.team
+
+        // Skip if same team (doubles partner — not a head-to-head)
+        if (myTeam === theirTeam) continue
+
+        const t1 = match.team1_score
+        const t2 = match.team2_score
+        const winningTeam = t1 > t2 ? 1 : 2
+
+        if (winningTeam === myTeam) myWins++
+        else theirWins++
+      }
+
+      const total = myWins + theirWins
+      if (total > 0) h2h = { myWins, theirWins, total }
+    }
+  }
+
   return (
     <div className="max-w-2xl">
 
@@ -144,6 +192,43 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
           </div>
         </CardContent>
       </Card>
+
+      {/* ── Head-to-head ── */}
+      {h2h && (
+        <Card className="mb-6">
+          <CardContent className="py-4 px-4">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Your head-to-head</p>
+            <div className="flex items-center gap-3">
+              {/* My side */}
+              <div className="flex-1 text-center">
+                <p className="text-3xl font-bold text-green-600">{h2h.myWins}</p>
+                <p className="text-xs text-gray-500 mt-0.5">You</p>
+              </div>
+
+              {/* Bar */}
+              <div className="flex-[2] space-y-1.5">
+                <div className="flex rounded-full overflow-hidden h-3 bg-gray-100">
+                  <div
+                    className="bg-green-500 transition-all"
+                    style={{ width: `${Math.round((h2h.myWins / h2h.total) * 100)}%` }}
+                  />
+                  <div
+                    className="bg-red-400 transition-all"
+                    style={{ width: `${Math.round((h2h.theirWins / h2h.total) * 100)}%` }}
+                  />
+                </div>
+                <p className="text-xs text-center text-gray-400">{h2h.total} match{h2h.total !== 1 ? 'es' : ''} played</p>
+              </div>
+
+              {/* Their side */}
+              <div className="flex-1 text-center">
+                <p className="text-3xl font-bold text-red-400">{h2h.theirWins}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{profile.display_name.split(' ')[0]}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── League memberships + per-league chart ── */}
       <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
