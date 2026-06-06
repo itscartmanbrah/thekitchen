@@ -98,7 +98,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
                   <span className="text-xs text-gray-500">{m.profiles.email}</span>
                 </div>
                 <Badge variant={m.role === 'head_admin' ? 'default' : m.role === 'admin' ? 'secondary' : 'outline'} className="text-xs">
-                  {roleLabels[m.role]}
+                  {roleLabels[m.role] ?? m.role}
                 </Badge>
                 <div className="text-sm font-medium text-right w-16">
                   {formatElo(m.elo_rating)}

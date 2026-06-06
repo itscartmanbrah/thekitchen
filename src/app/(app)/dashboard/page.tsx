@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { CreateLeagueDialog } from '@/components/leagues/create-league-dialog'
 import { JoinLeagueDialog } from '@/components/leagues/join-league-dialog'
 import { formatElo } from '@/lib/utils'
-import { Trophy, Users, MapPin } from 'lucide-react'
+import { Trophy, Users, MapPin, TrendingUp } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -50,6 +50,12 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* ELO transparency link */}
+      <Link href="/elo" className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-green-600 transition-colors mb-6">
+        <TrendingUp className="w-3.5 h-3.5" />
+        How ELO rankings are calculated
+      </Link>
+
       {(!memberships || memberships.length === 0) ? (
         <div className="text-center py-20">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -75,7 +81,7 @@ export default async function DashboardPage() {
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-base leading-tight">{m.leagues.name}</CardTitle>
                     <Badge variant={roleVariants[m.role]} className="shrink-0 text-xs">
-                      {roleLabels[m.role]}
+                      {roleLabels[m.role] ?? m.role}
                     </Badge>
                   </div>
                   {m.leagues.location && (

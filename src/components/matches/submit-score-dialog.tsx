@@ -67,7 +67,12 @@ export function SubmitScoreDialog({ match, onSubmitted }: Props) {
     })
 
     if (rpcError) {
-      toast({ title: 'Score saved but ELO update failed', description: rpcError.message, variant: 'destructive' })
+      // Revert match back to scheduled so it can be resubmitted
+      await supabase
+        .from('matches')
+        .update({ status: 'scheduled', team1_score: null, team2_score: null, completed_at: null } as any)
+        .eq('id', match.id)
+      toast({ title: 'Failed to submit score', description: 'ELO calculation error — please try again. ' + rpcError.message, variant: 'destructive' })
       setLoading(false)
       return
     }

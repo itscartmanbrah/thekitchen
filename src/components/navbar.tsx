@@ -37,7 +37,7 @@ export function Navbar({ profile }: { profile: Profile | null }) {
               <DropdownMenuTrigger asChild>
                 <button
                   className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: profile.avatar_color }}
+                  style={{ backgroundColor: profile.avatar_color ?? '#16a34a' }}
                 >
                   {getInitials(profile.display_name)}
                 </button>
@@ -53,6 +53,9 @@ export function Navbar({ profile }: { profile: Profile | null }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/profile">Profile</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/elo">How ELO Works</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-red-600">

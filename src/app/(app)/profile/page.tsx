@@ -2,19 +2,27 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
-import { AVATAR_COLORS } from '@/lib/utils'
+import { AVATAR_COLORS, formatElo, getEloTier, getPickleballRating } from '@/lib/utils'
+import { Trophy, MapPin, ExternalLink } from 'lucide-react'
 import type { Profile } from '@/types/database'
+
+const roleLabels: Record<string, string> = {
+  head_admin: 'Head Admin', admin: 'Admin', officiator: 'Officiator', player: 'Player',
+}
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [memberships, setMemberships] = useState<any[]>([])
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [nickname, setNickname] = useState('')
@@ -28,20 +36,46 @@ export default function ProfilePage() {
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return router.push('/login')
-      supabase.from('profiles').select('*').eq('id', user.id).single().then(({ data }) => {
-        if (data) {
-          const p = data as unknown as Profile
-          setProfile(p)
-          setFirstName(p.first_name ?? '')
-          setLastName(p.last_name ?? '')
-          setNickname(p.nickname ?? '')
-          setBirthday(p.birthday ?? '')
-          setPhone(p.phone ?? '')
-          setAvatarColor(p.avatar_color)
-        }
-      })
+
+      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      if (data) {
+        const p = data as unknown as Profile
+        setProfile(p)
+        setFirstName(p.first_name ?? '')
+        setLastName(p.last_name ?? '')
+        setNickname(p.nickname ?? '')
+        setBirthday(p.birthday ?? '')
+        setPhone(p.phone ?? '')
+        setAvatarColor(p.avatar_color)
+      }
+
+      // Fetch league stats
+      const { data: ms } = await supabase
+        .from('league_members')
+        .select('*, leagues(*)')
+        .eq('user_id', user.id)
+        .order('elo_rating', { ascending: false })
+
+      // Fetch rank per league
+      const ranked = await Promise.all(
+        (ms ?? []).map(async (m: any) => {
+          const { count } = await supabase
+            .from('league_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('league_id', m.league_id)
+            .gt('elo_rating', m.elo_rating)
+          const { count: total } = await supabase
+            .from('league_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('league_id', m.league_id)
+          return { ...m, rank: (count ?? 0) + 1, totalPlayers: total ?? 1 }
+        })
+      )
+      setMemberships(ranked)
+    }).catch(() => {
+      // non-fatal — profile edit still works without league stats
     })
   }, [])
 
@@ -78,10 +112,65 @@ export default function ProfilePage() {
   if (!profile) return <div className="text-center py-12 text-gray-500">Loading…</div>
 
   const previewName = nickname.trim() || `${firstName} ${lastName}`.trim() || profile.display_name
+  const bestElo = memberships.length > 0 ? memberships[0].elo_rating : 1000
+  const pb   = getPickleballRating(bestElo)
+  const tier = getEloTier(bestElo)
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Profile</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
+        <Link href={`/players/${profile.id}`}>
+          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+            <ExternalLink className="w-3.5 h-3.5" />
+            View public profile
+          </Button>
+        </Link>
+      </div>
+
+      {/* ── League stats ── */}
+      {memberships.length > 0 && (
+        <div className="mb-5 space-y-2">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Your Rankings</p>
+          {memberships.map((m: any) => {
+            const mPb   = getPickleballRating(m.elo_rating)
+            const mTier = getEloTier(m.elo_rating)
+            const mWR   = m.wins + m.losses > 0
+              ? Math.round((m.wins / (m.wins + m.losses)) * 100)
+              : null
+            return (
+              <Card key={m.id} className="overflow-hidden">
+                <div className="h-1" style={{ backgroundColor: m.leagues?.banner_color ?? '#16a34a' }} />
+                <CardContent className="py-3 px-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-gray-900 truncate">{m.leagues?.name}</p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <div className="flex items-center gap-1 bg-gray-100 rounded-full px-2 py-0.5">
+                          <Trophy className="w-3 h-3 text-gray-500" />
+                          <span className="text-xs font-semibold text-gray-700">#{m.rank} of {m.totalPlayers}</span>
+                        </div>
+                        <span className={`text-xs font-semibold ${mPb.color}`}>{mPb.rating}</span>
+                        <span className="text-gray-300 text-xs">·</span>
+                        <span className={`text-xs ${mTier.color}`}>{mTier.label}</span>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-lg font-bold text-gray-900">{formatElo(m.elo_rating)}</p>
+                      <p className="text-xs text-gray-500">
+                        <span className="text-green-600 font-medium">{m.wins}W</span>
+                        {' – '}
+                        {m.losses}L
+                        {mWR !== null && <span className="ml-1 text-gray-400">({mWR}%)</span>}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      )}
 
       <Card>
         <CardHeader className="pb-4">

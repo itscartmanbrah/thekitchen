@@ -94,6 +94,7 @@ export interface Database {
           wins: number
           losses: number
           joined_at: string
+          status: 'active' | 'pending'
         }
         Insert: {
           id?: string
@@ -104,12 +105,14 @@ export interface Database {
           wins?: number
           losses?: number
           joined_at?: string
+          status?: 'active' | 'pending'
         }
         Update: {
           role?: LeagueRole
           elo_rating?: number
           wins?: number
           losses?: number
+          status?: 'active' | 'pending'
         }
       }
       matches: {

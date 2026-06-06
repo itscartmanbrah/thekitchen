@@ -44,7 +44,11 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
   }
 
   async function handleDelete() {
-    await supabase.from('leagues').delete().eq('id', league.id)
+    const { error } = await supabase.from('leagues').delete().eq('id', league.id)
+    if (error) {
+      toast({ title: 'Failed to delete league', description: error.message, variant: 'destructive' })
+      return
+    }
     router.push('/dashboard')
     router.refresh()
   }

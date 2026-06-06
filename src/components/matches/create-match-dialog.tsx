@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from '@/components/ui/dialog'
@@ -35,6 +36,8 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
   const [team2, setTeam2] = useState<string[]>([])
   const [officiatorId, setOfficiatorId] = useState('')
   const [maxPoints, setMaxPoints] = useState(11)
+  const [scheduledAt, setScheduledAt] = useState('')
+  const [notes, setNotes] = useState('')
   const [members, setMembers] = useState<LeagueMemberWithProfile[]>([])
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
@@ -82,6 +85,8 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
         status: 'scheduled',
         officiator_id: officiatorId || null,
         max_points: maxPoints,
+        scheduled_at: scheduledAt || null,
+        notes: notes || null,
         created_by: user.id,
       } as any)
       .select()
@@ -108,7 +113,7 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
 
     toast({ title: 'Match created!' })
     setOpen(false)
-    setTeam1([]); setTeam2([]); setOfficiatorId(''); setFormat('singles')
+    setTeam1([]); setTeam2([]); setOfficiatorId(''); setFormat('singles'); setScheduledAt(''); setNotes('')
     onCreated()
     setLoading(false)
   }
@@ -202,6 +207,31 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
               value={maxPoints}
               onChange={e => setMaxPoints(parseInt(e.target.value) || 11)}
               className="w-24"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="scheduled-at">
+              Scheduled date & time <span className="text-gray-400 font-normal text-xs">(optional)</span>
+            </Label>
+            <Input
+              id="scheduled-at"
+              type="datetime-local"
+              value={scheduledAt}
+              onChange={e => setScheduledAt(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="match-notes">
+              Notes <span className="text-gray-400 font-normal text-xs">(optional)</span>
+            </Label>
+            <Textarea
+              id="match-notes"
+              placeholder="e.g. Court 3, outdoor game, tiebreak rules…"
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              rows={2}
             />
           </div>
         </div>
