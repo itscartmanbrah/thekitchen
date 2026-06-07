@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { AppLogo } from '@/components/app-logo'
 import { Card, CardContent } from '@/components/ui/card'
 import { Mail, Phone, ArrowLeft } from 'lucide-react'
 
@@ -9,9 +10,7 @@ export default function ContactPage() {
 
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold">TK</span>
-          </div>
+          <AppLogo className="w-10 h-10" />
           <span className="font-bold text-2xl text-gray-900">The Kitchen</span>
         </div>
 

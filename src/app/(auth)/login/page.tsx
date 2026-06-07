@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { AppLogo } from '@/components/app-logo'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -37,9 +38,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold">TK</span>
-          </div>
+          <AppLogo className="w-10 h-10" />
           <span className="font-bold text-2xl text-gray-900">The Kitchen</span>
         </div>
         <Card>

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { AppLogo } from '@/components/app-logo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Users, Zap, BarChart3, Shield, Star } from 'lucide-react'
@@ -10,9 +11,7 @@ export default function LandingPage() {
       <nav className="border-b bg-white/80 backdrop-blur sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">TK</span>
-            </div>
+            <AppLogo className="w-8 h-8" />
             <span className="font-bold text-xl text-gray-900">The Kitchen</span>
           </div>
           <div className="flex items-center gap-3">
@@ -134,9 +133,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t py-8 text-center text-sm text-gray-500">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="w-5 h-5 bg-green-600 rounded flex items-center justify-center">
-            <span className="text-white font-bold text-xs">TK</span>
-          </div>
+          <AppLogo className="w-5 h-5" />
           <span className="font-semibold text-gray-700">The Kitchen</span>
         </div>
         <p className="font-medium text-gray-700">© {new Date().getFullYear()} The Kitchen. All rights reserved.</p>

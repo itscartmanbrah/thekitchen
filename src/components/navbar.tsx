@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { getInitials } from '@/lib/utils'
+import { AppLogo } from '@/components/app-logo'
 import { NotificationsBell } from '@/components/notifications-bell'
 import type { Profile } from '@/types/database'
 
@@ -26,9 +27,7 @@ export function Navbar({ profile }: { profile: Profile | null }) {
     <nav className="border-b bg-white sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-green-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xs">TK</span>
-          </div>
+          <AppLogo className="w-7 h-7" />
           <span className="font-bold text-gray-900">The Kitchen</span>
         </Link>
 

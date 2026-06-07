@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { AppLogo } from '@/components/app-logo'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -41,9 +42,7 @@ export default function BetaGatePage() {
 
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold">TK</span>
-          </div>
+          <AppLogo className="w-10 h-10" />
           <span className="font-bold text-2xl text-gray-900">The Kitchen</span>
         </div>
 
