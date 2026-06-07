@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import {
@@ -44,8 +44,29 @@ export function ChallengeDialog({
   const [proposedAt, setProposedAt]   = useState('')
   const [message, setMessage]         = useState('')
   const [loading, setLoading]         = useState(false)
+  const [conflict, setConflict]       = useState<{ challenger: boolean; challenged: boolean }>({ challenger: false, challenged: false })
   const { toast } = useToast()
   const supabase = createClient()
+
+  // Check both players for scheduling conflicts whenever the proposed time changes
+  useEffect(() => {
+    if (!open) return
+    const handle = setTimeout(() => {
+      supabase
+        .rpc('get_conflicting_players', {
+          p_league_id: leagueId,
+          p_user_ids: [currentUserId, challengedId],
+          p_proposed_at: proposedAt ? new Date(proposedAt).toISOString() : null,
+        })
+        .then(({ data }) => {
+          const ids = new Set((data ?? []).map((r: any) => r.user_id))
+          setConflict({ challenger: ids.has(currentUserId), challenged: ids.has(challengedId) })
+        })
+    }, 300)
+    return () => clearTimeout(handle)
+  }, [open, proposedAt, currentUserId, challengedId, leagueId])
+
+  const hasConflict = conflict.challenger || conflict.challenged
 
   // Officiators and admins only, excluding both players
   const eligible = members.filter(m =>
@@ -64,6 +85,10 @@ export function ChallengeDialog({
   async function handleSubmit() {
     if (!officiatorId) {
       toast({ title: 'Select an officiator first', variant: 'destructive' })
+      return
+    }
+    if (hasConflict) {
+      toast({ title: 'Scheduling conflict', description: 'One of the players is unavailable at this time.', variant: 'destructive' })
       return
     }
     setLoading(true)
@@ -210,6 +235,17 @@ export function ChallengeDialog({
               onChange={e => setProposedAt(e.target.value)}
               className="w-full text-sm border rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-300 bg-white"
             />
+            {hasConflict && (
+              <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
+                {conflict.challenger && conflict.challenged
+                  ? 'You and your opponent both'
+                  : conflict.challenger ? 'You' : `${challengedName}`}
+                {' '}already {hasConflict && (conflict.challenger && conflict.challenged ? 'have' : 'has')} a conflicting scheduled match
+                {proposedAt
+                  ? ' — matches must be at least 30 minutes apart.'
+                  : ' — and a match without a set time blocks any other match. Try proposing a specific time at least 30 minutes from your other match.'}
+              </p>
+            )}
           </div>
 
           {/* Message */}
@@ -232,7 +268,7 @@ export function ChallengeDialog({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={loading || !officiatorId || eligible.length === 0}
+            disabled={loading || !officiatorId || eligible.length === 0 || hasConflict}
           >
             {loading ? 'Sending…' : 'Send challenge ⚔️'}
           </Button>

@@ -33,13 +33,16 @@ const formatConfig: Record<MatchFormat, { label: string; perTeam: number }> = {
 function PlayerSearch({
   members,
   onSelect,
+  conflictedIds,
 }: {
   members: LeagueMemberWithProfile[]
   onSelect: (userId: string) => void
+  conflictedIds?: Set<string>
 }) {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const { toast } = useToast()
 
   const filtered = query.trim()
     ? members.filter(m =>
@@ -47,8 +50,16 @@ function PlayerSearch({
       )
     : members
 
-  function pick(userId: string) {
-    onSelect(userId)
+  function pick(member: LeagueMemberWithProfile) {
+    if (conflictedIds?.has(member.user_id)) {
+      toast({
+        title: `${member.profiles.display_name} is unavailable`,
+        description: 'This player already has a conflicting scheduled match (matches without a time block any other match; scheduled matches must be at least 30 minutes apart).',
+        variant: 'destructive',
+      })
+      return
+    }
+    onSelect(member.user_id)
     setQuery('')
     setOpen(false)
   }
@@ -87,11 +98,16 @@ function PlayerSearch({
             <li key={m.user_id}>
               <button
                 type="button"
-                className="flex items-center gap-2 w-full px-2 py-1.5 hover:bg-gray-50 text-left"
-                onMouseDown={e => { e.preventDefault(); pick(m.user_id) }}
+                className={`flex items-center gap-2 w-full px-2 py-1.5 text-left ${
+                  conflictedIds?.has(m.user_id) ? 'opacity-50 cursor-not-allowed hover:bg-transparent' : 'hover:bg-gray-50'
+                }`}
+                onMouseDown={e => { e.preventDefault(); pick(m) }}
               >
                 <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} imageUrl={m.profiles.avatar_url} size="sm" />
                 <span className="truncate">{m.profiles.display_name}</span>
+                {conflictedIds?.has(m.user_id) && (
+                  <span className="ml-auto text-[10px] text-red-500 font-medium shrink-0">Unavailable</span>
+                )}
               </button>
             </li>
           ))}
@@ -118,6 +134,7 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
   const [scheduledAt, setScheduledAt] = useState('')
   const [notes, setNotes] = useState('')
   const [members, setMembers] = useState<LeagueMemberWithProfile[]>([])
+  const [conflictedIds, setConflictedIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
   const supabase = createClient()
@@ -130,6 +147,24 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
       .eq('league_id', leagueId)
       .then(({ data }) => setMembers((data as LeagueMemberWithProfile[]) ?? []))
   }, [open, leagueId])
+
+  // Re-check scheduling conflicts whenever the dialog opens, the player pool
+  // changes, or the proposed time changes.
+  useEffect(() => {
+    if (!open || members.length === 0) return
+    const handle = setTimeout(() => {
+      supabase
+        .rpc('get_conflicting_players', {
+          p_league_id: leagueId,
+          p_user_ids: members.map(m => m.user_id),
+          p_proposed_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
+        })
+        .then(({ data }) => {
+          setConflictedIds(new Set((data ?? []).map((r: any) => r.user_id)))
+        })
+    }, 300)
+    return () => clearTimeout(handle)
+  }, [open, members, scheduledAt, leagueId])
 
   const perTeam = formatConfig[format].perTeam
   const usedIds = [...team1, ...team2]
@@ -150,6 +185,16 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
   async function handleCreate() {
     if (team1.length !== perTeam || team2.length !== perTeam) {
       toast({ title: 'Incomplete teams', description: `Each team needs ${perTeam} player(s).`, variant: 'destructive' })
+      return
+    }
+    const conflicted = [...team1, ...team2].filter(id => conflictedIds.has(id))
+    if (conflicted.length > 0) {
+      const names = conflicted.map(id => getMember(id)?.profiles.display_name).filter(Boolean).join(', ')
+      toast({
+        title: 'Scheduling conflict',
+        description: `${names} already ${conflicted.length > 1 ? 'have' : 'has'} a conflicting scheduled match. Remove them or change the time.`,
+        variant: 'destructive',
+      })
       return
     }
     setLoading(true)
@@ -278,6 +323,7 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
                       <PlayerSearch
                         members={availableMembers}
                         onSelect={v => addToTeam(teamNum, v)}
+                        conflictedIds={conflictedIds}
                       />
                     )}
                   </div>
