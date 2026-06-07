@@ -5,6 +5,10 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { ChallengeDialog } from '@/components/leagues/challenge-dialog'
 import { formatElo } from '@/lib/utils'
@@ -12,7 +16,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/hooks/use-toast'
-import { MoreHorizontal, Swords } from 'lucide-react'
+import { MoreHorizontal, Swords, ShieldBan, ShieldCheck } from 'lucide-react'
 import { InvitePlayerDialog } from '@/components/leagues/invite-player-dialog'
 import type { LeagueMemberWithProfile, LeagueRole } from '@/types/database'
 
@@ -34,8 +38,12 @@ const roleOrder: Record<string, number> = { head_admin: 0, admin: 1, officiator:
 
 export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }: Props) {
   const [members, setMembers] = useState<LeagueMemberWithProfile[]>([])
+  const [bannedMembers, setBannedMembers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [challengeTarget, setChallengeTarget] = useState<{ id: string; name: string } | null>(null)
+  const [banTarget, setBanTarget] = useState<{ id: string; name: string } | null>(null)
+  const [banReason, setBanReason] = useState('')
+  const [banLoading, setBanLoading] = useState(false)
   const { toast } = useToast()
   const supabase = createClient()
 
@@ -51,7 +59,48 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
     setLoading(false)
   }
 
-  useEffect(() => { fetchMembers() }, [leagueId])
+  async function fetchBanned() {
+    if (!isAdmin) return
+    const { data } = await supabase
+      .from('league_members')
+      .select('id, user_id, ban_reason, banned_at, profiles(display_name, avatar_color, avatar_url)')
+      .eq('league_id', leagueId)
+      .eq('status', 'banned')
+      .order('banned_at', { ascending: false })
+    setBannedMembers(data ?? [])
+  }
+
+  useEffect(() => { fetchMembers(); fetchBanned() }, [leagueId, isAdmin])
+
+  async function confirmBan() {
+    if (!banTarget) return
+    setBanLoading(true)
+    const { error } = await supabase.rpc('ban_league_member', {
+      p_member_id: banTarget.id,
+      p_reason: banReason.trim() || null,
+    })
+    if (error) {
+      toast({ title: 'Failed to ban member', description: error.message, variant: 'destructive' })
+    } else {
+      toast({ title: `${banTarget.name} has been banned` })
+      setBanTarget(null)
+      setBanReason('')
+      fetchMembers()
+      fetchBanned()
+    }
+    setBanLoading(false)
+  }
+
+  async function unbanMember(memberId: string, name: string) {
+    const { error } = await supabase.rpc('unban_league_member', { p_member_id: memberId })
+    if (error) {
+      toast({ title: 'Failed to unban member', description: error.message, variant: 'destructive' })
+    } else {
+      toast({ title: `${name} has been unbanned` })
+      fetchMembers()
+      fetchBanned()
+    }
+  }
 
   async function changeRole(memberId: string, userId: string, newRole: LeagueRole) {
     if (userId === currentUserId) return
@@ -159,6 +208,13 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
                       >
                         Remove from league
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-red-700"
+                        onClick={() => { setBanTarget({ id: m.id, name: m.profiles.display_name }); setBanReason('') }}
+                      >
+                        <ShieldBan className="w-4 h-4 mr-2" />
+                        Ban from league
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
@@ -168,6 +224,79 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
         )
       })}
       </div>
+
+      {/* Banned members (admins only) */}
+      {isAdmin && bannedMembers.length > 0 && (
+        <div className="pt-4">
+          <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
+            <ShieldBan className="w-3.5 h-3.5" />
+            Banned ({bannedMembers.length})
+          </p>
+          <div className="space-y-2">
+            {bannedMembers.map(b => (
+              <Card key={b.id} className="border-red-100 bg-red-50/40">
+                <CardContent className="py-3 px-4">
+                  <div className="flex items-center gap-3">
+                    <PlayerAvatar name={b.profiles.display_name} color={b.profiles.avatar_color} imageUrl={b.profiles.avatar_url} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <span className="font-medium text-sm truncate block">{b.profiles.display_name}</span>
+                      {b.ban_reason && (
+                        <span className="text-xs text-gray-500 italic truncate block">&ldquo;{b.ban_reason}&rdquo;</span>
+                      )}
+                      {b.banned_at && (
+                        <span className="text-xs text-gray-400">
+                          Banned {new Date(b.banned_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => unbanMember(b.id, b.profiles.display_name)}
+                      className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700 hover:bg-green-50 transition-colors shrink-0"
+                    >
+                      <ShieldCheck className="w-3 h-3" />
+                      Unban
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Ban confirmation dialog */}
+      <Dialog open={!!banTarget} onOpenChange={v => { if (!v) { setBanTarget(null); setBanReason('') } }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-700">
+              <ShieldBan className="w-4 h-4" />
+              Ban {banTarget?.name}?
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <p className="text-sm text-gray-500">
+              They will be removed from the leaderboard and matches, and won&apos;t be able to rejoin this league while banned.
+            </p>
+            <Textarea
+              placeholder="Reason for ban (optional, but recommended)…"
+              value={banReason}
+              onChange={e => setBanReason(e.target.value)}
+              rows={3}
+              className="text-sm resize-none"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setBanTarget(null); setBanReason('') }}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={confirmBan}
+              disabled={banLoading}
+            >
+              {banLoading ? 'Banning…' : 'Ban member'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {challengeTarget && (
         <ChallengeDialog

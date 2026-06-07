@@ -40,10 +40,20 @@ export function JoinLeagueDialog() {
 
     const { data: existing } = await supabase
       .from('league_members')
-      .select('id')
+      .select('id, status')
       .eq('league_id', league.id)
       .eq('user_id', user.id)
-      .single()
+      .single() as any
+
+    if (existing?.status === 'banned') {
+      toast({
+        title: 'You cannot join this league',
+        description: `You have been banned from ${league.name}.`,
+        variant: 'destructive',
+      })
+      setLoading(false)
+      return
+    }
 
     if (existing) {
       toast({ title: 'Already a member', description: `You're already in ${league.name}.` })

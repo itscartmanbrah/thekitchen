@@ -47,6 +47,27 @@ export default async function LeaguePage({ params }: { params: { id: string } })
     )
   }
 
+  // Banned members are blocked entirely
+  if ((membership as any).status === 'banned') {
+    return (
+      <div className="max-w-md mx-auto text-center py-24">
+        <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-2xl">🚫</span>
+        </div>
+        <h1 className="text-xl font-bold text-gray-900 mb-2">You&apos;ve been banned from this league</h1>
+        <p className="text-gray-500 text-sm">
+          You no longer have access to <strong>{league.name}</strong>.
+        </p>
+        {(membership as any).ban_reason && (
+          <p className="text-sm text-gray-500 mt-3 bg-gray-50 border rounded-lg px-4 py-3 italic">
+            &ldquo;{(membership as any).ban_reason}&rdquo;
+          </p>
+        )}
+        <p className="text-gray-400 text-xs mt-4">If you think this is a mistake, contact a league admin.</p>
+      </div>
+    )
+  }
+
   // Show accept/decline screen for invited members
   if ((membership as any).status === 'invited') {
     return <LeagueInviteScreen league={league} membershipId={membership.id} userId={user.id} />
