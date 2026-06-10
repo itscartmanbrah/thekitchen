@@ -42,15 +42,21 @@ export interface PickleballRating {
   color: string
 }
 
+// Continuous DUPR-style rating (2.00–8.00), like DUPR's dynamic scale.
+// 1000 ELO (league average) maps to 3.50; every 250 ELO is one rating point.
+//   750 → 2.50 · 1000 → 3.50 · 1125 → 4.00 · 1250 → 4.50 · 1500 → 5.50 · 2000 → 7.50
 export function getPickleballRating(elo: number): PickleballRating {
-  if (elo >= 1500) return { rating: '5.0+', label: 'Elite / Pro',         description: 'Competes at the highest amateur or professional level',      color: 'text-yellow-500' }
-  if (elo >= 1350) return { rating: '4.5',  label: 'Tournament Player',   description: 'Consistently wins at local tournaments, strong all-round game', color: 'text-orange-500' }
-  if (elo >= 1200) return { rating: '4.0',  label: 'Advanced',            description: 'Power, spin, and solid strategy on every shot',              color: 'text-purple-500' }
-  if (elo >= 1100) return { rating: '3.5',  label: 'Intermediate+',       description: 'More consistent, developing tactics and court awareness',     color: 'text-blue-500' }
-  if (elo >= 1000) return { rating: '3.0',  label: 'Intermediate',        description: 'Reliable groundstrokes, understands positioning',            color: 'text-green-600' }
-  if (elo >= 950)  return { rating: '2.5',  label: 'Beginner+',           description: 'Can sustain rallies, learning the kitchen rules',            color: 'text-green-500' }
-  if (elo >= 900)  return { rating: '2.0',  label: 'Beginner',            description: 'Basic shots, still learning scoring and positioning',        color: 'text-gray-500' }
-  return                  { rating: '1.5',  label: 'New Player',           description: 'Just getting started',                                       color: 'text-gray-400' }
+  const value = Math.min(8, Math.max(2, 3.5 + (elo - 1000) / 250))
+  const rating = value.toFixed(2)
+
+  if (value >= 6.0) return { rating, label: 'Pro',                description: 'Competes at the professional level',                          color: 'text-yellow-500' }
+  if (value >= 5.0) return { rating, label: 'Elite',              description: 'Competes at the highest amateur level',                       color: 'text-amber-500' }
+  if (value >= 4.5) return { rating, label: 'Tournament Player',  description: 'Consistently wins at local tournaments, strong all-round game', color: 'text-orange-500' }
+  if (value >= 4.0) return { rating, label: 'Advanced',           description: 'Power, spin, and solid strategy on every shot',               color: 'text-purple-500' }
+  if (value >= 3.5) return { rating, label: 'Intermediate+',      description: 'More consistent, developing tactics and court awareness',      color: 'text-blue-500' }
+  if (value >= 3.0) return { rating, label: 'Intermediate',       description: 'Reliable groundstrokes, understands positioning',             color: 'text-green-600' }
+  if (value >= 2.5) return { rating, label: 'Beginner+',          description: 'Can sustain rallies, learning the kitchen rules',             color: 'text-green-500' }
+  return                   { rating, label: 'Beginner',           description: 'Basic shots, still learning scoring and positioning',         color: 'text-gray-500' }
 }
 
 export const BANNER_COLORS = [
