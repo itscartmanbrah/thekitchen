@@ -15,6 +15,7 @@ import { LeagueInviteScreen } from '@/components/leagues/league-invite-screen'
 import { LeagueSeasonManager } from '@/components/leagues/league-season-manager'
 import { LeagueChallenges } from '@/components/leagues/league-challenges'
 import { LeagueOfficiated } from '@/components/leagues/league-officiated'
+import { LeagueTournaments } from '@/components/leagues/league-tournaments'
 import { MapPin } from 'lucide-react'
 import { CopyInviteButton } from '@/components/leagues/copy-invite-button'
 import type { League, LeagueMember } from '@/types/database'
@@ -140,6 +141,7 @@ export default async function LeaguePage({ params }: { params: { id: string } })
           <TabsTrigger value="stats">Stats</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="challenges">Challenges</TabsTrigger>
+          <TabsTrigger value="tournaments">Tournaments</TabsTrigger>
           {isOfficiator && (
             <TabsTrigger value="officiated">Officiated</TabsTrigger>
           )}
@@ -180,6 +182,15 @@ export default async function LeaguePage({ params }: { params: { id: string } })
 
         <TabsContent value="challenges">
           <LeagueChallenges leagueId={params.id} currentUserId={user.id} />
+        </TabsContent>
+
+        <TabsContent value="tournaments">
+          <LeagueTournaments
+            leagueId={params.id}
+            currentUserId={user.id}
+            isAdmin={isAdmin}
+            canReport={isOfficiator}
+          />
         </TabsContent>
 
         {isOfficiator && (

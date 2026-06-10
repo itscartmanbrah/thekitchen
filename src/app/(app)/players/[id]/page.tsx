@@ -328,6 +328,22 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                     </div>
                   </div>
 
+                  {/* Format ratings + career high */}
+                  <div className="flex items-center gap-2 flex-wrap mb-2">
+                    <div className="flex items-center gap-1.5 bg-gray-50 border rounded-lg px-2.5 py-1">
+                      <span className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">Singles</span>
+                      <span className="text-xs font-bold text-gray-800">{formatElo(m.singles_elo ?? m.elo_rating)}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-gray-50 border rounded-lg px-2.5 py-1">
+                      <span className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">Doubles</span>
+                      <span className="text-xs font-bold text-gray-800">{formatElo(m.doubles_elo ?? m.elo_rating)}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1">
+                      <span className="text-[10px] uppercase tracking-wide text-amber-600 font-medium">Career high</span>
+                      <span className="text-xs font-bold text-amber-700">{formatElo(m.career_high_elo ?? m.elo_rating)}</span>
+                    </div>
+                  </div>
+
                   {/* Season history */}
                   {m.seasonHistory.length > 0 && (
                     <div className="border-t pt-3 mt-2 space-y-1.5">

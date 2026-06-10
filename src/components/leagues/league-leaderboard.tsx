@@ -198,9 +198,21 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
     return null
   }
 
-  const displayed = formatMemberIds
+  // When a format tab is active, rank and display by that format's rating
+  const ratingFor = (m: LeagueMemberWithProfile): number => {
+    if (formatFilter === 'doubles' || formatFilter === 'mixed_doubles') {
+      return (m as any).doubles_elo ?? m.elo_rating
+    }
+    if (formatFilter === 'singles' || formatFilter === 'round_robin') {
+      return (m as any).singles_elo ?? m.elo_rating
+    }
+    return m.elo_rating
+  }
+
+  const displayed = (formatMemberIds
     ? members.filter(m => formatMemberIds.has(m.user_id))
     : members
+  ).slice().sort((a, b) => ratingFor(b) - ratingFor(a))
 
   // ── Past season view ──────────────────────────────────────────────────────
   if (selectedSeasonId !== 'current') {
@@ -281,8 +293,9 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
 
       <div className="space-y-2">
         {displayed.map((m, idx) => {
-          const tier = getEloTier(m.elo_rating)
-          const pb = getPickleballRating(m.elo_rating)
+          const shownElo = ratingFor(m)
+          const tier = getEloTier(shownElo)
+          const pb = getPickleballRating(shownElo)
           const isMe = m.user_id === currentUserId
           const winRate = m.wins + m.losses > 0 ? Math.round((m.wins / (m.wins + m.losses)) * 100) : null
           const form = formMap[m.user_id] ?? []
@@ -314,7 +327,7 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <div className="font-bold text-base">{formatElo(m.elo_rating)}</div>
+                    <div className="font-bold text-base">{formatElo(shownElo)}</div>
                     <div className="text-xs text-gray-500">
                       {m.wins}W {m.losses}L
                       {winRate !== null && <span className="ml-1">({winRate}%)</span>}
