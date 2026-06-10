@@ -23,6 +23,7 @@ export default function ProfilePage() {
   const [nickname, setNickname] = useState('')
   const [birthday, setBirthday] = useState('')
   const [phone, setPhone] = useState('')
+  const [gender, setGender] = useState('')
   const [avatarColor, setAvatarColor] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
@@ -45,6 +46,7 @@ export default function ProfilePage() {
         setNickname(p.nickname ?? '')
         setBirthday(p.birthday ?? '')
         setPhone(p.phone ?? '')
+        setGender((p as any).gender ?? '')
         setAvatarColor(p.avatar_color)
         setAvatarUrl((p as any).avatar_url ?? null)
       }
@@ -125,6 +127,7 @@ export default function ProfilePage() {
         nickname: nickname || null,
         birthday: birthday || null,
         phone: phone || null,
+        gender: gender || null,
         display_name: displayName,
         avatar_color: avatarColor,
       } as any)
@@ -304,6 +307,20 @@ export default function ProfilePage() {
                     value={birthday}
                     onChange={e => setBirthday(e.target.value)}
                   />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="gender">Gender</Label>
+                  <select
+                    id="gender"
+                    value={gender}
+                    onChange={e => setGender(e.target.value)}
+                    className="w-full h-10 text-sm border border-input rounded-md px-3 bg-white focus:outline-none focus:ring-1 focus:ring-ring"
+                  >
+                    <option value="">Prefer not to say</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                  <p className="text-xs text-gray-400">Needed to enter Men&apos;s, Women&apos;s, or Mixed tournament divisions.</p>
                 </div>
               </div>
             </div>

@@ -12,8 +12,12 @@ import {
 } from '@/components/ui/dialog'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { TournamentBracket, type BracketMatch, type BracketPlayer } from '@/components/tournaments/tournament-bracket'
+import { DivisionView, type Division } from '@/components/tournaments/division-view'
+import {
+  DIVISION_PRESETS, SKILL_CUTOFFS, divisionRuleSummary, type DivisionConfig,
+} from '@/components/tournaments/division-presets'
 import { useToast } from '@/hooks/use-toast'
-import { Trophy, Plus, ArrowLeft, Link2, Check } from 'lucide-react'
+import { Trophy, Plus, ArrowLeft, Link2, Check, X, Users } from 'lucide-react'
 
 interface Tournament {
   id: string
@@ -23,12 +27,6 @@ interface Tournament {
   winner_id: string | null
   created_at: string
   completed_at: string | null
-}
-
-interface Member {
-  user_id: string
-  elo_rating: number
-  profiles: { display_name: string; avatar_color: string; avatar_url: string | null }
 }
 
 export function LeagueTournaments({
@@ -43,19 +41,24 @@ export function LeagueTournaments({
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Tournament | null>(null)
 
-  // Bracket data for selected tournament
-  const [players, setPlayers] = useState<BracketPlayer[]>([])
-  const [matches, setMatches] = useState<BracketMatch[]>([])
+  // Division-based tournaments
+  const [divisions, setDivisions] = useState<Division[]>([])
+  const [entryCounts, setEntryCounts] = useState<Record<string, number>>({})
+  const [selectedDivision, setSelectedDivision] = useState<Division | null>(null)
+
+  // Legacy (v1, no divisions) bracket data
+  const [legacyPlayers, setLegacyPlayers] = useState<BracketPlayer[]>([])
+  const [legacyMatches, setLegacyMatches] = useState<BracketMatch[]>([])
+  const [isLegacy, setIsLegacy] = useState(false)
   const [bracketLoading, setBracketLoading] = useState(false)
 
   // Create dialog
   const [createOpen, setCreateOpen] = useState(false)
   const [name, setName] = useState('')
-  const [members, setMembers] = useState<Member[]>([])
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [chosenDivisions, setChosenDivisions] = useState<DivisionConfig[]>([])
   const [creating, setCreating] = useState(false)
 
-  // Score dialog
+  // Legacy score dialog
   const [scoreMatch, setScoreMatch] = useState<BracketMatch | null>(null)
   const [score1, setScore1] = useState('')
   const [score2, setScore2] = useState('')
@@ -79,31 +82,43 @@ export function LeagueTournaments({
 
   async function openTournament(t: Tournament) {
     setSelected(t)
+    setSelectedDivision(null)
     setBracketLoading(true)
+
+    const { data: divs } = await supabase
+      .from('tournament_divisions')
+      .select('*')
+      .eq('tournament_id', t.id)
+      .order('created_at')
+
+    if (divs && divs.length > 0) {
+      setIsLegacy(false)
+      setDivisions(divs as Division[])
+      const { data: counts } = await supabase
+        .from('division_entries')
+        .select('division_id')
+        .in('division_id', (divs as any[]).map(d => d.id))
+      const map: Record<string, number> = {}
+      for (const row of (counts ?? []) as any[]) {
+        map[row.division_id] = (map[row.division_id] ?? 0) + 1
+      }
+      setEntryCounts(map)
+      setBracketLoading(false)
+      return
+    }
+
+    // Legacy v1 tournament: single all-comers bracket
+    setIsLegacy(true)
     const [{ data: tp }, { data: tm }] = await Promise.all([
-      supabase
-        .from('tournament_players')
-        .select('user_id, seed')
-        .eq('tournament_id', t.id)
-        .order('seed'),
-      supabase
-        .from('tournament_matches')
-        .select('*')
-        .eq('tournament_id', t.id)
-        .order('round')
-        .order('position'),
+      supabase.from('tournament_players').select('user_id, seed').eq('tournament_id', t.id).order('seed'),
+      supabase.from('tournament_matches').select('*').eq('tournament_id', t.id).is('division_id', null).order('round').order('position'),
     ])
-    // tournament_players.user_id references auth.users, not profiles, so the
-    // implicit join doesn't resolve — fetch profiles separately.
     const ids = ((tp ?? []) as any[]).map(p => p.user_id)
     const { data: profiles } = ids.length
-      ? await supabase
-          .from('profiles')
-          .select('id, display_name, avatar_color, avatar_url')
-          .in('id', ids)
+      ? await supabase.from('profiles').select('id, display_name, avatar_color, avatar_url').in('id', ids)
       : { data: [] }
     const profileMap = new Map(((profiles ?? []) as any[]).map(p => [p.id, p]))
-    setPlayers(((tp ?? []) as any[]).map(p => {
+    setLegacyPlayers(((tp ?? []) as any[]).map(p => {
       const prof = profileMap.get(p.user_id)
       return {
         user_id: p.user_id, seed: p.seed,
@@ -112,45 +127,27 @@ export function LeagueTournaments({
         avatar_url: prof?.avatar_url ?? null,
       }
     }))
-    setMatches((tm as BracketMatch[]) ?? [])
+    setLegacyMatches((tm as BracketMatch[]) ?? [])
     setBracketLoading(false)
   }
 
-  async function refreshBracket() {
+  async function refreshSelected() {
     if (!selected) return
-    const { data: tm } = await supabase
-      .from('tournament_matches')
-      .select('*')
-      .eq('tournament_id', selected.id)
-      .order('round')
-      .order('position')
-    setMatches((tm as BracketMatch[]) ?? [])
-    const { data: t } = await supabase
-      .from('tournaments').select('*').eq('id', selected.id).single()
+    const { data: t } = await supabase.from('tournaments').select('*').eq('id', selected.id).single()
     if (t) setSelected(t as Tournament)
+    const { data: divs } = await supabase
+      .from('tournament_divisions').select('*').eq('tournament_id', selected.id).order('created_at')
+    setDivisions((divs as Division[]) ?? [])
     fetchTournaments()
   }
 
-  async function openCreate() {
-    setCreateOpen(true)
-    const { data } = await supabase
-      .from('league_members')
-      .select('user_id, elo_rating, profiles(display_name, avatar_color, avatar_url)')
-      .eq('league_id', leagueId)
-      .eq('status', 'active')
-      .order('elo_rating', { ascending: false })
-    const list = (data as unknown as Member[]) ?? []
-    setMembers(list)
-    setSelectedIds(new Set(list.map(m => m.user_id)))
-  }
-
-  function togglePlayer(id: string) {
-    setSelectedIds(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+  // ── Create flow ───────────────────────────────────────────────────────────
+  function togglePreset(preset: DivisionConfig) {
+    setChosenDivisions(prev =>
+      prev.some(d => d.name === preset.name)
+        ? prev.filter(d => d.name !== preset.name)
+        : [...prev, preset]
+    )
   }
 
   async function handleCreate() {
@@ -158,31 +155,33 @@ export function LeagueTournaments({
       toast({ title: 'Give the tournament a name', variant: 'destructive' })
       return
     }
-    if (selectedIds.size < 2) {
-      toast({ title: 'Select at least 2 players', variant: 'destructive' })
+    if (chosenDivisions.length === 0) {
+      toast({ title: 'Pick at least one division', variant: 'destructive' })
       return
     }
     setCreating(true)
-    const { data: tid, error } = await supabase.rpc('create_tournament', {
+    const { data: tid, error } = await supabase.rpc('create_tournament_with_divisions', {
       p_league_id: leagueId,
       p_name: name.trim(),
-      p_player_ids: Array.from(selectedIds),
+      p_divisions: chosenDivisions,
     })
     if (error) {
       toast({ title: 'Failed to create tournament', description: error.message, variant: 'destructive' })
       setCreating(false)
       return
     }
-    toast({ title: 'Tournament created! 🏆', description: 'Bracket seeded by ELO.' })
+    toast({ title: 'Tournament created! 🏆', description: 'Registration is open for all divisions.' })
     setCreateOpen(false)
     setName('')
+    setChosenDivisions([])
     setCreating(false)
     await fetchTournaments()
     const { data: t } = await supabase.from('tournaments').select('*').eq('id', tid).single()
     if (t) openTournament(t as Tournament)
   }
 
-  async function handleReport() {
+  // ── Legacy score reporting ────────────────────────────────────────────────
+  async function handleLegacyReport() {
     if (!scoreMatch) return
     const s1 = parseInt(score1), s2 = parseInt(score2)
     if (isNaN(s1) || isNaN(s2) || s1 === s2) {
@@ -197,9 +196,9 @@ export function LeagueTournaments({
       toast({ title: 'Failed to report score', description: error.message, variant: 'destructive' })
     } else {
       toast({ title: 'Score recorded — ELO updated' })
-      setScoreMatch(null)
-      setScore1(''); setScore2('')
-      refreshBracket()
+      setScoreMatch(null); setScore1(''); setScore2('')
+      if (selected) openTournament(selected)
+      fetchTournaments()
     }
     setReporting(false)
   }
@@ -209,21 +208,21 @@ export function LeagueTournaments({
     navigator.clipboard.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-    toast({ title: 'Spectator link copied!', description: 'Anyone with this link can follow the bracket — no account needed.' })
+    toast({ title: 'Spectator link copied!', description: 'Anyone with this link can follow the brackets — no account needed.' })
   }
 
-  const playerMap = new Map(players.map(p => [p.user_id, p]))
+  const legacyPlayerMap = new Map(legacyPlayers.map(p => [p.user_id, p]))
 
   if (loading) return <div className="text-center py-12 text-gray-500">Loading tournaments…</div>
 
-  // ── Bracket detail view ─────────────────────────────────────────────────
+  // ── Tournament detail ──────────────────────────────────────────────────────
   if (selected) {
-    const winner = selected.winner_id ? playerMap.get(selected.winner_id) : null
+    const legacyWinner = selected.winner_id ? legacyPlayerMap.get(selected.winner_id) : null
     return (
       <div>
         <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
           <button
-            onClick={() => setSelected(null)}
+            onClick={() => { setSelected(null); setSelectedDivision(null) }}
             className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
           >
             <ArrowLeft className="w-4 h-4" /> All tournaments
@@ -234,36 +233,82 @@ export function LeagueTournaments({
           </Button>
         </div>
 
-        <div className="mb-4">
-          <h2 className="font-bold text-gray-900 flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-500" />
-            {selected.name}
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Seeded by ELO — top seeds may skip Round 1 with a bye.{' '}
-            <Link href="/tournaments-guide" className="underline hover:text-green-600">Learn how brackets work</Link>
-          </p>
-          {selected.status === 'completed' && winner && (
-            <div className="mt-2 inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
-              <span className="text-lg">🏆</span>
-              <PlayerAvatar name={winner.display_name} color={winner.avatar_color} imageUrl={winner.avatar_url} size="sm" />
-              <span className="text-sm font-semibold text-amber-800">{winner.display_name} wins!</span>
-            </div>
-          )}
-        </div>
-
-        {bracketLoading ? (
-          <div className="text-center py-12 text-gray-500">Loading bracket…</div>
-        ) : (
-          <TournamentBracket
-            players={players}
-            matches={matches}
-            canReport={canReport && selected.status === 'active'}
-            onReport={m => { setScoreMatch(m); setScore1(''); setScore2('') }}
-          />
+        {!selectedDivision && (
+          <div className="mb-4">
+            <h2 className="font-bold text-gray-900 flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-amber-500" />
+              {selected.name}
+            </h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Seeded by ELO within each division.{' '}
+              <Link href="/tournaments-guide" className="underline hover:text-green-600">Learn how brackets work</Link>
+            </p>
+          </div>
         )}
 
-        {/* Score entry dialog */}
+        {bracketLoading ? (
+          <div className="text-center py-12 text-gray-500">Loading…</div>
+        ) : selectedDivision ? (
+          <DivisionView
+            division={selectedDivision}
+            leagueId={leagueId}
+            currentUserId={currentUserId}
+            isAdmin={isAdmin}
+            canReport={canReport}
+            onBack={() => { setSelectedDivision(null); refreshSelected() }}
+            onChanged={refreshSelected}
+          />
+        ) : isLegacy ? (
+          <>
+            {selected.status === 'completed' && legacyWinner && (
+              <div className="mb-4 inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
+                <span className="text-lg">🏆</span>
+                <PlayerAvatar name={legacyWinner.display_name} color={legacyWinner.avatar_color} imageUrl={legacyWinner.avatar_url} size="sm" />
+                <span className="text-sm font-semibold text-amber-800">{legacyWinner.display_name} wins!</span>
+              </div>
+            )}
+            <TournamentBracket
+              players={legacyPlayers}
+              matches={legacyMatches}
+              canReport={canReport && selected.status === 'active'}
+              onReport={m => { setScoreMatch(m); setScore1(''); setScore2('') }}
+            />
+          </>
+        ) : (
+          /* Division cards */
+          <div className="space-y-2">
+            {divisions.map(d => (
+              <Card
+                key={d.id}
+                className="cursor-pointer hover:border-green-300 transition-colors"
+                onClick={() => setSelectedDivision(d)}
+              >
+                <CardContent className="py-3 px-4 flex items-center gap-3">
+                  <Trophy className={`w-4 h-4 shrink-0 ${
+                    d.status === 'completed' ? 'text-amber-500' :
+                    d.status === 'active' ? 'text-green-600' : 'text-gray-400'
+                  }`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{d.name}</p>
+                    <p className="text-xs text-gray-400 truncate">{divisionRuleSummary(d as any)}</p>
+                  </div>
+                  <span className="flex items-center gap-1 text-xs text-gray-400 shrink-0">
+                    <Users className="w-3 h-3" />
+                    {entryCounts[d.id] ?? 0}
+                  </span>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                    d.status === 'registration' ? 'bg-blue-100 text-blue-700' :
+                    d.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {d.status === 'registration' ? 'Registration open' : d.status === 'active' ? 'In progress' : 'Completed'}
+                  </span>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Legacy score entry dialog */}
         <Dialog open={!!scoreMatch} onOpenChange={v => { if (!v) setScoreMatch(null) }}>
           <DialogContent className="sm:max-w-xs">
             <DialogHeader>
@@ -275,7 +320,7 @@ export function LeagueTournaments({
                   { id: scoreMatch.player1_id, value: score1, set: setScore1 },
                   { id: scoreMatch.player2_id, value: score2, set: setScore2 },
                 ].map((row, i) => {
-                  const p = row.id ? playerMap.get(row.id) : undefined
+                  const p = row.id ? legacyPlayerMap.get(row.id) : undefined
                   return (
                     <div key={i} className="flex items-center gap-3">
                       {p && <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url} size="sm" />}
@@ -288,12 +333,11 @@ export function LeagueTournaments({
                     </div>
                   )
                 })}
-                <p className="text-xs text-gray-400">The result counts toward league ELO like any other match.</p>
               </div>
             )}
             <DialogFooter>
               <Button variant="outline" onClick={() => setScoreMatch(null)}>Cancel</Button>
-              <Button onClick={handleReport} disabled={reporting}>
+              <Button onClick={handleLegacyReport} disabled={reporting}>
                 {reporting ? 'Saving…' : 'Save result'}
               </Button>
             </DialogFooter>
@@ -303,7 +347,7 @@ export function LeagueTournaments({
     )
   }
 
-  // ── List view ───────────────────────────────────────────────────────────
+  // ── List view ──────────────────────────────────────────────────────────────
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -316,7 +360,7 @@ export function LeagueTournaments({
           </Link>
         </div>
         {isAdmin && (
-          <Button size="sm" onClick={openCreate}>
+          <Button size="sm" onClick={() => setCreateOpen(true)}>
             <Plus className="w-4 h-4 mr-1" /> New tournament
           </Button>
         )}
@@ -351,54 +395,81 @@ export function LeagueTournaments({
         </div>
       )}
 
-      {/* Create dialog */}
+      {/* ── Create dialog (divisions builder) ── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>New tournament</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="t-name">Name</Label>
+              <Label htmlFor="t-name">Event name</Label>
               <Input
                 id="t-name" placeholder="e.g. Summer Slam 2026"
                 value={name} onChange={e => setName(e.target.value)}
               />
             </div>
+
             <div className="space-y-1.5">
-              <Label>Players ({selectedIds.size} selected)</Label>
+              <Label>Divisions ({chosenDivisions.length} selected)</Label>
               <p className="text-xs text-gray-400 -mt-1">
-                Singles, single elimination. Seeding is automatic by ELO — top seeds get byes if needed.
+                Players register themselves into divisions they&apos;re eligible for.
+                Eligibility (gender, age, rating) is enforced automatically.
               </p>
-              <div className="space-y-1 max-h-60 overflow-y-auto pr-1">
-                {members.map(m => {
-                  const checked = selectedIds.has(m.user_id)
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {DIVISION_PRESETS.map(preset => {
+                  const active = chosenDivisions.some(d => d.name === preset.name)
                   return (
                     <button
-                      key={m.user_id}
-                      onClick={() => togglePlayer(m.user_id)}
-                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg border text-left transition-colors ${
-                        checked ? 'border-green-400 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                      key={preset.name}
+                      onClick={() => togglePreset(preset)}
+                      className={`text-xs px-2.5 py-1.5 rounded-full border transition-colors ${
+                        active
+                          ? 'border-green-500 bg-green-50 text-green-700 font-medium'
+                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
                       }`}
                     >
-                      <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} imageUrl={m.profiles.avatar_url} size="sm" />
-                      <span className="text-sm flex-1 truncate">{m.profiles.display_name}</span>
-                      <span className="text-xs text-gray-400">{m.elo_rating}</span>
-                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                        checked ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                      }`}>
-                        {checked && <Check className="w-3 h-3 text-white" />}
-                      </div>
+                      {preset.name}
                     </button>
                   )
                 })}
               </div>
             </div>
+
+            {chosenDivisions.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-gray-500">Selected divisions</p>
+                {chosenDivisions.map(d => (
+                  <div key={d.name} className="flex items-center gap-2 bg-gray-50 border rounded-lg px-3 py-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800">{d.name}</p>
+                      <p className="text-xs text-gray-400">{divisionRuleSummary(d)}</p>
+                    </div>
+                    <select
+                      value={d.bracket_type}
+                      onChange={e => setChosenDivisions(prev => prev.map(x =>
+                        x.name === d.name ? { ...x, bracket_type: e.target.value as any } : x
+                      ))}
+                      className="text-xs border rounded-md px-2 py-1 bg-white"
+                    >
+                      <option value="single_elim">Single elim</option>
+                      <option value="round_robin">Round robin</option>
+                    </select>
+                    <button onClick={() => togglePreset(d)} className="text-gray-400 hover:text-red-500">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+                <p className="text-xs text-gray-400">
+                  Tip: round robin suits small divisions (under ~6 entries) — everyone plays everyone.
+                </p>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={creating || selectedIds.size < 2 || !name.trim()}>
-              {creating ? 'Creating…' : 'Create & seed bracket'}
+            <Button onClick={handleCreate} disabled={creating || chosenDivisions.length === 0 || !name.trim()}>
+              {creating ? 'Creating…' : 'Create & open registration'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AppLogo } from '@/components/app-logo'
 import { TournamentBracket } from '@/components/tournaments/tournament-bracket'
+import { PublicDivisions } from '@/components/tournaments/public-divisions'
 import { Trophy } from 'lucide-react'
 import Link from 'next/link'
 
@@ -16,6 +17,8 @@ export default async function PublicTournamentPage({ params }: { params: { code:
 
   const players = data.players ?? []
   const matches = data.matches ?? []
+  const divisions = data.divisions ?? []
+  const hasDivisions = divisions.length > 0
   const winner = tournament.winner_id
     ? players.find((p: any) => p.user_id === tournament.winner_id)
     : null
@@ -45,7 +48,7 @@ export default async function PublicTournamentPage({ params }: { params: { code:
               {tournament.status === 'completed' ? 'Completed' : 'In progress'}
             </span>
           </p>
-          {winner && (
+          {!hasDivisions && winner && (
             <div className="mt-3 inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
               <span className="text-lg">🏆</span>
               <span className="text-sm font-semibold text-amber-800">{winner.display_name} wins!</span>
@@ -54,7 +57,11 @@ export default async function PublicTournamentPage({ params }: { params: { code:
         </div>
 
         <div className="bg-white rounded-xl border p-4">
-          <TournamentBracket players={players} matches={matches} />
+          {hasDivisions ? (
+            <PublicDivisions divisions={divisions} />
+          ) : (
+            <TournamentBracket players={players} matches={matches} />
+          )}
         </div>
 
         <p className="text-xs text-gray-400 text-center mt-6">

@@ -167,6 +167,35 @@ export default function TournamentsGuidePage() {
         </div>
       </Section>
 
+      {/* ── Divisions ── */}
+      <Section title="Divisions (tiers)" icon={<span className="text-base">🎯</span>}>
+        <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
+          <p>
+            Tournaments are split into <strong className="text-gray-800">divisions</strong> like real
+            pickleball events — Open Men, Novice Women, 35+ Mixed, Junior 12 &amp; Under. Each
+            division has its own registration, bracket, and champion.
+          </p>
+          <p>
+            <strong className="text-gray-800">You register yourself</strong> into divisions you&apos;re
+            eligible for. Eligibility is checked automatically from your profile and rating:
+          </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li><strong className="text-gray-800">Gender</strong> — Men&apos;s/Women&apos;s divisions need your gender set in Profile settings; Mixed teams need one man and one woman</li>
+            <li><strong className="text-gray-800">Age</strong> — taken from your date of birth (e.g. 35+, Junior 12 &amp; Under)</li>
+            <li><strong className="text-gray-800">Skill</strong> — rating caps use your league ELO (e.g. Beginner = under 3.5, Novice = under 3.0)</li>
+          </ul>
+          <p>
+            Doubles and Mixed divisions are entered as a <strong className="text-gray-800">team</strong> —
+            you pick your partner when you register, and your team is seeded by your combined
+            doubles rating.
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-xs text-blue-800">
+            Small divisions can run as <strong>round robin</strong> instead of a knockout bracket —
+            everyone plays everyone, and the best record (then best point difference) wins.
+          </div>
+        </div>
+      </Section>
+
       {/* ── Spectators ── */}
       <Section title="Following along as a spectator" icon={<FastForward className="w-4 h-4 text-purple-500" />}>
         <p className="text-sm text-gray-600 leading-relaxed">
