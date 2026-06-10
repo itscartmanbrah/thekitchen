@@ -68,14 +68,14 @@ function FAQ({ q, a }: { q: string; a: string }) {
 // ─── pickleball rating table data ────────────────────────────────────────────
 
 const PB_LEVELS = [
-  { elo: '1500+', rating: '5.0+', label: 'Elite / Pro',       desc: 'Competes at the highest amateur or professional level',         eloRange: '1,500 +' },
-  { elo: '1350',  rating: '4.5',  label: 'Tournament Player', desc: 'Consistently wins at local tournaments, strong all-round game', eloRange: '1,350 – 1,499' },
-  { elo: '1200',  rating: '4.0',  label: 'Advanced',          desc: 'Power, spin, and solid strategy on every shot',                eloRange: '1,200 – 1,349' },
-  { elo: '1100',  rating: '3.5',  label: 'Intermediate+',     desc: 'More consistent, developing tactics and court awareness',       eloRange: '1,100 – 1,199' },
-  { elo: '1000',  rating: '3.0',  label: 'Intermediate',      desc: 'Reliable groundstrokes, understands positioning',              eloRange: '1,000 – 1,099' },
-  { elo: '950',   rating: '2.5',  label: 'Beginner+',         desc: 'Can sustain rallies, learning the kitchen rules',               eloRange: '950 – 999' },
-  { elo: '900',   rating: '2.0',  label: 'Beginner',          desc: 'Basic shots, still learning scoring and positioning',           eloRange: '900 – 949' },
-  { elo: '0',     rating: '1.5',  label: 'New Player',        desc: 'Just getting started',                                          eloRange: 'Below 900' },
+  { elo: '1625', rating: '6.00+',       label: 'Pro',               desc: 'Competes at the professional level',                            eloRange: '1,625 +' },
+  { elo: '1375', rating: '5.00 – 5.99', label: 'Elite',             desc: 'Competes at the highest amateur level',                         eloRange: '1,375 – 1,624' },
+  { elo: '1250', rating: '4.50 – 4.99', label: 'Tournament Player', desc: 'Consistently wins at local tournaments, strong all-round game', eloRange: '1,250 – 1,374' },
+  { elo: '1125', rating: '4.00 – 4.49', label: 'Advanced',          desc: 'Power, spin, and solid strategy on every shot',                 eloRange: '1,125 – 1,249' },
+  { elo: '1000', rating: '3.50 – 3.99', label: 'Intermediate+',     desc: 'More consistent, developing tactics and court awareness',       eloRange: '1,000 – 1,124' },
+  { elo: '875',  rating: '3.00 – 3.49', label: 'Intermediate',      desc: 'Reliable groundstrokes, understands positioning',               eloRange: '875 – 999' },
+  { elo: '750',  rating: '2.50 – 2.99', label: 'Beginner+',         desc: 'Can sustain rallies, learning the kitchen rules',               eloRange: '750 – 874' },
+  { elo: '600',  rating: '2.00 – 2.49', label: 'Beginner',          desc: 'Basic shots, still learning scoring and positioning',           eloRange: 'Below 750' },
 ]
 
 // ─── page ─────────────────────────────────────────────────────────────────────
@@ -213,16 +213,17 @@ export default function EloPage() {
       </Section>
 
       {/* ── Pickleball rating ── */}
-      <Section title="Pickleball skill rating (1.5 – 5.0+)" icon={<span className="text-base">🏓</span>}>
+      <Section title="Pickleball skill rating (2.00 – 8.00)" icon={<span className="text-base">🏓</span>}>
         <div className="space-y-3 text-sm text-gray-600 leading-relaxed mb-4">
           <p>
-            Alongside your ELO points, The Kitchen shows a <strong className="text-gray-800">standard pickleball skill rating</strong> —
-            the same 1.5 to 5.0+ scale used by USA Pickleball. This gives you a familiar,
-            real-world label for where your game is at.
+            Alongside your ELO points, The Kitchen shows a <strong className="text-gray-800">DUPR-style skill rating</strong> on
+            the familiar 2.00 – 8.00 scale. It&apos;s continuous, so close players get
+            distinguishable ratings like 3.92 and 4.04 rather than the same rounded label.
           </p>
           <p>
-            Your skill rating is <strong className="text-gray-800">calculated automatically from your ELO points</strong> using
-            the table below. As your points go up, your rating goes up — no self-assessment needed.
+            Your skill rating is <strong className="text-gray-800">calculated automatically from your ELO points</strong>:
+            1,000 ELO = 3.50, and every 250 ELO points = one full rating point. As your
+            points go up, your rating goes up — no self-assessment needed.
           </p>
         </div>
 

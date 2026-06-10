@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -238,6 +239,10 @@ export function LeagueTournaments({
             <Trophy className="w-4 h-4 text-amber-500" />
             {selected.name}
           </h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Seeded by ELO — top seeds may skip Round 1 with a bye.{' '}
+            <Link href="/tournaments-guide" className="underline hover:text-green-600">Learn how brackets work</Link>
+          </p>
           {selected.status === 'completed' && winner && (
             <div className="mt-2 inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
               <span className="text-lg">🏆</span>
@@ -302,9 +307,14 @@ export function LeagueTournaments({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">
-          {tournaments.length} tournament{tournaments.length !== 1 ? 's' : ''}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-gray-500">
+            {tournaments.length} tournament{tournaments.length !== 1 ? 's' : ''}
+          </p>
+          <Link href="/tournaments-guide" className="text-xs text-gray-400 hover:text-green-600 underline">
+            How do brackets &amp; seeding work?
+          </Link>
+        </div>
         {isAdmin && (
           <Button size="sm" onClick={openCreate}>
             <Plus className="w-4 h-4 mr-1" /> New tournament

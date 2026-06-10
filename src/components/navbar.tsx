@@ -64,6 +64,9 @@ export function Navbar({ profile }: { profile: Profile | null }) {
                 <DropdownMenuItem asChild>
                   <Link href="/elo">How ELO Works</Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/tournaments-guide">How Tournaments Work</Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
                   Sign out
