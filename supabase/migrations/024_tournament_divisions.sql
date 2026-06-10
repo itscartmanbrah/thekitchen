@@ -466,7 +466,7 @@ begin
   -- Real league match so ELO flows through the normal engine
   insert into matches (league_id, format, status, created_by, max_points,
                        team1_score, team2_score, completed_at, notes)
-  values (v_t.league_id, v_d.format, 'completed', auth.uid(),
+  values (v_t.league_id, v_d.format::match_format, 'completed', auth.uid(),
           greatest(11, p_score1, p_score2), p_score1, p_score2, now(),
           v_t.name || ' — ' || v_d.name)
   returning id into v_match_id;
