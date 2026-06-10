@@ -17,7 +17,7 @@ import {
   DIVISION_PRESETS, SKILL_CUTOFFS, divisionRuleSummary, type DivisionConfig,
 } from '@/components/tournaments/division-presets'
 import { useToast } from '@/hooks/use-toast'
-import { Trophy, Plus, ArrowLeft, Link2, Check, X, Users } from 'lucide-react'
+import { Trophy, Plus, ArrowLeft, Link2, Check, X, Users, Trash2 } from 'lucide-react'
 
 interface Tournament {
   id: string
@@ -65,8 +65,25 @@ export function LeagueTournaments({
   const [reporting, setReporting] = useState(false)
 
   const [copied, setCopied] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<Tournament | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const { toast } = useToast()
   const supabase = createClient()
+
+  async function confirmDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    const { error } = await supabase.from('tournaments').delete().eq('id', deleteTarget.id)
+    if (error) {
+      toast({ title: 'Failed to delete tournament', description: error.message, variant: 'destructive' })
+    } else {
+      toast({ title: `"${deleteTarget.name}" deleted` })
+      if (selected?.id === deleteTarget.id) { setSelected(null); setSelectedDivision(null) }
+      fetchTournaments()
+    }
+    setDeleteTarget(null)
+    setDeleting(false)
+  }
 
   async function fetchTournaments() {
     const { data } = await supabase
@@ -389,11 +406,42 @@ export function LeagueTournaments({
                 }`}>
                   {t.status === 'active' ? 'In progress' : t.status === 'completed' ? 'Completed' : 'Cancelled'}
                 </span>
+                {isAdmin && (
+                  <button
+                    onClick={e => { e.stopPropagation(); setDeleteTarget(t) }}
+                    className="text-gray-300 hover:text-red-500 transition-colors shrink-0 p-1"
+                    title="Delete tournament"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Delete confirmation */}
+      <Dialog open={!!deleteTarget} onOpenChange={v => { if (!v) setDeleteTarget(null) }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-700">
+              <Trash2 className="w-4 h-4" />
+              Delete &ldquo;{deleteTarget?.name}&rdquo;?
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-500">
+            This removes the tournament, all divisions, registrations, and brackets permanently.
+            Completed matches keep counting toward league ELO and player records.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete} disabled={deleting}>
+              {deleting ? 'Deleting…' : 'Delete tournament'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Create dialog (divisions builder) ── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
