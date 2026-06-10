@@ -82,7 +82,7 @@ export function LeagueTournaments({
     const [{ data: tp }, { data: tm }] = await Promise.all([
       supabase
         .from('tournament_players')
-        .select('user_id, seed, profiles(display_name, avatar_color, avatar_url)')
+        .select('user_id, seed')
         .eq('tournament_id', t.id)
         .order('seed'),
       supabase
@@ -92,12 +92,25 @@ export function LeagueTournaments({
         .order('round')
         .order('position'),
     ])
-    setPlayers(((tp ?? []) as any[]).map(p => ({
-      user_id: p.user_id, seed: p.seed,
-      display_name: p.profiles.display_name,
-      avatar_color: p.profiles.avatar_color,
-      avatar_url: p.profiles.avatar_url,
-    })))
+    // tournament_players.user_id references auth.users, not profiles, so the
+    // implicit join doesn't resolve — fetch profiles separately.
+    const ids = ((tp ?? []) as any[]).map(p => p.user_id)
+    const { data: profiles } = ids.length
+      ? await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_color, avatar_url')
+          .in('id', ids)
+      : { data: [] }
+    const profileMap = new Map(((profiles ?? []) as any[]).map(p => [p.id, p]))
+    setPlayers(((tp ?? []) as any[]).map(p => {
+      const prof = profileMap.get(p.user_id)
+      return {
+        user_id: p.user_id, seed: p.seed,
+        display_name: prof?.display_name ?? 'Unknown player',
+        avatar_color: prof?.avatar_color ?? '#16a34a',
+        avatar_url: prof?.avatar_url ?? null,
+      }
+    }))
     setMatches((tm as BracketMatch[]) ?? [])
     setBracketLoading(false)
   }
