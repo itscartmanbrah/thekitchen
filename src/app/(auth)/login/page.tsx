@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
+import { Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -27,11 +28,13 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       toast({ title: 'Login failed', description: error.message, variant: 'destructive' })
-    } else {
-      router.push('/dashboard')
-      router.refresh()
+      setLoading(false)
+      return
     }
-    setLoading(false)
+    // Keep the button in its loading state while the dashboard renders —
+    // resetting it here makes the page look frozen during navigation.
+    router.push('/dashboard')
+    router.refresh()
   }
 
   return (
@@ -78,7 +81,12 @@ export default function LoginPage() {
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Signing in…' : 'Sign in'}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Signing in…
+                  </>
+                ) : 'Sign in'}
               </Button>
               <p className="text-sm text-center text-gray-600">
                 No account?{' '}

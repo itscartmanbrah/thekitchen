@@ -14,6 +14,48 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
 import { pickAvatarColor } from '@/lib/utils'
+import { Loader2 } from 'lucide-react'
+
+// Letters (including Latin accents), apostrophes, hyphens, spaces
+const NAME_RE = /^[A-Za-zÀ-ɏḀ-ỿ'\- ]+$/
+// 7–15 digits once formatting characters are stripped, optional leading +
+const PHONE_RE = /^\+?[\d\s\-().]{7,20}$/
+
+function validateSignup(fields: {
+  firstName: string; lastName: string; phone: string; birthday: string
+  password: string; confirmPassword: string
+}): string | null {
+  const { firstName, lastName, phone, birthday, password, confirmPassword } = fields
+
+  if (!NAME_RE.test(firstName.trim())) {
+    return 'First name can only contain letters, hyphens and apostrophes.'
+  }
+  if (!NAME_RE.test(lastName.trim())) {
+    return 'Last name can only contain letters, hyphens and apostrophes.'
+  }
+
+  if (phone.trim()) {
+    const digits = phone.replace(/\D/g, '')
+    if (!PHONE_RE.test(phone.trim()) || digits.length < 7 || digits.length > 15) {
+      return 'Enter a valid phone number (digits only, e.g. +1 555 000 0000).'
+    }
+  }
+
+  const dob = new Date(birthday)
+  const now = new Date()
+  if (isNaN(dob.getTime()) || dob >= now) {
+    return 'Date of birth must be in the past.'
+  }
+  const age = (now.getTime() - dob.getTime()) / (365.25 * 24 * 3600 * 1000)
+  if (age < 5 || age > 120) {
+    return 'Please enter a valid date of birth.'
+  }
+
+  if (password.length < 6) return 'Password must be at least 6 characters.'
+  if (password !== confirmPassword) return 'Passwords do not match.'
+
+  return null
+}
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState('')
@@ -33,18 +75,18 @@ export default function SignupPage() {
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
 
-    if (password.length < 6) {
-      toast({ title: 'Password too short', description: 'At least 6 characters required.', variant: 'destructive' })
-      return
-    }
-    if (password !== confirmPassword) {
-      toast({ title: 'Passwords do not match', variant: 'destructive' })
+    const validationError = validateSignup({ firstName, lastName, phone, birthday, password, confirmPassword })
+    if (validationError) {
+      toast({ title: 'Check your details', description: validationError, variant: 'destructive' })
       return
     }
 
     setLoading(true)
 
-    const displayName = nickname?.trim() || `${firstName} ${lastName}`.trim()
+    const cleanFirst = firstName.trim()
+    const cleanLast  = lastName.trim()
+    const cleanPhone = phone.trim() || null
+    const displayName = nickname?.trim() || `${cleanFirst} ${cleanLast}`.trim()
     const avatarColor = pickAvatarColor(displayName)
 
     const { data, error } = await supabase.auth.signUp({
@@ -52,11 +94,11 @@ export default function SignupPage() {
       password,
       options: {
         data: {
-          first_name: firstName,
-          last_name: lastName,
-          nickname: nickname || null,
+          first_name: cleanFirst,
+          last_name: cleanLast,
+          nickname: nickname.trim() || null,
           birthday: birthday || null,
-          phone: phone || null,
+          phone: cleanPhone,
           display_name: displayName,
           avatar_color: avatarColor,
         },
@@ -73,17 +115,19 @@ export default function SignupPage() {
       await supabase.from('profiles').upsert({
         id: data.user.id,
         email,
-        first_name: firstName,
-        last_name: lastName,
-        nickname: nickname || null,
+        first_name: cleanFirst,
+        last_name: cleanLast,
+        nickname: nickname.trim() || null,
         birthday: birthday || null,
-        phone: phone || null,
+        phone: cleanPhone,
         display_name: displayName,
         avatar_color: avatarColor,
       } as any)
 
+      // Stay in the loading state while the dashboard renders
       router.push('/dashboard')
       router.refresh()
+      return
     }
 
     setLoading(false)
@@ -170,9 +214,11 @@ export default function SignupPage() {
                     <Input
                       id="phone"
                       type="tel"
+                      inputMode="tel"
                       placeholder="+1 (555) 000-0000"
                       value={phone}
-                      onChange={e => setPhone(e.target.value)}
+                      onChange={e => setPhone(e.target.value.replace(/[^\d\s+\-().]/g, ''))}
+                      maxLength={20}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -182,6 +228,7 @@ export default function SignupPage() {
                       type="date"
                       value={birthday}
                       onChange={e => setBirthday(e.target.value)}
+                      max={new Date().toISOString().split('T')[0]}
                       required
                     />
                   </div>
@@ -220,7 +267,12 @@ export default function SignupPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Creating account…' : 'Create account'}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Creating account…
+                  </>
+                ) : 'Create account'}
               </Button>
 
               <p className="text-sm text-center text-gray-600">
