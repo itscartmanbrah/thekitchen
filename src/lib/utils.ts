@@ -27,11 +27,14 @@ export function formatElo(elo: number): string {
   return Math.round(elo).toLocaleString()
 }
 
+// Tier thresholds aligned with the DUPR-style scale in getPickleballRating
+// (1000 ELO = 3.50, one rating point per 250 ELO).
 export function getEloTier(elo: number): { label: string; color: string } {
-  if (elo >= 1400) return { label: 'Elite', color: 'text-yellow-500' }
-  if (elo >= 1200) return { label: 'Advanced', color: 'text-purple-500' }
-  if (elo >= 1100) return { label: 'Intermediate', color: 'text-blue-500' }
-  if (elo >= 950)  return { label: 'Developing', color: 'text-green-500' }
+  if (elo >= 1375) return { label: 'Elite', color: 'text-yellow-500' }        // 5.0+
+  if (elo >= 1250) return { label: 'Tournament', color: 'text-orange-500' }   // 4.5+
+  if (elo >= 1125) return { label: 'Advanced', color: 'text-purple-500' }     // 4.0+
+  if (elo >= 1000) return { label: 'Intermediate', color: 'text-blue-500' }   // 3.5+
+  if (elo >= 875)  return { label: 'Developing', color: 'text-green-500' }    // 3.0+
   return { label: 'Beginner', color: 'text-gray-500' }
 }
 
