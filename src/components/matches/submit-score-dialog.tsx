@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import { PlayerAvatar } from '@/components/player-avatar'
+import { validatePickleballScore } from '@/lib/utils'
 import { ClipboardCheck } from 'lucide-react'
 
 interface Props {
@@ -34,49 +35,9 @@ export function SubmitScoreDialog({ match, onSubmitted }: Props) {
     const s2 = parseInt(score2)
     const maxPoints: number = match.max_points ?? 11
 
-    if (isNaN(s1) || isNaN(s2) || s1 < 0 || s2 < 0) {
-      toast({ title: 'Invalid scores', variant: 'destructive' })
-      return
-    }
-    if (s1 === s2) {
-      toast({ title: 'Scores must differ', description: 'Ties are not allowed in pickleball.', variant: 'destructive' })
-      return
-    }
-
-    const winner = Math.max(s1, s2)
-    const loser  = Math.min(s1, s2)
-    const diff   = winner - loser
-
-    // Winner must reach the target score
-    if (winner < maxPoints) {
-      toast({
-        title: 'Score too low',
-        description: `The winning score must reach at least ${maxPoints}. Current winner has ${winner}.`,
-        variant: 'destructive',
-      })
-      return
-    }
-
-    // Must win by at least 2 (pickleball rule — always)
-    if (diff < 2) {
-      toast({
-        title: 'Must win by 2',
-        description: `Scores are ${winner}–${loser}. In pickleball you must win by at least 2 points. Keep playing until someone leads by 2.`,
-        variant: 'destructive',
-      })
-      return
-    }
-
-    // If the winner's score exceeds the target, the game went into extended play.
-    // Extended play ends the moment someone leads by exactly 2 — so the loser
-    // must have exactly (winner - 2). e.g. for a game to 11: 12-10, 13-11…
-    // A score like 9-12 is impossible (loser can't have 9 if winner has 12).
-    if (winner > maxPoints && diff !== 2) {
-      toast({
-        title: 'Invalid extended-play score',
-        description: `If the score goes past ${maxPoints}, extended play ends the moment someone leads by exactly 2. The loser must have ${winner - 2}, not ${loser}.`,
-        variant: 'destructive',
-      })
+    const scoreError = validatePickleballScore(s1, s2, maxPoints)
+    if (scoreError) {
+      toast({ ...scoreError, variant: 'destructive' })
       return
     }
 

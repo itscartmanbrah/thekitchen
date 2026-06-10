@@ -27,6 +27,36 @@ export function formatElo(elo: number): string {
   return Math.round(elo).toLocaleString()
 }
 
+// Validates a pickleball game score. Returns null if valid, else { title, description }.
+// Rules: no ties, winner must reach the target, win by at least 2, and an
+// extended-play game (past the target) ends the moment someone leads by exactly 2.
+export function validatePickleballScore(
+  s1: number,
+  s2: number,
+  maxPoints = 11,
+): { title: string; description: string } | null {
+  if (isNaN(s1) || isNaN(s2) || s1 < 0 || s2 < 0) {
+    return { title: 'Invalid scores', description: 'Enter a valid score for each side.' }
+  }
+  if (s1 === s2) {
+    return { title: 'Scores must differ', description: 'Ties are not allowed in pickleball.' }
+  }
+  const winner = Math.max(s1, s2)
+  const loser = Math.min(s1, s2)
+  const diff = winner - loser
+
+  if (winner < maxPoints) {
+    return { title: 'Score too low', description: `The winning score must reach at least ${maxPoints}. Current winner has ${winner}.` }
+  }
+  if (diff < 2) {
+    return { title: 'Must win by 2', description: `Scores are ${winner}–${loser}. In pickleball you must win by at least 2 points. Keep playing until someone leads by 2.` }
+  }
+  if (winner > maxPoints && diff !== 2) {
+    return { title: 'Invalid extended-play score', description: `If the score goes past ${maxPoints}, extended play ends the moment someone leads by exactly 2. The loser must have ${winner - 2}, not ${loser}.` }
+  }
+  return null
+}
+
 // Tier thresholds aligned with the DUPR-style scale in getPickleballRating
 // (1000 ELO = 3.50, one rating point per 250 ELO).
 export function getEloTier(elo: number): { label: string; color: string } {

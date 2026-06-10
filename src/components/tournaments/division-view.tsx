@@ -11,6 +11,7 @@ import {
 import { PlayerAvatar } from '@/components/player-avatar'
 import { TournamentBracket, type BracketMatch, type BracketPlayer } from '@/components/tournaments/tournament-bracket'
 import { divisionRuleSummary } from '@/components/tournaments/division-presets'
+import { validatePickleballScore } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { ArrowLeft, Trophy, UserPlus, LogOut, Play } from 'lucide-react'
 
@@ -197,8 +198,9 @@ export function DivisionView({
   async function handleReport() {
     if (!scoreMatch) return
     const s1 = parseInt(score1), s2 = parseInt(score2)
-    if (isNaN(s1) || isNaN(s2) || s1 === s2) {
-      toast({ title: 'Enter two different scores', variant: 'destructive' })
+    const scoreError = validatePickleballScore(s1, s2, 11)
+    if (scoreError) {
+      toast({ ...scoreError, variant: 'destructive' })
       return
     }
     setReporting(true)

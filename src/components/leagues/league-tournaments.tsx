@@ -16,6 +16,7 @@ import { DivisionView, type Division } from '@/components/tournaments/division-v
 import {
   DIVISION_PRESETS, SKILL_CUTOFFS, divisionRuleSummary, type DivisionConfig,
 } from '@/components/tournaments/division-presets'
+import { validatePickleballScore } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { Trophy, Plus, ArrowLeft, Link2, Check, X, Users, Trash2 } from 'lucide-react'
 
@@ -201,8 +202,9 @@ export function LeagueTournaments({
   async function handleLegacyReport() {
     if (!scoreMatch) return
     const s1 = parseInt(score1), s2 = parseInt(score2)
-    if (isNaN(s1) || isNaN(s2) || s1 === s2) {
-      toast({ title: 'Enter two different scores', variant: 'destructive' })
+    const scoreError = validatePickleballScore(s1, s2, 11)
+    if (scoreError) {
+      toast({ ...scoreError, variant: 'destructive' })
       return
     }
     setReporting(true)
