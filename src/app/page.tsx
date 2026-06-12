@@ -9,20 +9,23 @@ export default function LandingPage() {
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
       {/* Nav */}
       <nav className="border-b bg-white/80 backdrop-blur sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0 shrink-0">
             <AppLogo className="w-8 h-8" />
-            <span className="font-bold text-xl text-gray-900">The Kitchen</span>
+            <span className="font-bold text-lg sm:text-xl text-gray-900 whitespace-nowrap">The Kitchen</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" asChild>
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+            <Button variant="ghost" asChild className="hidden sm:inline-flex">
               <Link href="/contact">Contact</Link>
             </Button>
-            <Button variant="ghost" asChild>
+            <Button variant="ghost" size="sm" asChild className="px-2 sm:px-4">
               <Link href="/login">Sign in</Link>
             </Button>
-            <Button asChild>
-              <Link href="/signup">Get started free</Link>
+            <Button size="sm" asChild>
+              <Link href="/signup">
+                <span className="sm:hidden">Sign up</span>
+                <span className="hidden sm:inline">Get started free</span>
+              </Link>
             </Button>
           </div>
         </div>

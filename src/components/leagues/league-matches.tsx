@@ -348,8 +348,8 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                 {isExpanded && (
                   <div className="border-t border-gray-100 bg-gray-50 px-4 py-4 space-y-4">
 
-                    {/* Players breakdown */}
-                    <div className="grid grid-cols-2 gap-3">
+                    {/* Players breakdown — stacked on phones, side-by-side from sm: up */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {[{ players: team1, score: match.team1_score, otherScore: match.team2_score },
                         { players: team2, score: match.team2_score, otherScore: match.team1_score }]
                         .map(({ players, score, otherScore }, teamIdx) => {
