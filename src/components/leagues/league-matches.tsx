@@ -231,7 +231,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                 {/* ── Collapsed row (always visible) ── */}
                 <CardContent className="py-3 px-4">
                   <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="flex items-center gap-x-3 gap-y-1 flex-1 min-w-0 flex-wrap">
                       {/* Team 1 */}
                       <div className="flex items-center gap-1.5">
                         {team1.map((p: any) => (

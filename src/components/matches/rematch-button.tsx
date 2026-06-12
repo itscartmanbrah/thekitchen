@@ -55,9 +55,16 @@ export function RematchButton({ match, onCreated }: Props) {
   }
 
   return (
-    <Button size="sm" variant="ghost" className="gap-1 text-gray-500 hover:text-gray-800" onClick={handleRematch} disabled={loading}>
-      <RefreshCw className="w-3.5 h-3.5" />
-      {loading ? 'Creating…' : 'Rematch'}
+    <Button
+      size="sm"
+      variant="ghost"
+      className="gap-1 text-gray-500 hover:text-gray-800 px-2 sm:px-3"
+      onClick={handleRematch}
+      disabled={loading}
+      title="Rematch — same players, same format"
+    >
+      <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+      <span className="hidden sm:inline">{loading ? 'Creating…' : 'Rematch'}</span>
     </Button>
   )
 }
