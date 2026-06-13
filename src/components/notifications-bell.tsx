@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Bell, Trophy, Swords, Megaphone, Check, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { Bell, Trophy, Swords, Megaphone, Check, CheckCircle, XCircle, AlertCircle, CalendarClock } from 'lucide-react'
 
 interface Notification {
   id: string
@@ -34,6 +34,7 @@ function NotifIcon({ type }: { type: string }) {
   if (type === 'league_invite')      return <Bell className="w-4 h-4 text-green-500" />
   if (type === 'challenge_officiate') return <Swords className="w-4 h-4 text-orange-500" />
   if (type === 'challenge_received') return <Swords className="w-4 h-4 text-red-500" />
+  if (type === 'court_booking')      return <CalendarClock className="w-4 h-4 text-green-600" />
   return <Bell className="w-4 h-4 text-gray-400" />
 }
 

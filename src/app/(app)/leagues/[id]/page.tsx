@@ -17,6 +17,7 @@ import { LeagueChallenges } from '@/components/leagues/league-challenges'
 import { LeagueOfficiated } from '@/components/leagues/league-officiated'
 import { LeagueTournaments } from '@/components/leagues/league-tournaments'
 import { LeagueCourts } from '@/components/leagues/league-courts'
+import { LeagueBookings } from '@/components/leagues/league-bookings'
 import { MapPin } from 'lucide-react'
 import { CopyInviteButton } from '@/components/leagues/copy-invite-button'
 import type { League, LeagueMember } from '@/types/database'
@@ -144,6 +145,9 @@ export default async function LeaguePage({ params }: { params: { id: string } })
           <TabsTrigger value="challenges">Challenges</TabsTrigger>
           <TabsTrigger value="tournaments">Tournaments</TabsTrigger>
           <TabsTrigger value="courts">Courts</TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="bookings">Bookings</TabsTrigger>
+          )}
           {isOfficiator && (
             <TabsTrigger value="officiated">Officiated</TabsTrigger>
           )}
@@ -198,6 +202,12 @@ export default async function LeaguePage({ params }: { params: { id: string } })
         <TabsContent value="courts">
           <LeagueCourts leagueId={params.id} currentUserId={user.id} isAdmin={isAdmin} />
         </TabsContent>
+
+        {isAdmin && (
+          <TabsContent value="bookings">
+            <LeagueBookings leagueId={params.id} />
+          </TabsContent>
+        )}
 
         {isOfficiator && (
           <TabsContent value="officiated">
