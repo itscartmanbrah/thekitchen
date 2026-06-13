@@ -39,6 +39,9 @@ interface Session {
 function fmtTime(iso: string) {
   return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 }
+function fmtHourChip(iso: string) {
+  return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric' }).replace(' ', '')
+}
 function dayKey(iso: string) {
   const d = new Date(iso); d.setHours(0, 0, 0, 0); return d.toISOString()
 }
@@ -224,18 +227,19 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
                         )}
                       </div>
 
-                      {/* Expanded per-hour breakdown */}
+                      {/* Expanded: compact hour chips */}
                       {isOpen && hours > 1 && (
-                        <div className="border-t bg-gray-50 px-3 py-2 space-y-1">
-                          <p className="text-[11px] text-gray-400 flex items-center gap-1">
+                        <div className="border-t bg-gray-50 px-3 py-2.5">
+                          <p className="text-[11px] text-gray-400 mb-2 flex items-center gap-1">
                             <MapPin className="w-3 h-3" />{s.court_name} · {hours} one-hour slots
                           </p>
-                          {s.bookings.map(b => (
-                            <div key={b.id} className="flex items-center gap-2 text-xs text-gray-600 py-0.5">
-                              <Clock className="w-3 h-3 text-gray-300" />
-                              <span className="flex-1">{fmtTime(b.starts_at)}–{fmtTime(b.ends_at)}</span>
-                            </div>
-                          ))}
+                          <div className="flex flex-wrap gap-1.5">
+                            {s.bookings.map(b => (
+                              <span key={b.id} className="text-[11px] font-medium text-gray-600 bg-white border rounded-md px-2 py-1">
+                                {fmtHourChip(b.starts_at)}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
