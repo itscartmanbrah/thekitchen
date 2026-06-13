@@ -145,9 +145,7 @@ export default async function LeaguePage({ params }: { params: { id: string } })
           <TabsTrigger value="challenges">Challenges</TabsTrigger>
           <TabsTrigger value="tournaments">Tournaments</TabsTrigger>
           <TabsTrigger value="courts">Courts</TabsTrigger>
-          {isAdmin && (
-            <TabsTrigger value="bookings">Bookings</TabsTrigger>
-          )}
+          <TabsTrigger value="bookings">{isAdmin ? 'Bookings' : 'My Bookings'}</TabsTrigger>
           {isOfficiator && (
             <TabsTrigger value="officiated">Officiated</TabsTrigger>
           )}
@@ -203,11 +201,9 @@ export default async function LeaguePage({ params }: { params: { id: string } })
           <LeagueCourts leagueId={params.id} currentUserId={user.id} isAdmin={isAdmin} />
         </TabsContent>
 
-        {isAdmin && (
-          <TabsContent value="bookings">
-            <LeagueBookings leagueId={params.id} />
-          </TabsContent>
-        )}
+        <TabsContent value="bookings">
+          <LeagueBookings leagueId={params.id} currentUserId={user.id} isAdmin={isAdmin} />
+        </TabsContent>
 
         {isOfficiator && (
           <TabsContent value="officiated">

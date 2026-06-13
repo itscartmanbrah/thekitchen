@@ -8,7 +8,9 @@ import {
 } from '@/components/ui/dialog'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
-import { CalendarClock, MapPin, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import { CalendarClock, MapPin, Clock, ChevronDown, ChevronUp, Phone } from 'lucide-react'
+
+const CANCEL_WINDOW_MS = 2 * 60 * 60 * 1000
 
 interface Row {
   id: string
@@ -18,6 +20,7 @@ interface Row {
   ends_at: string
   court_name: string
   is_indoor: boolean
+  contact_phone: string | null
   display_name: string
   avatar_color: string
   avatar_url: string | null
@@ -27,6 +30,7 @@ interface Session {
   id: string
   court_id: string
   court_name: string
+  contact_phone: string | null
   user_id: string
   display_name: string
   avatar_color: string
@@ -70,7 +74,7 @@ function buildSessions(rows: Row[]): Session[] {
       last.bookings.push(r)
     } else {
       sessions.push({
-        id: r.id, court_id: r.court_id, court_name: r.court_name,
+        id: r.id, court_id: r.court_id, court_name: r.court_name, contact_phone: r.contact_phone,
         user_id: r.user_id, display_name: r.display_name,
         avatar_color: r.avatar_color, avatar_url: r.avatar_url,
         start: r.starts_at, end: r.ends_at, bookings: [r],
@@ -80,12 +84,13 @@ function buildSessions(rows: Row[]): Session[] {
   return sessions.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
 }
 
-export function LeagueBookings({ leagueId }: { leagueId: string }) {
+export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId: string; currentUserId: string; isAdmin: boolean }) {
   const [rows, setRows] = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
   const [scope, setScope] = useState<'upcoming' | 'past'>('upcoming')
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [confirmTarget, setConfirmTarget] = useState<Session | null>(null)
+  const [contactTarget, setContactTarget] = useState<Session | null>(null)
   const { toast } = useToast()
   const supabase = createClient()
 
@@ -94,9 +99,12 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
     const nowIso = new Date().toISOString()
     let q = supabase
       .from('court_bookings')
-      .select('id, court_id, user_id, starts_at, ends_at, courts(name, is_indoor)')
+      .select('id, court_id, user_id, starts_at, ends_at, courts(name, is_indoor, contact_phone)')
       .eq('league_id', leagueId)
       .eq('status', 'booked')
+
+    // Non-admins only see their own bookings
+    if (!isAdmin) q = q.eq('user_id', currentUserId)
 
     q = scope === 'upcoming'
       ? q.gte('starts_at', nowIso).order('starts_at', { ascending: true })
@@ -118,6 +126,7 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
         id: r.id, court_id: r.court_id, user_id: r.user_id,
         starts_at: r.starts_at, ends_at: r.ends_at,
         court_name: r.courts?.name ?? 'Court', is_indoor: r.courts?.is_indoor ?? false,
+        contact_phone: r.courts?.contact_phone ?? null,
         display_name: fullName || p?.display_name || 'Unknown',
         avatar_color: p?.avatar_color ?? '#16a34a', avatar_url: p?.avatar_url ?? null,
       }
@@ -125,7 +134,17 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
     setLoading(false)
   }
 
-  useEffect(() => { fetchBookings() }, [leagueId, scope])
+  useEffect(() => { fetchBookings() }, [leagueId, scope, isAdmin, currentUserId])
+
+  // Admins can cancel anytime; members only ≥2 hours before start
+  function canCancel(s: Session) {
+    return isAdmin || new Date(s.start).getTime() - Date.now() >= CANCEL_WINDOW_MS
+  }
+
+  function onCancelClick(s: Session) {
+    if (canCancel(s)) setConfirmTarget(s)
+    else setContactTarget(s)
+  }
 
   async function cancelSession(s: Session) {
     const { error } = await supabase.rpc('cancel_court_session', { p_booking_ids: s.bookings.map(b => b.id) })
@@ -159,7 +178,7 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold text-gray-900 flex items-center gap-2">
           <CalendarClock className="w-4 h-4 text-green-600" />
-          Court bookings
+          {isAdmin ? 'Court bookings' : 'My bookings'}
         </h2>
         <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
           {(['upcoming', 'past'] as const).map(s => (
@@ -220,7 +239,7 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
                           <Button
                             size="sm" variant="ghost"
                             className="text-red-500 hover:text-red-600 hover:bg-red-50 h-7 px-2 text-xs shrink-0"
-                            onClick={() => setConfirmTarget(s)}
+                            onClick={() => onCancelClick(s)}
                           >
                             Cancel
                           </Button>
@@ -268,6 +287,37 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
             <Button variant="destructive" onClick={() => confirmTarget && cancelSession(confirmTarget)}>
               Yes, cancel booking
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Within 2 hours: contact admin instead of cancelling */}
+      <Dialog open={!!contactTarget} onOpenChange={v => { if (!v) setContactTarget(null) }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Cancellation window closed</DialogTitle>
+          </DialogHeader>
+          {contactTarget && (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-500">
+                This booking starts in under 2 hours, so it can no longer be cancelled here.
+                Please contact the court admin to cancel.
+              </p>
+              {contactTarget.contact_phone ? (
+                <a
+                  href={`tel:${contactTarget.contact_phone.replace(/[^\d+]/g, '')}`}
+                  className="inline-flex items-center gap-1.5 font-medium text-green-700 underline"
+                >
+                  <Phone className="w-4 h-4" />
+                  {contactTarget.contact_phone}
+                </a>
+              ) : (
+                <p className="text-sm font-medium text-gray-700">No contact number set — reach out to your league admin.</p>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setContactTarget(null)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

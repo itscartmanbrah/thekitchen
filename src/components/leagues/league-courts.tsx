@@ -146,6 +146,8 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
       .lt('starts_at', dayEnd.toISOString())
     const list = (data as Booking[]) ?? []
     setBookings(list)
+    // Only admins see who booked each slot; players/officiators see generic "Booked".
+    if (!isAdmin) return
     const ids = Array.from(new Set(list.map(b => b.user_id))).filter(id => !(id in names))
     if (ids.length) {
       const { data: profs } = await supabase.from('profiles').select('id, display_name, first_name, last_name').in('id', ids)
@@ -464,7 +466,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                       if (outOfHours || isPast) { cls = 'bg-gray-200 cursor-not-allowed' }
                       if (bk) {
                         cls = `bg-green-500 ${(mine || isAdmin) ? 'cursor-pointer hover:bg-green-600' : 'cursor-default'}`
-                        label = mine ? 'You' : (names[bk.user_id]?.split(' ')[0] ?? '•')
+                        label = mine ? 'You' : isAdmin ? (names[bk.user_id]?.split(' ')[0] ?? '•') : ''
                       } else if (sel) {
                         cls = 'bg-gray-900 cursor-pointer'
                       }
@@ -473,7 +475,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                         <td
                           key={h}
                           onClick={() => onCellClick(court, h)}
-                          title={bk ? (mine ? 'Your booking — tap for details' : `Booked by ${names[bk.user_id] ?? '…'}${isAdmin ? ' — tap to manage' : ''}`) : outOfHours ? 'Closed' : isPast ? 'Past' : 'Tap to select'}
+                          title={bk ? (mine ? 'Your booking — tap for details' : isAdmin ? `Booked by ${names[bk.user_id] ?? '…'} — tap to manage` : 'Booked') : outOfHours ? 'Closed' : isPast ? 'Past' : 'Tap to select'}
                           className={`border-l h-10 text-center align-middle text-[10px] font-medium select-none ${cls} ${bk ? 'text-white' : sel ? 'text-white' : 'text-transparent'}`}
                         >
                           {label}
