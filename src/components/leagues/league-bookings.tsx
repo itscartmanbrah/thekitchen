@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
-import { CalendarClock, MapPin, Clock } from 'lucide-react'
+import { CalendarClock, MapPin, Clock, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface Row {
   id: string
@@ -18,6 +18,19 @@ interface Row {
   display_name: string
   avatar_color: string
   avatar_url: string | null
+}
+
+interface Session {
+  id: string
+  court_id: string
+  court_name: string
+  user_id: string
+  display_name: string
+  avatar_color: string
+  avatar_url: string | null
+  start: string
+  end: string
+  bookings: Row[]
 }
 
 function fmtTime(iso: string) {
@@ -35,10 +48,37 @@ function dayLabel(iso: string) {
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
 }
 
+// Merge contiguous bookings (same court + same player, back-to-back hours) into sessions
+function buildSessions(rows: Row[]): Session[] {
+  const sorted = [...rows].sort((a, b) =>
+    a.court_id.localeCompare(b.court_id) ||
+    a.user_id.localeCompare(b.user_id) ||
+    new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()
+  )
+  const sessions: Session[] = []
+  for (const r of sorted) {
+    const last = sessions[sessions.length - 1]
+    if (last && last.court_id === r.court_id && last.user_id === r.user_id &&
+        new Date(last.end).getTime() === new Date(r.starts_at).getTime()) {
+      last.end = r.ends_at
+      last.bookings.push(r)
+    } else {
+      sessions.push({
+        id: r.id, court_id: r.court_id, court_name: r.court_name,
+        user_id: r.user_id, display_name: r.display_name,
+        avatar_color: r.avatar_color, avatar_url: r.avatar_url,
+        start: r.starts_at, end: r.ends_at, bookings: [r],
+      })
+    }
+  }
+  return sessions.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+}
+
 export function LeagueBookings({ leagueId }: { leagueId: string }) {
   const [rows, setRows] = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
   const [scope, setScope] = useState<'upcoming' | 'past'>('upcoming')
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const { toast } = useToast()
   const supabase = createClient()
 
@@ -53,7 +93,7 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
 
     q = scope === 'upcoming'
       ? q.gte('starts_at', nowIso).order('starts_at', { ascending: true })
-      : q.lt('starts_at', nowIso).order('starts_at', { ascending: false }).limit(100)
+      : q.lt('starts_at', nowIso).order('starts_at', { ascending: false }).limit(200)
 
     const { data } = await q
     const raw = (data ?? []) as any[]
@@ -79,19 +119,39 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
 
   useEffect(() => { fetchBookings() }, [leagueId, scope])
 
-  async function cancel(id: string) {
+  async function cancelOne(id: string) {
     const { error } = await supabase.rpc('cancel_court_booking', { p_booking_id: id })
-    if (error) toast({ title: 'Could not cancel', description: error.message, variant: 'destructive' })
-    else { toast({ title: 'Booking cancelled' }); fetchBookings() }
+    if (error) { toast({ title: 'Could not cancel', description: error.message, variant: 'destructive' }); return false }
+    return true
   }
 
-  // Group by day
-  const groups: { key: string; label: string; rows: Row[] }[] = []
-  for (const r of rows) {
-    const key = dayKey(r.starts_at)
+  async function cancelHour(id: string) {
+    if (await cancelOne(id)) { toast({ title: 'Hour cancelled' }); fetchBookings() }
+  }
+
+  async function cancelSession(s: Session) {
+    let ok = 0
+    for (const b of s.bookings) if (await cancelOne(b.id)) ok++
+    if (ok) { toast({ title: `Cancelled ${ok} hour${ok > 1 ? 's' : ''}` }); fetchBookings() }
+  }
+
+  function toggle(id: string) {
+    setExpanded(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const sessions = buildSessions(rows)
+
+  // Group sessions by day for the date headers
+  const groups: { key: string; label: string; sessions: Session[] }[] = []
+  for (const s of sessions) {
+    const key = dayKey(s.start)
     let g = groups.find(x => x.key === key)
-    if (!g) { g = { key, label: dayLabel(r.starts_at), rows: [] }; groups.push(g) }
-    g.rows.push(r)
+    if (!g) { g = { key, label: dayLabel(s.start), sessions: [] }; groups.push(g) }
+    g.sessions.push(s)
   }
 
   return (
@@ -118,7 +178,7 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
 
       {loading ? (
         <div className="text-center py-12 text-gray-500">Loading bookings…</div>
-      ) : rows.length === 0 ? (
+      ) : sessions.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <CalendarClock className="w-8 h-8 mx-auto mb-2 text-gray-300" />
           <p className="text-sm">No {scope} bookings.</p>
@@ -129,31 +189,66 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
             <div key={g.key}>
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{g.label}</p>
               <div className="space-y-1.5">
-                {g.rows.map(r => (
-                  <div key={r.id} className="flex items-center gap-3 bg-white border rounded-lg px-3 py-2.5">
-                    <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700 w-32 shrink-0">
-                      <Clock className="w-3.5 h-3.5 text-gray-400" />
-                      {fmtTime(r.starts_at)}–{fmtTime(r.ends_at)}
+                {g.sessions.map(s => {
+                  const hours = s.bookings.length
+                  const isOpen = expanded.has(s.id)
+                  return (
+                    <div key={s.id} className="bg-white border rounded-lg overflow-hidden">
+                      {/* Summary row */}
+                      <div className="flex items-center gap-3 px-3 py-2.5">
+                        <button onClick={() => toggle(s.id)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+                          <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700 w-32 shrink-0">
+                            <Clock className="w-3.5 h-3.5 text-gray-400" />
+                            {fmtTime(s.start)}–{fmtTime(s.end)}
+                          </div>
+                          <span className="text-[11px] font-semibold text-green-700 bg-green-50 rounded-full px-2 py-0.5 shrink-0">
+                            {hours} hr{hours > 1 ? 's' : ''}
+                          </span>
+                          <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 shrink-0">
+                            <MapPin className="w-3 h-3 text-gray-400" />
+                            {s.court_name}
+                          </div>
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <PlayerAvatar name={s.display_name} color={s.avatar_color} imageUrl={s.avatar_url} size="xs" />
+                            <span className="text-sm text-gray-800 truncate">{s.display_name}</span>
+                          </div>
+                          {hours > 1 && (isOpen
+                            ? <ChevronUp className="w-4 h-4 text-gray-400 shrink-0" />
+                            : <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />)}
+                        </button>
+                        {scope === 'upcoming' && (
+                          <Button
+                            size="sm" variant="ghost"
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50 h-7 px-2 text-xs shrink-0"
+                            onClick={() => cancelSession(s)}
+                          >
+                            Cancel{hours > 1 ? ' all' : ''}
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Expanded per-hour breakdown */}
+                      {isOpen && hours > 1 && (
+                        <div className="border-t bg-gray-50 px-3 py-2 space-y-1">
+                          <p className="text-[11px] text-gray-400 flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />{s.court_name} · {hours} one-hour slots
+                          </p>
+                          {s.bookings.map(b => (
+                            <div key={b.id} className="flex items-center gap-2 text-xs text-gray-600 py-0.5">
+                              <Clock className="w-3 h-3 text-gray-300" />
+                              <span className="flex-1">{fmtTime(b.starts_at)}–{fmtTime(b.ends_at)}</span>
+                              {scope === 'upcoming' && (
+                                <button onClick={() => cancelHour(b.id)} className="text-red-400 hover:text-red-600">
+                                  Cancel
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500 w-20 shrink-0">
-                      <MapPin className="w-3 h-3 text-gray-400" />
-                      {r.court_name}
-                    </div>
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <PlayerAvatar name={r.display_name} color={r.avatar_color} imageUrl={r.avatar_url} size="xs" />
-                      <span className="text-sm text-gray-800 truncate">{r.display_name}</span>
-                    </div>
-                    {scope === 'upcoming' && (
-                      <Button
-                        size="sm" variant="ghost"
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50 h-7 px-2 text-xs shrink-0"
-                        onClick={() => cancel(r.id)}
-                      >
-                        Cancel
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           ))}
