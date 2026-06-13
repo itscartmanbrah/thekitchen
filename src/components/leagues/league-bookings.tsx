@@ -146,6 +146,14 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
     else setContactTarget(s)
   }
 
+  // Cancel a single hour (one pill) from within a session
+  function onHourClick(s: Session, b: Row) {
+    const single: Session = { ...s, id: b.id, start: b.starts_at, end: b.ends_at, bookings: [b] }
+    const cancellable = isAdmin || new Date(b.starts_at).getTime() - Date.now() >= CANCEL_WINDOW_MS
+    if (cancellable) setConfirmTarget(single)
+    else setContactTarget(single)
+  }
+
   async function cancelSession(s: Session) {
     const { error } = await supabase.rpc('cancel_court_session', { p_booking_ids: s.bookings.map(b => b.id) })
     if (error) toast({ title: 'Could not cancel', description: error.message, variant: 'destructive' })
@@ -254,11 +262,24 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
                           </p>
                           <div className="flex flex-wrap gap-1.5">
                             {s.bookings.map(b => (
-                              <span key={b.id} className="text-[11px] font-medium text-gray-600 bg-white border rounded-md px-2 py-1">
-                                {fmtHourChip(b.starts_at)}
-                              </span>
+                              scope === 'upcoming' ? (
+                                <button
+                                  key={b.id}
+                                  onClick={() => onHourClick(s, b)}
+                                  title="Cancel this hour"
+                                  className="group text-[11px] font-medium text-gray-600 bg-white border rounded-md px-2 py-1 hover:border-red-300 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                >
+                                  {fmtHourChip(b.starts_at)}
+                                  <span className="text-red-400 ml-1 opacity-0 group-hover:opacity-100">✕</span>
+                                </button>
+                              ) : (
+                                <span key={b.id} className="text-[11px] font-medium text-gray-600 bg-white border rounded-md px-2 py-1">
+                                  {fmtHourChip(b.starts_at)}
+                                </span>
+                              )
                             ))}
                           </div>
+                          <p className="text-[11px] text-gray-400 mt-2">Tap an hour to cancel just that slot, or use Cancel above for the whole booking.</p>
                         </div>
                       )}
                     </div>
