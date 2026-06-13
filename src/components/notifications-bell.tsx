@@ -35,6 +35,7 @@ function NotifIcon({ type }: { type: string }) {
   if (type === 'challenge_officiate') return <Swords className="w-4 h-4 text-orange-500" />
   if (type === 'challenge_received') return <Swords className="w-4 h-4 text-red-500" />
   if (type === 'court_booking')      return <CalendarClock className="w-4 h-4 text-green-600" />
+  if (type === 'court_cancellation') return <CalendarClock className="w-4 h-4 text-red-500" />
   return <Bell className="w-4 h-4 text-gray-400" />
 }
 

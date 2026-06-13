@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
 import { CalendarClock, MapPin, Clock, ChevronDown, ChevronUp } from 'lucide-react'
@@ -79,6 +82,7 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
   const [loading, setLoading] = useState(true)
   const [scope, setScope] = useState<'upcoming' | 'past'>('upcoming')
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [confirmTarget, setConfirmTarget] = useState<Session | null>(null)
   const { toast } = useToast()
   const supabase = createClient()
 
@@ -100,17 +104,18 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
 
     const userIds = Array.from(new Set(raw.map(r => r.user_id)))
     const { data: profs } = userIds.length
-      ? await supabase.from('profiles').select('id, display_name, avatar_color, avatar_url').in('id', userIds)
+      ? await supabase.from('profiles').select('id, display_name, first_name, last_name, avatar_color, avatar_url').in('id', userIds)
       : { data: [] }
     const pMap = new Map(((profs ?? []) as any[]).map(p => [p.id, p]))
 
     setRows(raw.map(r => {
       const p = pMap.get(r.user_id)
+      const fullName = `${p?.first_name ?? ''} ${p?.last_name ?? ''}`.trim()
       return {
         id: r.id, court_id: r.court_id, user_id: r.user_id,
         starts_at: r.starts_at, ends_at: r.ends_at,
         court_name: r.courts?.name ?? 'Court', is_indoor: r.courts?.is_indoor ?? false,
-        display_name: p?.display_name ?? 'Unknown',
+        display_name: fullName || p?.display_name || 'Unknown',
         avatar_color: p?.avatar_color ?? '#16a34a', avatar_url: p?.avatar_url ?? null,
       }
     }))
@@ -120,14 +125,10 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
   useEffect(() => { fetchBookings() }, [leagueId, scope])
 
   async function cancelSession(s: Session) {
-    let ok = 0, firstError = ''
-    for (const b of s.bookings) {
-      const { error } = await supabase.rpc('cancel_court_booking', { p_booking_id: b.id })
-      if (error) firstError = error.message
-      else ok++
-    }
-    if (ok) { toast({ title: 'Booking cancelled' }); fetchBookings() }
-    else if (firstError) toast({ title: 'Could not cancel', description: firstError, variant: 'destructive' })
+    const { error } = await supabase.rpc('cancel_court_session', { p_booking_ids: s.bookings.map(b => b.id) })
+    if (error) toast({ title: 'Could not cancel', description: error.message, variant: 'destructive' })
+    else { toast({ title: 'Booking cancelled' }); fetchBookings() }
+    setConfirmTarget(null)
   }
 
   function toggle(id: string) {
@@ -216,7 +217,7 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
                           <Button
                             size="sm" variant="ghost"
                             className="text-red-500 hover:text-red-600 hover:bg-red-50 h-7 px-2 text-xs shrink-0"
-                            onClick={() => cancelSession(s)}
+                            onClick={() => setConfirmTarget(s)}
                           >
                             Cancel
                           </Button>
@@ -245,6 +246,27 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
           ))}
         </div>
       )}
+
+      {/* Cancel confirmation */}
+      <Dialog open={!!confirmTarget} onOpenChange={v => { if (!v) setConfirmTarget(null) }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Cancel this booking?</DialogTitle>
+          </DialogHeader>
+          {confirmTarget && (
+            <p className="text-sm text-gray-500">
+              {confirmTarget.display_name}&apos;s booking on {confirmTarget.court_name} ({fmtTime(confirmTarget.start)}–{fmtTime(confirmTarget.end)})
+              will be cancelled and the slot{confirmTarget.bookings.length > 1 ? 's' : ''} freed for others.
+            </p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmTarget(null)}>Keep booking</Button>
+            <Button variant="destructive" onClick={() => confirmTarget && cancelSession(confirmTarget)}>
+              Yes, cancel booking
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -71,6 +71,8 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
 
   const [detail, setDetail] = useState<Detail | null>(null)
   const [cancelling, setCancelling] = useState(false)
+  const [confirmCancel, setConfirmCancel] = useState(false)
+  const [userEmail, setUserEmail] = useState('')
 
   // Add-court dialog
   const [addOpen, setAddOpen] = useState(false)
@@ -81,6 +83,9 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
   const [contactPhone, setContactPhone] = useState('')
   const [saving, setSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Court | null>(null)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteError, setDeleteError] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   const { toast } = useToast()
   const supabase = createClient()
@@ -93,6 +98,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
     setLoading(false)
   }
   useEffect(() => { fetchCourts() }, [leagueId])
+  useEffect(() => { supabase.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? '')) }, [])
 
   async function fetchBookings() {
     const dayStart = startOfDay(selectedDate)
@@ -108,9 +114,12 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
     setBookings(list)
     const ids = Array.from(new Set(list.map(b => b.user_id))).filter(id => !(id in names))
     if (ids.length) {
-      const { data: profs } = await supabase.from('profiles').select('id, display_name').in('id', ids)
+      const { data: profs } = await supabase.from('profiles').select('id, display_name, first_name, last_name').in('id', ids)
       const next = { ...names }
-      for (const p of (profs ?? []) as any[]) next[p.id] = p.display_name
+      for (const p of (profs ?? []) as any[]) {
+        const full = `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim()
+        next[p.id] = full || p.display_name
+      }
       setNames(next)
     }
   }
@@ -136,15 +145,13 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
   async function cancelSession() {
     if (!detail) return
     setCancelling(true)
-    let ok = 0, firstError = ''
-    for (const b of detail.bookings) {
-      const { error } = await supabase.rpc('cancel_court_booking', { p_booking_id: b.id })
-      if (error) firstError = error.message
-      else ok++
-    }
-    if (ok > 0) toast({ title: 'Booking cancelled' })
-    if (firstError && ok === 0) toast({ title: 'Could not cancel', description: firstError, variant: 'destructive' })
+    const { error } = await supabase.rpc('cancel_court_session', {
+      p_booking_ids: detail.bookings.map(b => b.id),
+    })
+    if (error) toast({ title: 'Could not cancel', description: error.message, variant: 'destructive' })
+    else toast({ title: 'Booking cancelled' })
     setDetail(null)
+    setConfirmCancel(false)
     await fetchBookings()
     setCancelling(false)
   }
@@ -166,11 +173,26 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
     setSaving(false)
   }
 
+  function openDelete(court: Court) {
+    setDeleteTarget(court); setDeletePassword(''); setDeleteError('')
+  }
+
   async function deleteCourt() {
     if (!deleteTarget) return
+    if (!deletePassword) { setDeleteError('Enter your password to confirm.'); return }
+    setDeleting(true)
+    setDeleteError('')
+    // Re-authenticate to confirm it's really the admin
+    const { error: authError } = await supabase.auth.signInWithPassword({ email: userEmail, password: deletePassword })
+    if (authError) {
+      setDeleteError('Incorrect password.')
+      setDeleting(false)
+      return
+    }
     const { error } = await supabase.from('courts').delete().eq('id', deleteTarget.id)
-    if (error) toast({ title: 'Could not delete', description: error.message, variant: 'destructive' })
+    if (error) setDeleteError(error.message)
     else { toast({ title: `"${deleteTarget.name}" removed` }); setDeleteTarget(null); fetchCourts() }
+    setDeleting(false)
   }
 
   const AddCourtDialog = (
@@ -445,7 +467,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
           {isAdmin && (
             <div className="mt-4 flex flex-wrap gap-2">
               {courts.map(c => (
-                <button key={c.id} onClick={() => setDeleteTarget(c)}
+                <button key={c.id} onClick={() => openDelete(c)}
                   className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 border rounded-full px-2.5 py-1">
                   <Trash2 className="w-3 h-3" />{c.name}
                 </button>
@@ -458,7 +480,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
       {AddCourtDialog}
 
       {/* Booking detail / cancel dialog */}
-      <Dialog open={!!detail} onOpenChange={v => { if (!v) setDetail(null) }}>
+      <Dialog open={!!detail} onOpenChange={v => { if (!v) { setDetail(null); setConfirmCancel(false) } }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -481,11 +503,17 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
               </p>
 
               {canCancel ? (
-                <p className="text-xs text-gray-400">
-                  {isAdmin && !detail.mine
-                    ? 'As an admin you can cancel this booking.'
-                    : 'You can cancel up to 2 hours before the start time.'}
-                </p>
+                confirmCancel ? (
+                  <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2.5 text-sm text-red-800">
+                    Are you sure you want to cancel this booking? The slot{detailHours > 1 ? 's' : ''} will be freed for others.
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400">
+                    {isAdmin && !detail.mine
+                      ? 'As an admin you can cancel this booking.'
+                      : 'You can cancel up to 2 hours before the start time.'}
+                  </p>
+                )
               ) : (
                 <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-800 space-y-2">
                   <p>Cancellations close 2 hours before the start time. To cancel now, please contact the court admin.</p>
@@ -505,11 +533,22 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDetail(null)}>Close</Button>
-            {canCancel && (
-              <Button variant="destructive" onClick={cancelSession} disabled={cancelling}>
-                {cancelling ? 'Cancelling…' : 'Cancel booking'}
-              </Button>
+            {confirmCancel ? (
+              <>
+                <Button variant="outline" onClick={() => setConfirmCancel(false)}>Keep booking</Button>
+                <Button variant="destructive" onClick={cancelSession} disabled={cancelling}>
+                  {cancelling ? 'Cancelling…' : 'Yes, cancel booking'}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => setDetail(null)}>Close</Button>
+                {canCancel && (
+                  <Button variant="destructive" onClick={() => setConfirmCancel(true)}>
+                    Cancel booking
+                  </Button>
+                )}
+              </>
             )}
           </DialogFooter>
         </DialogContent>
@@ -522,10 +561,26 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
               <Trash2 className="w-4 h-4" />Delete &ldquo;{deleteTarget?.name}&rdquo;?
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-gray-500">This removes the court and all its bookings. This can&apos;t be undone.</p>
+          <div className="space-y-3">
+            <p className="text-sm text-gray-500">This removes the court and all its bookings. This can&apos;t be undone.</p>
+            <div className="space-y-1.5">
+              <Label htmlFor="delete-password">Enter your password to confirm</Label>
+              <Input
+                id="delete-password"
+                type="password"
+                placeholder="Your account password"
+                value={deletePassword}
+                onChange={e => { setDeletePassword(e.target.value); setDeleteError('') }}
+                onKeyDown={e => { if (e.key === 'Enter') deleteCourt() }}
+              />
+              {deleteError && <p className="text-xs text-red-600">{deleteError}</p>}
+            </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={deleteCourt}>Delete court</Button>
+            <Button variant="destructive" onClick={deleteCourt} disabled={deleting || !deletePassword}>
+              {deleting ? 'Deleting…' : 'Delete court'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
