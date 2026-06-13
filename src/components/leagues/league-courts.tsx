@@ -316,31 +316,17 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
   const isSelected = (courtId: string, hour: number) =>
     selected.some(s => s.courtId === courtId && s.hour === hour)
 
-  // Build the contiguous session (same court + same user) containing this hour
-  function sessionFor(court: Court, userId: string, hour: number): Booking[] {
-    const mine = bookings
-      .filter(b => b.court_id === court.id && b.user_id === userId)
-      .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
-    const runs: Booking[][] = []
-    for (const b of mine) {
-      const h = new Date(b.starts_at).getHours()
-      const last = runs[runs.length - 1]
-      if (last && new Date(last[last.length - 1].starts_at).getHours() + 1 === h) last.push(b)
-      else runs.push([b])
-    }
-    return runs.find(run => run.some(b => new Date(b.starts_at).getHours() === hour)) ?? []
-  }
-
   function onCellClick(court: Court, hour: number) {
     if (hour < court.open_hour || hour >= court.close_hour) return
     const slot = new Date(startOfDay(selectedDate)); slot.setHours(hour, 0, 0, 0)
     if (slot.getTime() < now) return
     const bk = bookingAt(court.id, hour)
     if (bk) {
+      // Cancel just the clicked hour, not the whole booking block
       if (bk.user_id === currentUserId || isAdmin) {
         setDetail({
           court, userId: bk.user_id, mine: bk.user_id === currentUserId,
-          bookings: sessionFor(court, bk.user_id, hour),
+          bookings: [bk],
         })
       }
       return
