@@ -119,20 +119,15 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
 
   useEffect(() => { fetchBookings() }, [leagueId, scope])
 
-  async function cancelOne(id: string) {
-    const { error } = await supabase.rpc('cancel_court_booking', { p_booking_id: id })
-    if (error) { toast({ title: 'Could not cancel', description: error.message, variant: 'destructive' }); return false }
-    return true
-  }
-
-  async function cancelHour(id: string) {
-    if (await cancelOne(id)) { toast({ title: 'Hour cancelled' }); fetchBookings() }
-  }
-
   async function cancelSession(s: Session) {
-    let ok = 0
-    for (const b of s.bookings) if (await cancelOne(b.id)) ok++
-    if (ok) { toast({ title: `Cancelled ${ok} hour${ok > 1 ? 's' : ''}` }); fetchBookings() }
+    let ok = 0, firstError = ''
+    for (const b of s.bookings) {
+      const { error } = await supabase.rpc('cancel_court_booking', { p_booking_id: b.id })
+      if (error) firstError = error.message
+      else ok++
+    }
+    if (ok) { toast({ title: 'Booking cancelled' }); fetchBookings() }
+    else if (firstError) toast({ title: 'Could not cancel', description: firstError, variant: 'destructive' })
   }
 
   function toggle(id: string) {
@@ -223,7 +218,7 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
                             className="text-red-500 hover:text-red-600 hover:bg-red-50 h-7 px-2 text-xs shrink-0"
                             onClick={() => cancelSession(s)}
                           >
-                            Cancel{hours > 1 ? ' all' : ''}
+                            Cancel
                           </Button>
                         )}
                       </div>
@@ -238,11 +233,6 @@ export function LeagueBookings({ leagueId }: { leagueId: string }) {
                             <div key={b.id} className="flex items-center gap-2 text-xs text-gray-600 py-0.5">
                               <Clock className="w-3 h-3 text-gray-300" />
                               <span className="flex-1">{fmtTime(b.starts_at)}–{fmtTime(b.ends_at)}</span>
-                              {scope === 'upcoming' && (
-                                <button onClick={() => cancelHour(b.id)} className="text-red-400 hover:text-red-600">
-                                  Cancel
-                                </button>
-                              )}
                             </div>
                           ))}
                         </div>

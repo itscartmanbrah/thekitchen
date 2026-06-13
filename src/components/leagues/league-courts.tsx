@@ -9,7 +9,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
-import { MapPin, Plus, Trash2, Home, Sun, ChevronLeft, ChevronRight } from 'lucide-react'
+import { MapPin, Plus, Trash2, Home, Sun, ChevronLeft, ChevronRight, Phone, Clock } from 'lucide-react'
 
 interface Court {
   id: string
@@ -17,6 +17,7 @@ interface Court {
   is_indoor: boolean
   open_hour: number
   close_hour: number
+  contact_phone: string | null
 }
 
 interface Booking {
@@ -32,6 +33,15 @@ interface Props {
   isAdmin: boolean
 }
 
+interface Detail {
+  court: Court
+  userId: string
+  mine: boolean
+  bookings: Booking[]   // contiguous session, sorted
+}
+
+const CANCEL_WINDOW_MS = 2 * 60 * 60 * 1000
+
 function startOfDay(d: Date) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x }
 function sameDay(a: Date, b: Date) { return startOfDay(a).getTime() === startOfDay(b).getTime() }
 function fmtHourShort(h: number) {
@@ -43,6 +53,9 @@ function fmtHourLong(h: number) {
   const period = h >= 12 ? 'PM' : 'AM'
   const hour12 = h % 12 === 0 ? 12 : h % 12
   return `${hour12}:00 ${period}`
+}
+function fmtTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 }
 
 export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
@@ -56,12 +69,16 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
   const [selected, setSelected] = useState<{ courtId: string; hour: number }[]>([])
   const [booking, setBooking] = useState(false)
 
+  const [detail, setDetail] = useState<Detail | null>(null)
+  const [cancelling, setCancelling] = useState(false)
+
   // Add-court dialog
   const [addOpen, setAddOpen] = useState(false)
   const [name, setName] = useState('')
   const [isIndoor, setIsIndoor] = useState(false)
   const [openHour, setOpenHour] = useState(6)
   const [closeHour, setCloseHour] = useState(22)
+  const [contactPhone, setContactPhone] = useState('')
   const [saving, setSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Court | null>(null)
 
@@ -102,8 +119,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
   async function confirmBooking() {
     if (!selected.length) return
     setBooking(true)
-    let ok = 0
-    let firstError = ''
+    let ok = 0, firstError = ''
     for (const sel of selected) {
       const slot = new Date(startOfDay(selectedDate)); slot.setHours(sel.hour, 0, 0, 0)
       const { error } = await supabase.rpc('book_court', { p_court_id: sel.courtId, p_starts_at: slot.toISOString() })
@@ -117,10 +133,20 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
     setBooking(false)
   }
 
-  async function cancelBooking(id: string) {
-    const { error } = await supabase.rpc('cancel_court_booking', { p_booking_id: id })
-    if (error) toast({ title: 'Could not cancel', description: error.message, variant: 'destructive' })
-    else { toast({ title: 'Booking cancelled' }); fetchBookings() }
+  async function cancelSession() {
+    if (!detail) return
+    setCancelling(true)
+    let ok = 0, firstError = ''
+    for (const b of detail.bookings) {
+      const { error } = await supabase.rpc('cancel_court_booking', { p_booking_id: b.id })
+      if (error) firstError = error.message
+      else ok++
+    }
+    if (ok > 0) toast({ title: 'Booking cancelled' })
+    if (firstError && ok === 0) toast({ title: 'Could not cancel', description: firstError, variant: 'destructive' })
+    setDetail(null)
+    await fetchBookings()
+    setCancelling(false)
   }
 
   async function addCourt() {
@@ -128,12 +154,13 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
     if (closeHour <= openHour) { toast({ title: 'Closing hour must be after opening hour', variant: 'destructive' }); return }
     setSaving(true)
     const { error } = await supabase.from('courts').insert({
-      league_id: leagueId, name: name.trim(), is_indoor: isIndoor, open_hour: openHour, close_hour: closeHour,
+      league_id: leagueId, name: name.trim(), is_indoor: isIndoor,
+      open_hour: openHour, close_hour: closeHour, contact_phone: contactPhone.trim() || null,
     } as any)
     if (error) toast({ title: 'Could not add court', description: error.message, variant: 'destructive' })
     else {
       toast({ title: 'Court added' })
-      setAddOpen(false); setName(''); setIsIndoor(false); setOpenHour(6); setCloseHour(22)
+      setAddOpen(false); setName(''); setIsIndoor(false); setOpenHour(6); setCloseHour(22); setContactPhone('')
       fetchCourts()
     }
     setSaving(false)
@@ -181,6 +208,18 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
               </select>
             </div>
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="contact-phone">
+              Contact phone <span className="text-gray-400 font-normal">(for cancellations)</span>
+            </Label>
+            <Input
+              id="contact-phone" type="tel" inputMode="tel" placeholder="+63 900 000 0000"
+              value={contactPhone}
+              onChange={e => setContactPhone(e.target.value.replace(/[^\d\s+\-().]/g, ''))}
+              maxLength={20}
+            />
+            <p className="text-xs text-gray-400">Shown to players who need to cancel within 2 hours of their booking.</p>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
@@ -203,7 +242,6 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
     )
   }
 
-  // Grid hour range across all courts
   const minOpen = Math.min(...courts.map(c => c.open_hour))
   const maxClose = Math.max(...courts.map(c => c.close_hour))
   const hours = Array.from({ length: maxClose - minOpen }, (_, i) => minOpen + i)
@@ -214,13 +252,33 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
   const isSelected = (courtId: string, hour: number) =>
     selected.some(s => s.courtId === courtId && s.hour === hour)
 
-  function toggleCell(court: Court, hour: number) {
+  // Build the contiguous session (same court + same user) containing this hour
+  function sessionFor(court: Court, userId: string, hour: number): Booking[] {
+    const mine = bookings
+      .filter(b => b.court_id === court.id && b.user_id === userId)
+      .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
+    const runs: Booking[][] = []
+    for (const b of mine) {
+      const h = new Date(b.starts_at).getHours()
+      const last = runs[runs.length - 1]
+      if (last && new Date(last[last.length - 1].starts_at).getHours() + 1 === h) last.push(b)
+      else runs.push([b])
+    }
+    return runs.find(run => run.some(b => new Date(b.starts_at).getHours() === hour)) ?? []
+  }
+
+  function onCellClick(court: Court, hour: number) {
     if (hour < court.open_hour || hour >= court.close_hour) return
     const slot = new Date(startOfDay(selectedDate)); slot.setHours(hour, 0, 0, 0)
     if (slot.getTime() < now) return
-    const existing = bookingAt(court.id, hour)
-    if (existing) {
-      if (existing.user_id === currentUserId || isAdmin) cancelBooking(existing.id)
+    const bk = bookingAt(court.id, hour)
+    if (bk) {
+      if (bk.user_id === currentUserId || isAdmin) {
+        setDetail({
+          court, userId: bk.user_id, mine: bk.user_id === currentUserId,
+          bookings: sessionFor(court, bk.user_id, hour),
+        })
+      }
       return
     }
     setSelected(prev => isSelected(court.id, hour)
@@ -228,17 +286,24 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
       : [...prev, { courtId: court.id, hour }])
   }
 
-  // Month calendar grid
+  // Month calendar
   const firstOfMonth = new Date(calMonth.getFullYear(), calMonth.getMonth(), 1)
-  const startWeekday = (firstOfMonth.getDay() + 6) % 7 // Mon=0
+  const startWeekday = (firstOfMonth.getDay() + 6) % 7
   const daysInMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0).getDate()
   const calCells: (Date | null)[] = []
   for (let i = 0; i < startWeekday; i++) calCells.push(null)
   for (let d = 1; d <= daysInMonth; d++) calCells.push(new Date(calMonth.getFullYear(), calMonth.getMonth(), d))
 
+  // Detail dialog derived values
+  const detailStart = detail?.bookings[0]?.starts_at
+  const detailEndHour = detail ? new Date(detail.bookings[detail.bookings.length - 1].starts_at).getHours() + 1 : 0
+  const detailHours = detail?.bookings.length ?? 0
+  const canCancel = detail
+    ? (isAdmin || (detailStart != null && new Date(detailStart).getTime() - Date.now() >= CANCEL_WINDOW_MS))
+    : false
+
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-gray-500">{courts.length} court{courts.length !== 1 ? 's' : ''} · each slot 60 min</p>
         {isAdmin && <Button size="sm" onClick={() => setAddOpen(true)}><Plus className="w-4 h-4 mr-1" />Add court</Button>}
@@ -334,7 +399,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
 
                       let cls = 'bg-white hover:bg-green-50 cursor-pointer'
                       let label = ''
-                      if (outOfHours || isPast) { cls = 'bg-gray-200 cursor-not-allowed'; }
+                      if (outOfHours || isPast) { cls = 'bg-gray-200 cursor-not-allowed' }
                       if (bk) {
                         cls = `bg-green-500 ${(mine || isAdmin) ? 'cursor-pointer hover:bg-green-600' : 'cursor-default'}`
                         label = mine ? 'You' : (names[bk.user_id]?.split(' ')[0] ?? '•')
@@ -345,8 +410,8 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                       return (
                         <td
                           key={h}
-                          onClick={() => toggleCell(court, h)}
-                          title={bk ? (mine ? 'Your booking — tap to cancel' : `Booked by ${names[bk.user_id] ?? '…'}${isAdmin ? ' — tap to cancel' : ''}`) : outOfHours ? 'Closed' : isPast ? 'Past' : 'Tap to select'}
+                          onClick={() => onCellClick(court, h)}
+                          title={bk ? (mine ? 'Your booking — tap for details' : `Booked by ${names[bk.user_id] ?? '…'}${isAdmin ? ' — tap to manage' : ''}`) : outOfHours ? 'Closed' : isPast ? 'Past' : 'Tap to select'}
                           className={`border-l h-10 text-center align-middle text-[10px] font-medium select-none ${cls} ${bk ? 'text-white' : sel ? 'text-white' : 'text-transparent'}`}
                         >
                           {label}
@@ -360,10 +425,9 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
           </div>
 
           <p className="text-xs text-gray-400 mt-2">
-            Tap an open cell to select it, then confirm. Tap a green cell you booked to cancel.
+            Tap open cells to select, then confirm. Tap your booking to manage it.
           </p>
 
-          {/* Confirm bar */}
           {selected.length > 0 && (
             <div className="mt-3 flex items-center justify-between gap-3 bg-green-50 border border-green-200 rounded-lg px-4 py-2.5">
               <span className="text-sm text-green-800 font-medium">
@@ -372,13 +436,12 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={() => setSelected([])}>Clear</Button>
                 <Button size="sm" onClick={confirmBooking} disabled={booking}>
-                  {booking ? 'Booking…' : `Confirm booking`}
+                  {booking ? 'Booking…' : 'Confirm booking'}
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Admin: delete a court */}
           {isAdmin && (
             <div className="mt-4 flex flex-wrap gap-2">
               {courts.map(c => (
@@ -393,6 +456,64 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
       </div>
 
       {AddCourtDialog}
+
+      {/* Booking detail / cancel dialog */}
+      <Dialog open={!!detail} onOpenChange={v => { if (!v) setDetail(null) }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {detail?.court.is_indoor ? <Home className="w-4 h-4 text-gray-400" /> : <Sun className="w-4 h-4 text-gray-400" />}
+              {detail?.court.name}
+            </DialogTitle>
+          </DialogHeader>
+          {detail && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-gray-800">
+                <Clock className="w-4 h-4 text-gray-400" />
+                {fmtTime(detail.bookings[0].starts_at)} – {fmtHourLong(detailEndHour % 24)}
+                <span className="text-xs text-green-700 bg-green-50 rounded-full px-2 py-0.5 ml-1">
+                  {detailHours} hr{detailHours > 1 ? 's' : ''}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500">
+                {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                {!detail.mine && ` · booked by ${names[detail.userId] ?? 'a member'}`}
+              </p>
+
+              {canCancel ? (
+                <p className="text-xs text-gray-400">
+                  {isAdmin && !detail.mine
+                    ? 'As an admin you can cancel this booking.'
+                    : 'You can cancel up to 2 hours before the start time.'}
+                </p>
+              ) : (
+                <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-800 space-y-2">
+                  <p>Cancellations close 2 hours before the start time. To cancel now, please contact the court admin.</p>
+                  {detail.court.contact_phone ? (
+                    <a
+                      href={`tel:${detail.court.contact_phone.replace(/[^\d+]/g, '')}`}
+                      className="inline-flex items-center gap-1.5 font-medium text-amber-900 underline"
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                      {detail.court.contact_phone}
+                    </a>
+                  ) : (
+                    <p className="font-medium">No contact number set — reach out to your league admin.</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDetail(null)}>Close</Button>
+            {canCancel && (
+              <Button variant="destructive" onClick={cancelSession} disabled={cancelling}>
+                {cancelling ? 'Cancelling…' : 'Cancel booking'}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!deleteTarget} onOpenChange={v => { if (!v) setDeleteTarget(null) }}>
         <DialogContent className="sm:max-w-sm">
