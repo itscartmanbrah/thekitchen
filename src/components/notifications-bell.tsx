@@ -294,6 +294,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
   // Initial fetch + realtime
   useEffect(() => {
     fetchNotifications()
+    // Live updates via realtime…
     const ch = supabase
       .channel(`notifications:${userId}`)
       .on('postgres_changes', {
@@ -301,7 +302,10 @@ export function NotificationsBell({ userId }: { userId: string }) {
         filter: `user_id=eq.${userId}`,
       }, () => fetchNotifications())
       .subscribe()
-    return () => { supabase.removeChannel(ch) }
+    // …plus a polling fallback so new notifications still appear without a
+    // reload even if the realtime connection is unavailable.
+    const poll = setInterval(fetchNotifications, 30000)
+    return () => { supabase.removeChannel(ch); clearInterval(poll) }
   }, [userId])
 
   // Mark non-invite notifications read when dropdown opens

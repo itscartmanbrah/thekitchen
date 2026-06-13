@@ -5,11 +5,16 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
-import { MapPin, Plus, Trash2, Home, Sun, ChevronLeft, ChevronRight, Phone, Clock } from 'lucide-react'
+import { MapPin, Plus, Trash2, Home, Sun, ChevronLeft, ChevronRight, Phone, Clock, Pencil, Navigation } from 'lucide-react'
+
+const DEFAULT_POLICY = `Cancel at least 2 hours before your booking starts.
+Within 2 hours of the start time, contact the court admin to cancel.
+Please arrive on time — repeated no-shows may affect future bookings.`
 
 interface Court {
   id: string
@@ -87,6 +92,15 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
   const [deleteError, setDeleteError] = useState('')
   const [deleting, setDeleting] = useState(false)
 
+  // League court info (policy + address)
+  const [policy, setPolicy] = useState<string | null>(null)
+  const [address, setAddress] = useState<string | null>(null)
+  const [leagueLocation, setLeagueLocation] = useState<string | null>(null)
+  const [infoOpen, setInfoOpen] = useState(false)
+  const [policyDraft, setPolicyDraft] = useState('')
+  const [addressDraft, setAddressDraft] = useState('')
+  const [savingInfo, setSavingInfo] = useState(false)
+
   const { toast } = useToast()
   const supabase = createClient()
   const today = startOfDay(new Date())
@@ -99,6 +113,26 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
   }
   useEffect(() => { fetchCourts() }, [leagueId])
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? '')) }, [])
+
+  async function fetchLeagueInfo() {
+    const { data } = await supabase
+      .from('leagues').select('cancellation_policy, court_address, location').eq('id', leagueId).single()
+    setPolicy((data as any)?.cancellation_policy ?? null)
+    setAddress((data as any)?.court_address ?? null)
+    setLeagueLocation((data as any)?.location ?? null)
+  }
+  useEffect(() => { fetchLeagueInfo() }, [leagueId])
+
+  async function saveInfo() {
+    setSavingInfo(true)
+    const { error } = await supabase
+      .from('leagues')
+      .update({ cancellation_policy: policyDraft.trim() || null, court_address: addressDraft.trim() || null } as any)
+      .eq('id', leagueId)
+    if (error) toast({ title: 'Could not save', description: error.message, variant: 'destructive' })
+    else { toast({ title: 'Court info updated' }); setInfoOpen(false); fetchLeagueInfo() }
+    setSavingInfo(false)
+  }
 
   async function fetchBookings() {
     const dayStart = startOfDay(selectedDate)
@@ -128,15 +162,21 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
   async function confirmBooking() {
     if (!selected.length) return
     setBooking(true)
-    let ok = 0, firstError = ''
+    // Group selected slots by court so each court books in one call (one notification)
+    const byCourt = new Map<string, string[]>()
     for (const sel of selected) {
       const slot = new Date(startOfDay(selectedDate)); slot.setHours(sel.hour, 0, 0, 0)
-      const { error } = await supabase.rpc('book_court', { p_court_id: sel.courtId, p_starts_at: slot.toISOString() })
-      if (error) firstError = error.message
-      else ok++
+      const arr = byCourt.get(sel.courtId) ?? []
+      arr.push(slot.toISOString())
+      byCourt.set(sel.courtId, arr)
     }
-    if (ok > 0) toast({ title: `Booked ${ok} slot${ok > 1 ? 's' : ''}! 🎾` })
-    if (firstError) toast({ title: 'Some slots could not be booked', description: firstError, variant: 'destructive' })
+    let firstError = ''
+    for (const [courtId, starts] of Array.from(byCourt.entries())) {
+      const { error } = await supabase.rpc('book_court_session', { p_court_id: courtId, p_starts_at: starts })
+      if (error) firstError = error.message
+    }
+    if (!firstError) toast({ title: `Booked ${selected.length} slot${selected.length > 1 ? 's' : ''}! 🎾` })
+    else toast({ title: 'Some slots could not be booked', description: firstError, variant: 'destructive' })
     setSelected([])
     await fetchBookings()
     setBooking(false)
@@ -477,7 +517,88 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
         </div>
       </div>
 
+      {/* Cancellation policy + address */}
+      {(() => {
+        const shownAddress = address || leagueLocation
+        return (
+          <div className="mt-8 border-t pt-6 space-y-6">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="font-bold text-gray-900">Cancellation policy</h3>
+                {isAdmin && (
+                  <button
+                    onClick={() => { setPolicyDraft(policy ?? DEFAULT_POLICY); setAddressDraft(address ?? ''); setInfoOpen(true) }}
+                    className="text-gray-400 hover:text-green-600"
+                    title="Edit policy & address"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+              <ol className="list-decimal pl-5 space-y-1 text-sm text-gray-600">
+                {(policy ?? DEFAULT_POLICY).split('\n').filter(l => l.trim()).map((line, i) => (
+                  <li key={i}>{line.trim()}</li>
+                ))}
+              </ol>
+            </div>
+
+            {shownAddress && (
+              <div>
+                <h3 className="font-bold text-gray-900 mb-3">Getting there</h3>
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <p className="text-sm text-gray-600 flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+                    {shownAddress}
+                  </p>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shownAddress)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm border rounded-full px-3 py-1.5 text-gray-700 hover:border-green-400 hover:text-green-700"
+                  >
+                    <Navigation className="w-3.5 h-3.5" />
+                    Get directions
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })()}
+
       {AddCourtDialog}
+
+      {/* Edit policy + address dialog */}
+      <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Court info</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="policy">Cancellation policy</Label>
+              <Textarea
+                id="policy" rows={5} value={policyDraft}
+                onChange={e => setPolicyDraft(e.target.value)}
+                placeholder={DEFAULT_POLICY}
+                className="text-sm"
+              />
+              <p className="text-xs text-gray-400">One rule per line — shown as a numbered list.</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="address">Court address</Label>
+              <Input
+                id="address" value={addressDraft}
+                onChange={e => setAddressDraft(e.target.value)}
+                placeholder="e.g. Oakhill Park, Catadman National Highway, Ozamiz City 7200"
+              />
+              <p className="text-xs text-gray-400">Used for the &ldquo;Get directions&rdquo; link.</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInfoOpen(false)}>Cancel</Button>
+            <Button onClick={saveInfo} disabled={savingInfo}>{savingInfo ? 'Saving…' : 'Save'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Booking detail / cancel dialog */}
       <Dialog open={!!detail} onOpenChange={v => { if (!v) { setDetail(null); setConfirmCancel(false) } }}>
