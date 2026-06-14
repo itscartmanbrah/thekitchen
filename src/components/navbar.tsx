@@ -62,6 +62,9 @@ export function Navbar({ profile }: { profile: Profile | null }) {
                   <Link href="/profile">Profile</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link href="/my-bookings">My Bookings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link href="/elo">How ELO Works</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>

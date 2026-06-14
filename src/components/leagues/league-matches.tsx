@@ -61,14 +61,15 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
   const [hasMore, setHasMore] = useState(false)
   const [formatFilter, setFormatFilter] = useState<MatchFormat | 'all'>('all')
   const [playerFilter, setPlayerFilter] = useState<string>('all')
+  const [dateFilter, setDateFilter] = useState<string>('')
   const [members, setMembers] = useState<any[]>([])
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const supabase = createClient()
   const { toast } = useToast()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  async function fetchMatches(replace = true) {
-    const { data } = await supabase
+  async function fetchMatches(date = dateFilter) {
+    let q = supabase
       .from('matches')
       .select(`
         *,
@@ -78,10 +79,19 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
       `)
       .eq('league_id', leagueId)
       .order('created_at', { ascending: false })
-      .limit(PAGE_SIZE)
+
+    if (date) {
+      const dayStart = new Date(date); dayStart.setHours(0, 0, 0, 0)
+      const dayEnd = new Date(dayStart); dayEnd.setDate(dayEnd.getDate() + 1)
+      q = q.gte('created_at', dayStart.toISOString()).lt('created_at', dayEnd.toISOString()).limit(200)
+    } else {
+      q = q.limit(PAGE_SIZE)
+    }
+
+    const { data } = await q
     const rows = data ?? []
     setMatches(rows)
-    setHasMore(rows.length === PAGE_SIZE)
+    setHasMore(!date && rows.length === PAGE_SIZE)
     setLoading(false)
   }
 
@@ -192,14 +202,30 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
               <option key={m.user_id} value={m.user_id}>{m.profiles.display_name}</option>
             ))}
           </select>
+
+          <input
+            type="date"
+            value={dateFilter}
+            onChange={e => { setDateFilter(e.target.value); fetchMatches(e.target.value) }}
+            className="text-xs border rounded-lg px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
+            title="Filter by date"
+          />
+          {dateFilter && (
+            <button
+              onClick={() => { setDateFilter(''); fetchMatches('') }}
+              className="text-xs text-gray-400 hover:text-gray-700 underline"
+            >
+              Clear date
+            </button>
+          )}
         </div>
       )}
 
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-gray-500">
           <Swords className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-          <p>{matches.length === 0 ? 'No matches yet.' : 'No matches match your filters.'}</p>
-          {isAdmin && matches.length === 0 && <p className="text-sm mt-1">Create the first match to get things going.</p>}
+          <p>{dateFilter ? 'No matches on this date.' : matches.length === 0 ? 'No matches yet.' : 'No matches match your filters.'}</p>
+          {isAdmin && matches.length === 0 && !dateFilter && <p className="text-sm mt-1">Create the first match to get things going.</p>}
         </div>
       ) : (
         <div className="space-y-3">
