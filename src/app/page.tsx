@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { AppLogo } from '@/components/app-logo'
+import { InstallAppButton } from '@/components/install-app-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Users, Zap, BarChart3, Shield, Star } from 'lucide-react'
@@ -15,6 +16,7 @@ export default function LandingPage() {
             <span className="font-bold text-lg sm:text-xl text-gray-900 whitespace-nowrap">The Kitchen</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+            <InstallAppButton />
             <Button variant="ghost" asChild className="hidden sm:inline-flex">
               <Link href="/contact">Contact</Link>
             </Button>
