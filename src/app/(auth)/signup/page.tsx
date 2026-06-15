@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
 import { pickAvatarColor } from '@/lib/utils'
-import { Loader2, MailCheck } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 // Letters (including Latin accents), apostrophes, hyphens, spaces
 const NAME_RE = /^[A-Za-zÀ-ɏḀ-ỿ'\- ]+$/
@@ -68,7 +68,6 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [sentToEmail, setSentToEmail] = useState<string | null>(null)
 
   const router = useRouter()
   const { toast } = useToast()
@@ -114,16 +113,7 @@ export default function SignupPage() {
       return
     }
 
-    // Email confirmation required: Supabase created the user but no session yet.
-    // (The profile is created server-side by the handle_new_user trigger.)
-    if (data.user && !data.session) {
-      setSentToEmail(email)
-      setLoading(false)
-      return
-    }
-
-    // Auto-confirmed / already signed in
-    if (data.user && data.session) {
+    if (data.user) {
       await supabase.from('profiles').upsert({
         id: data.user.id,
         email,
@@ -144,41 +134,6 @@ export default function SignupPage() {
     }
 
     setLoading(false)
-  }
-
-  // Email confirmation sent — show a "check your inbox" screen
-  if (sentToEmail) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <AppLogo className="w-10 h-10" />
-            <span className="font-bold text-2xl text-gray-900">The Kitchen</span>
-          </div>
-          <Card>
-            <CardContent className="pt-8 pb-6 text-center">
-              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MailCheck className="w-7 h-7 text-green-600" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-900 mb-2">Check your email</h1>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                We&apos;ve sent a confirmation link to{' '}
-                <strong className="text-gray-800">{sentToEmail}</strong>.
-                Open it to verify your account, then sign in.
-              </p>
-              <p className="text-xs text-gray-400 mt-4">
-                Didn&apos;t get it? Check your spam folder, or wait a minute and look again.
-              </p>
-              <div className="mt-6">
-                <Button asChild className="w-full">
-                  <Link href="/login">Go to sign in</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
   }
 
   return (
