@@ -72,6 +72,9 @@ export function Navbar({ profile }: { profile: Profile | null }) {
                 <DropdownMenuItem asChild>
                   <Link href="/tournaments-guide">How Tournaments Work</Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/open-play-guide">How Open Play Works</Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
                   Sign out
