@@ -25,6 +25,7 @@ interface SessionRow {
   rated: boolean
   status: 'active' | 'ended'
   share_code: string
+  allow_self_join: boolean
 }
 interface SP {
   id: string
@@ -179,6 +180,13 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     if (!error) loadState(session!.id)
   }
 
+  async function toggleSelfJoin() {
+    if (!session) return
+    const { error } = await supabase.rpc('set_session_self_join', { p_session_id: session.id, p_allow: !session.allow_self_join })
+    if (error) toast({ title: 'Could not update', description: error.message, variant: 'destructive' })
+    else setSession({ ...session, allow_self_join: !session.allow_self_join })
+  }
+
   async function endSession() {
     if (!session) return
     const { error } = await supabase.rpc('end_play_session', { p_session_id: session.id })
@@ -275,6 +283,13 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
         </div>
       </div>
 
+      {isOrganizer && (
+        <label className="flex items-center gap-2 mb-4 text-xs text-gray-600 cursor-pointer">
+          <input type="checkbox" checked={session.allow_self_join} onChange={toggleSelfJoin} />
+          <span>Let players check themselves in from the share link (no account needed)</span>
+        </label>
+      )}
+
       {/* Courts board */}
       <div className="grid gap-2 sm:grid-cols-2 mb-4">
         {Array.from({ length: session.court_count }, (_, i) => i + 1).map(courtNo => {
@@ -337,9 +352,14 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
               </span>
               <span className="text-xs text-gray-400">{p.wins}W {p.losses}L</span>
               {isOrganizer && (
-                <button onClick={() => setStatus(p.id, 'resting')} className="text-gray-300 hover:text-amber-500" title="Rest">
-                  <Pause className="w-3.5 h-3.5" />
-                </button>
+                <>
+                  <button onClick={() => setStatus(p.id, 'resting')} className="text-gray-300 hover:text-amber-500" title="Rest">
+                    <Pause className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => setStatus(p.id, 'left')} className="text-gray-300 hover:text-red-500" title="Remove">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </>
               )}
             </div>
           ))}
