@@ -7,7 +7,7 @@
 --
 -- Writes go through security-definer RPCs (mirrors challenges/tournaments).
 
-create table play_sessions (
+create table if not exists play_sessions (
   id          uuid primary key default gen_random_uuid(),
   league_id   uuid not null references leagues(id) on delete cascade,
   name        text not null,
@@ -22,7 +22,7 @@ create table play_sessions (
   ended_at    timestamptz
 );
 
-create table session_players (
+create table if not exists session_players (
   id           uuid primary key default gen_random_uuid(),
   session_id   uuid not null references play_sessions(id) on delete cascade,
   user_id      uuid references auth.users(id),     -- null for guests
@@ -38,7 +38,7 @@ create table session_players (
   created_at   timestamptz not null default now()
 );
 
-create table session_games (
+create table if not exists session_games (
   id           uuid primary key default gen_random_uuid(),
   session_id   uuid not null references play_sessions(id) on delete cascade,
   court_number int  not null,
@@ -51,20 +51,23 @@ create table session_games (
   completed_at timestamptz
 );
 
-create index idx_play_sessions_league on play_sessions(league_id, status);
-create index idx_session_players_session on session_players(session_id, status);
-create index idx_session_games_session on session_games(session_id, status);
+create index if not exists idx_play_sessions_league on play_sessions(league_id, status);
+create index if not exists idx_session_players_session on session_players(session_id, status);
+create index if not exists idx_session_games_session on session_games(session_id, status);
 
 alter table play_sessions enable row level security;
 alter table session_players enable row level security;
 alter table session_games enable row level security;
 
+drop policy if exists "League members can view play sessions" on play_sessions;
 create policy "League members can view play sessions"
   on play_sessions for select using (league_id in (select auth_user_league_ids()));
+drop policy if exists "League members can view session players" on session_players;
 create policy "League members can view session players"
   on session_players for select using (
     session_id in (select id from play_sessions where league_id in (select auth_user_league_ids()))
   );
+drop policy if exists "League members can view session games" on session_games;
 create policy "League members can view session games"
   on session_games for select using (
     session_id in (select id from play_sessions where league_id in (select auth_user_league_ids()))
