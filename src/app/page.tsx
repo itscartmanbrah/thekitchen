@@ -18,6 +18,9 @@ export default function LandingPage() {
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
             <InstallAppButton />
             <Button variant="ghost" asChild className="hidden sm:inline-flex">
+              <Link href="/how-to-use">How to use</Link>
+            </Button>
+            <Button variant="ghost" asChild className="hidden sm:inline-flex">
               <Link href="/contact">Contact</Link>
             </Button>
             <Button variant="ghost" size="sm" asChild className="px-2 sm:px-4">
