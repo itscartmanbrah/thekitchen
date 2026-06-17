@@ -253,7 +253,7 @@ begin
     -- nominal scores: open play records a winner, so count it as a standard win
     insert into matches (league_id, format, status, created_by, max_points,
                          team1_score, team2_score, completed_at, notes)
-    values (v_s.league_id, v_s.format, 'completed', auth.uid(), 11,
+    values (v_s.league_id, v_s.format::match_format, 'completed', auth.uid(), 11,
             case when p_winner = 1 then 11 else 9 end,
             case when p_winner = 2 then 11 else 9 end,
             now(), 'Open play — ' || v_s.name)
