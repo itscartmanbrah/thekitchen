@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CreateLeagueDialog } from '@/components/leagues/create-league-dialog'
 import { JoinLeagueDialog } from '@/components/leagues/join-league-dialog'
+import { ProfileCompletionBanner } from '@/components/profile-completion-banner'
 import { formatElo } from '@/lib/utils'
 import { Trophy, MapPin, TrendingUp } from 'lucide-react'
 
@@ -38,6 +39,7 @@ export default async function DashboardPage() {
 
   return (
     <div>
+      <ProfileCompletionBanner />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Your Leagues</h1>
