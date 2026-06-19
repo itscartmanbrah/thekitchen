@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
+import { GoogleSignInButton } from '@/components/google-sign-in-button'
 import { Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
@@ -49,8 +50,16 @@ export default function LoginPage() {
             <CardTitle>Welcome back</CardTitle>
             <CardDescription>Sign in to your account</CardDescription>
           </CardHeader>
+          <CardContent className="pt-6 pb-0">
+            <GoogleSignInButton label="Sign in with Google" />
+            <div className="flex items-center gap-3 my-4">
+              <span className="flex-1 h-px bg-gray-200" />
+              <span className="text-xs text-gray-400">or</span>
+              <span className="flex-1 h-px bg-gray-200" />
+            </div>
+          </CardContent>
           <form onSubmit={handleLogin}>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-0">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input

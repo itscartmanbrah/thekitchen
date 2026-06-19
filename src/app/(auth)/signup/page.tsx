@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
 import { pickAvatarColor } from '@/lib/utils'
+import { GoogleSignInButton } from '@/components/google-sign-in-button'
 import { Loader2 } from 'lucide-react'
 
 // Letters (including Latin accents), apostrophes, hyphens, spaces
@@ -151,8 +152,17 @@ export default function SignupPage() {
             <CardDescription>Register to join leagues and track your rankings</CardDescription>
           </CardHeader>
 
+          <CardContent className="pb-0">
+            <GoogleSignInButton label="Sign up with Google" />
+            <div className="flex items-center gap-3 my-4">
+              <span className="flex-1 h-px bg-gray-200" />
+              <span className="text-xs text-gray-400">or sign up with email</span>
+              <span className="flex-1 h-px bg-gray-200" />
+            </div>
+          </CardContent>
+
           <form onSubmit={handleSignup}>
-            <CardContent className="space-y-5">
+            <CardContent className="space-y-5 pt-0">
 
               {/* Name */}
               <div>
