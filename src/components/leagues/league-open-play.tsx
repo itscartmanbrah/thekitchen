@@ -70,6 +70,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
+  const [existingBookings, setExistingBookings] = useState<{ court_id: string; starts_at: string; ends_at: string }[]>([])
 
   // add player
   const [addOpen, setAddOpen] = useState(false)
@@ -117,6 +118,27 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   }, [leagueId])
 
   const isScheduled = !!session && !!session.starts_at && new Date(session.starts_at).getTime() > Date.now()
+
+  // Show what's already booked on the selected courts for the chosen date
+  useEffect(() => {
+    if (selectedCourts.length === 0) { setExistingBookings([]); return }
+    const day = startDate || new Date().toISOString().split('T')[0]
+    const dayStart = new Date(`${day}T00:00`); const dayEnd = new Date(dayStart); dayEnd.setDate(dayEnd.getDate() + 1)
+    supabase.from('court_bookings')
+      .select('court_id, starts_at, ends_at')
+      .in('court_id', selectedCourts).eq('status', 'booked')
+      .gte('starts_at', dayStart.toISOString()).lt('starts_at', dayEnd.toISOString())
+      .order('starts_at')
+      .then(({ data }) => setExistingBookings((data as any[]) ?? []))
+  }, [selectedCourts, startDate, leagueId])
+
+  const courtName = (id: string) => courts.find(c => c.id === id)?.name ?? 'Court'
+  const chosenDay = startDate || new Date().toISOString().split('T')[0]
+  const chosenStart = startTime ? new Date(`${chosenDay}T${startTime}`) : null
+  const chosenEnd = endTime ? new Date(`${chosenDay}T${endTime}`) : null
+  const overlapping = (chosenStart && chosenEnd)
+    ? existingBookings.filter(b => new Date(b.starts_at) < chosenEnd && new Date(b.ends_at) > chosenStart)
+    : []
 
   const playerMap = new Map(players.map(p => [p.id, p]))
   const queued = players.filter(p => p.status === 'queued').sort((a, b) => a.queue_order - b.queue_order)
@@ -302,6 +324,30 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
           </div>
           <p className="text-xs text-gray-400 -mt-2">Leave the date as today to start now. The session auto-finishes at the end time.</p>
 
+          {selectedCourts.length > 0 && existingBookings.length > 0 && (
+            <div className="rounded-lg border bg-gray-50 px-3 py-2.5">
+              <p className="text-xs font-medium text-gray-600 mb-1.5">Already booked on these courts — {new Date(`${chosenDay}T00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+              <div className="space-y-1">
+                {existingBookings.map((b, i) => {
+                  const clash = chosenStart && chosenEnd && new Date(b.starts_at) < chosenEnd && new Date(b.ends_at) > chosenStart
+                  return (
+                    <div key={i} className={`flex items-center gap-2 text-xs ${clash ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+                      <span className="w-16 shrink-0">{courtName(b.court_id)}</span>
+                      <span>{new Date(b.starts_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}–{new Date(b.ends_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+                      {clash && <span className="text-red-500">· overlaps your window</span>}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {overlapping.length > 0 && (
+            <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
+              Your selected window clashes with an existing booking above. Move the open-play time, pick another court, or cancel the booking first.
+            </p>
+          )}
+
           <div className="space-y-1.5">
             <Label>Format</Label>
             <div className="flex gap-1">
@@ -321,7 +367,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
               <span className="block text-xs text-gray-400">Games between league members count toward ELO. Guest games are always casual.</span>
             </span>
           </label>
-          <Button onClick={startSession} disabled={busy} className="w-full">
+          <Button onClick={startSession} disabled={busy || overlapping.length > 0} className="w-full">
             <Play className="w-4 h-4 mr-1" />{busy ? 'Saving…' : 'Create session'}
           </Button>
         </div>
