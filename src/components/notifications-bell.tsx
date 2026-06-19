@@ -36,6 +36,9 @@ function NotifIcon({ type }: { type: string }) {
   if (type === 'challenge_received') return <Swords className="w-4 h-4 text-red-500" />
   if (type === 'court_booking')      return <CalendarClock className="w-4 h-4 text-green-600" />
   if (type === 'court_cancellation') return <CalendarClock className="w-4 h-4 text-red-500" />
+  if (type === 'booking_request')    return <CalendarClock className="w-4 h-4 text-blue-500" />
+  if (type === 'booking_approved')   return <CheckCircle className="w-4 h-4 text-green-600" />
+  if (type === 'booking_rejected')   return <XCircle className="w-4 h-4 text-red-500" />
   return <Bell className="w-4 h-4 text-gray-400" />
 }
 

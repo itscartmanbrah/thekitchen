@@ -30,6 +30,12 @@ interface Booking {
   court_id: string
   user_id: string
   starts_at: string
+  status: 'pending' | 'booked'
+}
+interface OpenPlayBlock {
+  court_ids: string[]
+  starts_at: string
+  ends_at: string
 }
 
 interface Props {
@@ -66,6 +72,7 @@ function fmtTime(iso: string) {
 export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
   const [courts, setCourts] = useState<Court[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
+  const [openPlay, setOpenPlay] = useState<OpenPlayBlock[]>([])
   const [names, setNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
 
@@ -139,13 +146,24 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
     const dayEnd = new Date(dayStart); dayEnd.setDate(dayEnd.getDate() + 1)
     const { data } = await supabase
       .from('court_bookings')
-      .select('id, court_id, user_id, starts_at')
+      .select('id, court_id, user_id, starts_at, status')
       .eq('league_id', leagueId)
-      .eq('status', 'booked')
+      .in('status', ['pending', 'booked'])
       .gte('starts_at', dayStart.toISOString())
       .lt('starts_at', dayEnd.toISOString())
     const list = (data as Booking[]) ?? []
     setBookings(list)
+
+    // Open Play sessions occupying courts that day (not finished)
+    const { data: op } = await supabase
+      .from('play_sessions')
+      .select('court_ids, starts_at, ends_at')
+      .eq('league_id', leagueId)
+      .is('ended_at', null)
+      .not('court_ids', 'is', null)
+      .lt('starts_at', dayEnd.toISOString())
+      .gt('ends_at', dayStart.toISOString())
+    setOpenPlay(((op ?? []) as OpenPlayBlock[]))
     // Only admins see who booked each slot; players/officiators see generic "Booked".
     if (!isAdmin) return
     const ids = Array.from(new Set(list.map(b => b.user_id))).filter(id => !(id in names))
@@ -177,8 +195,8 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
       const { error } = await supabase.rpc('book_court_session', { p_court_id: courtId, p_starts_at: starts })
       if (error) firstError = error.message
     }
-    if (!firstError) toast({ title: `Booked ${selected.length} slot${selected.length > 1 ? 's' : ''}! 🎾` })
-    else toast({ title: 'Some slots could not be booked', description: firstError, variant: 'destructive' })
+    if (!firstError) toast({ title: `Requested ${selected.length} slot${selected.length > 1 ? 's' : ''}!`, description: 'An admin will review and approve your booking.' })
+    else toast({ title: 'Some slots could not be requested', description: firstError, variant: 'destructive' })
     setSelected([])
     await fetchBookings()
     setBooking(false)
@@ -315,9 +333,20 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
     bookings.find(b => b.court_id === courtId && new Date(b.starts_at).getHours() === hour)
   const isSelected = (courtId: string, hour: number) =>
     selected.some(s => s.courtId === courtId && s.hour === hour)
+  // Is this court+hour inside an Open Play window?
+  const openPlayAt = (courtId: string, hour: number) => {
+    const slotStart = new Date(startOfDay(selectedDate)); slotStart.setHours(hour, 0, 0, 0)
+    const slotEnd = new Date(slotStart); slotEnd.setHours(hour + 1)
+    return openPlay.some(op =>
+      op.court_ids?.includes(courtId) &&
+      new Date(op.starts_at).getTime() < slotEnd.getTime() &&
+      new Date(op.ends_at).getTime() > slotStart.getTime()
+    )
+  }
 
   function onCellClick(court: Court, hour: number) {
     if (hour < court.open_hour || hour >= court.close_hour) return
+    if (openPlayAt(court.id, hour)) return
     const slot = new Date(startOfDay(selectedDate)); slot.setHours(hour, 0, 0, 0)
     if (slot.getTime() < now) return
     const bk = bookingAt(court.id, hour)
@@ -411,10 +440,11 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
             <h3 className="text-sm font-semibold text-gray-900">
               Select slots for {selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
             </h3>
-            <div className="flex items-center gap-3 text-xs text-gray-500">
+            <div className="flex items-center gap-2.5 text-xs text-gray-500 flex-wrap">
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-green-500 inline-block" />Booked</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-amber-400 inline-block" />Pending</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-blue-500 inline-block" />Open Play</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-gray-900 inline-block" />Selected</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-gray-200 inline-block" />Unavailable</span>
             </div>
           </div>
 
@@ -443,26 +473,35 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                       const outOfHours = h < court.open_hour || h >= court.close_hour
                       const slot = new Date(startOfDay(selectedDate)); slot.setHours(h, 0, 0, 0)
                       const isPast = slot.getTime() < now
+                      const isOpenPlay = openPlayAt(court.id, h)
                       const bk = bookingAt(court.id, h)
                       const sel = isSelected(court.id, h)
                       const mine = bk?.user_id === currentUserId
+                      const pending = bk?.status === 'pending'
 
                       let cls = 'bg-white hover:bg-green-50 cursor-pointer'
                       let label = ''
+                      let textCls = 'text-transparent'
                       if (outOfHours || isPast) { cls = 'bg-gray-200 cursor-not-allowed' }
-                      if (bk) {
-                        cls = `bg-green-500 ${(mine || isAdmin) ? 'cursor-pointer hover:bg-green-600' : 'cursor-default'}`
-                        label = mine ? 'You' : isAdmin ? (names[bk.user_id]?.split(' ')[0] ?? '•') : ''
+                      if (isOpenPlay) {
+                        cls = 'bg-blue-500 cursor-not-allowed'
+                        label = 'Open Play'; textCls = 'text-white'
+                      } else if (bk) {
+                        cls = pending
+                          ? `bg-amber-400 ${(mine || isAdmin) ? 'cursor-pointer hover:bg-amber-500' : 'cursor-default'}`
+                          : `bg-green-500 ${(mine || isAdmin) ? 'cursor-pointer hover:bg-green-600' : 'cursor-default'}`
+                        label = mine ? (pending ? 'Pending' : 'You') : isAdmin ? (names[bk.user_id]?.split(' ')[0] ?? '•') : ''
+                        textCls = 'text-white'
                       } else if (sel) {
-                        cls = 'bg-gray-900 cursor-pointer'
+                        cls = 'bg-gray-900 cursor-pointer'; textCls = 'text-white'
                       }
 
                       return (
                         <td
                           key={h}
                           onClick={() => onCellClick(court, h)}
-                          title={bk ? (mine ? 'Your booking — tap for details' : isAdmin ? `Booked by ${names[bk.user_id] ?? '…'} — tap to manage` : 'Booked') : outOfHours ? 'Closed' : isPast ? 'Past' : 'Tap to select'}
-                          className={`border-l h-10 text-center align-middle text-[10px] font-medium select-none ${cls} ${bk ? 'text-white' : sel ? 'text-white' : 'text-transparent'}`}
+                          title={isOpenPlay ? 'Open Play session' : bk ? (mine ? (pending ? 'Awaiting admin approval — tap to withdraw' : 'Your booking — tap for details') : isAdmin ? `${pending ? 'Requested' : 'Booked'} by ${names[bk.user_id] ?? '…'} — tap to manage` : pending ? 'Requested' : 'Booked') : outOfHours ? 'Closed' : isPast ? 'Past' : 'Tap to select'}
+                          className={`border-l h-10 text-center align-middle text-[9px] font-medium select-none ${cls} ${textCls}`}
                         >
                           {label}
                         </td>

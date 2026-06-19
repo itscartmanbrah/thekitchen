@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
 import { CalendarClock, MapPin, Clock, ChevronDown, ChevronUp, Phone } from 'lucide-react'
@@ -24,6 +25,7 @@ interface Row {
   display_name: string
   avatar_color: string
   avatar_url: string | null
+  status?: string
 }
 
 interface Session {
@@ -37,6 +39,7 @@ interface Session {
   avatar_url: string | null
   start: string
   end: string
+  status: string
   bookings: Row[]
 }
 
@@ -68,7 +71,7 @@ function buildSessions(rows: Row[]): Session[] {
   const sessions: Session[] = []
   for (const r of sorted) {
     const last = sessions[sessions.length - 1]
-    if (last && last.court_id === r.court_id && last.user_id === r.user_id &&
+    if (last && last.court_id === r.court_id && last.user_id === r.user_id && last.status === (r.status ?? 'booked') &&
         new Date(last.end).getTime() === new Date(r.starts_at).getTime()) {
       last.end = r.ends_at
       last.bookings.push(r)
@@ -77,7 +80,7 @@ function buildSessions(rows: Row[]): Session[] {
         id: r.id, court_id: r.court_id, court_name: r.court_name, contact_phone: r.contact_phone,
         user_id: r.user_id, display_name: r.display_name,
         avatar_color: r.avatar_color, avatar_url: r.avatar_url,
-        start: r.starts_at, end: r.ends_at, bookings: [r],
+        start: r.starts_at, end: r.ends_at, status: r.status ?? 'booked', bookings: [r],
       })
     }
   }
@@ -91,20 +94,62 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [confirmTarget, setConfirmTarget] = useState<Session | null>(null)
   const [contactTarget, setContactTarget] = useState<Session | null>(null)
+  const [pending, setPending] = useState<Row[]>([])
+  const [rejectTarget, setRejectTarget] = useState<Session | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
   const { toast } = useToast()
   const supabase = createClient()
+
+  async function fetchPending() {
+    if (!isAdmin) { setPending([]); return }
+    const { data } = await supabase
+      .from('court_bookings')
+      .select('id, court_id, user_id, starts_at, ends_at, courts(name)')
+      .eq('league_id', leagueId).eq('status', 'pending')
+      .gte('starts_at', new Date().toISOString())
+      .order('starts_at', { ascending: true })
+    const raw = (data ?? []) as any[]
+    const ids = Array.from(new Set(raw.map(r => r.user_id)))
+    const { data: profs } = ids.length
+      ? await supabase.from('profiles').select('id, display_name, first_name, last_name, avatar_color, avatar_url').in('id', ids)
+      : { data: [] }
+    const pMap = new Map(((profs ?? []) as any[]).map(p => [p.id, p]))
+    setPending(raw.map(r => {
+      const p = pMap.get(r.user_id)
+      const full = `${p?.first_name ?? ''} ${p?.last_name ?? ''}`.trim()
+      return {
+        id: r.id, court_id: r.court_id, user_id: r.user_id, starts_at: r.starts_at, ends_at: r.ends_at,
+        court_name: r.courts?.name ?? 'Court', is_indoor: false, contact_phone: null,
+        display_name: full || p?.display_name || 'Unknown',
+        avatar_color: p?.avatar_color ?? '#16a34a', avatar_url: p?.avatar_url ?? null,
+      }
+    }))
+  }
+
+  async function approveRequest(s: Session) {
+    const { error } = await supabase.rpc('approve_booking_request', { p_booking_ids: s.bookings.map(b => b.id) })
+    if (error) toast({ title: 'Could not approve', description: error.message, variant: 'destructive' })
+    else { toast({ title: 'Booking approved' }); fetchPending(); fetchBookings() }
+  }
+  async function doReject() {
+    if (!rejectTarget) return
+    const { error } = await supabase.rpc('reject_booking_request', { p_booking_ids: rejectTarget.bookings.map(b => b.id), p_reason: rejectReason.trim() || null })
+    if (error) toast({ title: 'Could not reject', description: error.message, variant: 'destructive' })
+    else { toast({ title: 'Booking declined' }); setRejectTarget(null); setRejectReason(''); fetchPending() }
+  }
 
   async function fetchBookings() {
     setLoading(true)
     const nowIso = new Date().toISOString()
     let q = supabase
       .from('court_bookings')
-      .select('id, court_id, user_id, starts_at, ends_at, courts(name, is_indoor, contact_phone)')
+      .select('id, court_id, user_id, starts_at, ends_at, status, courts(name, is_indoor, contact_phone)')
       .eq('league_id', leagueId)
-      .eq('status', 'booked')
 
-    // Non-admins only see their own bookings
-    if (!isAdmin) q = q.eq('user_id', currentUserId)
+    // Admins see confirmed bookings here (requests are handled above); members
+    // see their own confirmed + pending requests.
+    if (!isAdmin) q = q.eq('user_id', currentUserId).in('status', ['pending', 'booked'])
+    else q = q.eq('status', 'booked')
 
     q = scope === 'upcoming'
       ? q.gte('starts_at', nowIso).order('starts_at', { ascending: true })
@@ -126,7 +171,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
         id: r.id, court_id: r.court_id, user_id: r.user_id,
         starts_at: r.starts_at, ends_at: r.ends_at,
         court_name: r.courts?.name ?? 'Court', is_indoor: r.courts?.is_indoor ?? false,
-        contact_phone: r.courts?.contact_phone ?? null,
+        contact_phone: r.courts?.contact_phone ?? null, status: r.status,
         display_name: fullName || p?.display_name || 'Unknown',
         avatar_color: p?.avatar_color ?? '#16a34a', avatar_url: p?.avatar_url ?? null,
       }
@@ -135,6 +180,9 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
   }
 
   useEffect(() => { fetchBookings() }, [leagueId, scope, isAdmin, currentUserId])
+  useEffect(() => { fetchPending() }, [leagueId, isAdmin])
+
+  const pendingSessions = buildSessions(pending)
 
   // Admins can cancel anytime; members only ≥2 hours before start
   function canCancel(s: Session) {
@@ -203,6 +251,36 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
         </div>
       </div>
 
+      {/* Pending requests (admins approve/reject) */}
+      {isAdmin && pendingSessions.length > 0 && (
+        <div className="mb-6">
+          <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-2">
+            Booking requests ({pendingSessions.length})
+          </p>
+          <div className="space-y-1.5">
+            {pendingSessions.map(s => (
+              <div key={s.id} className="bg-blue-50/60 border border-blue-200 rounded-lg px-3 py-2.5 flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700 w-32 shrink-0">
+                  <Clock className="w-3.5 h-3.5 text-gray-400" />{fmtTime(s.start)}–{fmtTime(s.end)}
+                </div>
+                <div className="flex items-center gap-1 text-xs text-gray-500 shrink-0">
+                  <MapPin className="w-3 h-3 text-gray-400" />{s.court_name}
+                </div>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <PlayerAvatar name={s.display_name} color={s.avatar_color} imageUrl={s.avatar_url} size="xs" />
+                  <span className="text-sm text-gray-800 truncate">{s.display_name}</span>
+                  <span className="text-[10px] text-gray-400">{dayLabel(s.start)}</span>
+                </div>
+                <div className="flex gap-1.5 shrink-0">
+                  <Button size="sm" className="h-7 px-2.5 text-xs" onClick={() => approveRequest(s)}>Approve</Button>
+                  <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs text-red-500" onClick={() => { setRejectTarget(s); setRejectReason('') }}>Decline</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="text-center py-12 text-gray-500">Loading bookings…</div>
       ) : sessions.length === 0 ? (
@@ -238,6 +316,9 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
                           <div className="flex items-center gap-2 flex-1 min-w-0">
                             <PlayerAvatar name={s.display_name} color={s.avatar_color} imageUrl={s.avatar_url} size="xs" />
                             <span className="text-sm text-gray-800 truncate">{s.display_name}</span>
+                            {s.status === 'pending' && (
+                              <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded-full px-2 py-0.5 shrink-0">Awaiting approval</span>
+                            )}
                           </div>
                           {hours > 1 && (isOpen
                             ? <ChevronUp className="w-4 h-4 text-gray-400 shrink-0" />
@@ -308,6 +389,29 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
             <Button variant="destructive" onClick={() => confirmTarget && cancelSession(confirmTarget)}>
               Yes, cancel booking
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Decline booking request with a reason */}
+      <Dialog open={!!rejectTarget} onOpenChange={v => { if (!v) { setRejectTarget(null); setRejectReason('') } }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader><DialogTitle>Decline this booking request?</DialogTitle></DialogHeader>
+          {rejectTarget && (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-500">
+                {rejectTarget.display_name}&apos;s request for {rejectTarget.court_name} ({fmtTime(rejectTarget.start)}–{fmtTime(rejectTarget.end)}) will be declined.
+              </p>
+              <Textarea
+                rows={3} value={rejectReason} onChange={e => setRejectReason(e.target.value)}
+                placeholder="Reason (optional) — e.g. that court has an Open Play session at that time."
+                className="text-sm resize-none"
+              />
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setRejectTarget(null); setRejectReason('') }}>Cancel</Button>
+            <Button variant="destructive" onClick={doReject}>Decline request</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

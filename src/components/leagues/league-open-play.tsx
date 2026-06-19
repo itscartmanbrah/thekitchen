@@ -23,10 +23,14 @@ interface SessionRow {
   format: 'singles' | 'doubles'
   match_mode: string
   rated: boolean
-  status: 'active' | 'ended'
+  status: 'scheduled' | 'active' | 'ended'
   share_code: string
   allow_self_join: boolean
+  starts_at: string | null
+  ends_at: string | null
+  court_ids: string[] | null
 }
+interface Court { id: string; name: string }
 interface SP {
   id: string
   user_id: string | null
@@ -59,9 +63,13 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
 
   // setup
   const [setupName, setSetupName] = useState('')
-  const [courtCount, setCourtCount] = useState(2)
+  const [courts, setCourts] = useState<Court[]>([])
+  const [selectedCourts, setSelectedCourts] = useState<string[]>([])
   const [format, setFormat] = useState<'singles' | 'doubles'>('doubles')
   const [rated, setRated] = useState(false)
+  const [startDate, setStartDate] = useState('')
+  const [startTime, setStartTime] = useState('')
+  const [endTime, setEndTime] = useState('')
 
   // add player
   const [addOpen, setAddOpen] = useState(false)
@@ -72,10 +80,14 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   const supabase = createClient()
 
   async function fetchActive() {
+    const nowIso = new Date().toISOString()
+    // most recent session that hasn't finished (scheduled or running)
     const { data: s } = await supabase
       .from('play_sessions').select('*')
-      .eq('league_id', leagueId).eq('status', 'active')
-      .order('started_at', { ascending: false }).limit(1).maybeSingle()
+      .eq('league_id', leagueId)
+      .is('ended_at', null)
+      .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
+      .order('starts_at', { ascending: false }).limit(1).maybeSingle()
     setSession((s as SessionRow) ?? null)
     if (s) await loadState((s as SessionRow).id)
     setLoading(false)
@@ -98,7 +110,13 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     setGames((g as Game[]) ?? [])
   }
 
-  useEffect(() => { fetchActive() }, [leagueId])
+  useEffect(() => {
+    fetchActive()
+    supabase.from('courts').select('id, name').eq('league_id', leagueId).eq('active', true).order('created_at')
+      .then(({ data }) => setCourts((data as Court[]) ?? []))
+  }, [leagueId])
+
+  const isScheduled = !!session && !!session.starts_at && new Date(session.starts_at).getTime() > Date.now()
 
   const playerMap = new Map(players.map(p => [p.id, p]))
   const queued = players.filter(p => p.status === 'queued').sort((a, b) => a.queue_order - b.queue_order)
@@ -109,13 +127,27 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   // ── actions ───────────────────────────────────────────────────────────────
   async function startSession() {
     if (!setupName.trim()) { toast({ title: 'Name the session', variant: 'destructive' }); return }
+    if (selectedCourts.length === 0) { toast({ title: 'Select at least one court', variant: 'destructive' }); return }
+    if (!startTime || !endTime) { toast({ title: 'Set a start and end time', variant: 'destructive' }); return }
+
+    const day = startDate || new Date().toISOString().split('T')[0]
+    const startsAt = new Date(`${day}T${startTime}`)
+    const endsAt = new Date(`${day}T${endTime}`)
+    if (endsAt <= startsAt) { toast({ title: 'End time must be after start time', variant: 'destructive' }); return }
+
     setBusy(true)
-    const { data, error } = await supabase.rpc('create_play_session', {
-      p_league_id: leagueId, p_name: setupName.trim(), p_court_count: courtCount,
+    const { error } = await supabase.rpc('create_play_session', {
+      p_league_id: leagueId, p_name: setupName.trim(), p_court_ids: selectedCourts,
       p_format: format, p_match_mode: 'balanced', p_rated: rated,
+      p_starts_at: startsAt.toISOString(), p_ends_at: endsAt.toISOString(),
+      p_allow_self_join: true,
     })
-    if (error) toast({ title: 'Could not start', description: error.message, variant: 'destructive' })
-    else { toast({ title: 'Session started 🎾' }); setSetupName(''); await fetchActive() }
+    if (error) toast({ title: 'Could not create', description: error.message, variant: 'destructive' })
+    else {
+      toast({ title: startsAt.getTime() > Date.now() ? 'Session scheduled 📅' : 'Session started 🎾' })
+      setSetupName(''); setSelectedCourts([]); setStartDate(''); setStartTime(''); setEndTime('')
+      await fetchActive()
+    }
     setBusy(false)
   }
 
@@ -225,29 +257,63 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
           Check players in, auto-balance courts, and rotate the queue.{' '}
           <Link href="/open-play-guide" className="underline hover:text-green-600">How it works</Link>
         </p>
+        {courts.length === 0 ? (
+          <div className="border rounded-xl p-4 bg-amber-50 border-amber-200 text-sm text-amber-800">
+            Add a court first (on the <strong>Courts</strong> tab) — Open Play runs on your courts and blocks them from booking during the session.
+          </div>
+        ) : (
         <div className="space-y-4 border rounded-xl p-4 bg-white">
           <div className="space-y-1.5">
             <Label htmlFor="s-name">Session name</Label>
             <Input id="s-name" placeholder="e.g. Thursday Night Open Play" value={setupName} onChange={e => setSetupName(e.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+
+          <div className="space-y-1.5">
+            <Label>Courts used</Label>
+            <div className="flex flex-wrap gap-1.5">
+              {courts.map(c => {
+                const on = selectedCourts.includes(c.id)
+                return (
+                  <button key={c.id} type="button"
+                    onClick={() => setSelectedCourts(prev => on ? prev.filter(x => x !== c.id) : [...prev, c.id])}
+                    className={`text-sm px-3 py-1.5 rounded-lg border ${on ? 'border-green-500 bg-green-50 text-green-700 font-medium' : 'border-gray-200 text-gray-600'}`}>
+                    {c.name}
+                  </button>
+                )
+              })}
+            </div>
+            <p className="text-xs text-gray-400">These courts are blocked from booking during the session.</p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
             <div className="space-y-1.5">
-              <Label>Courts</Label>
-              <Input type="number" min={1} max={15} value={courtCount}
-                onChange={e => setCourtCount(Math.min(15, Math.max(1, parseInt(e.target.value) || 1)))} />
+              <Label>Date</Label>
+              <Input type="date" value={startDate} min={new Date().toISOString().split('T')[0]}
+                onChange={e => setStartDate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Format</Label>
-              <div className="flex gap-1">
-                {(['doubles', 'singles'] as const).map(f => (
-                  <button key={f} onClick={() => setFormat(f)}
-                    className={`flex-1 text-sm py-2 rounded-lg border capitalize ${format === f ? 'border-green-500 bg-green-50 text-green-700 font-medium' : 'border-gray-200 text-gray-600'}`}>
-                    {f}
-                  </button>
-                ))}
-              </div>
+              <Label>Start</Label>
+              <Input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>End</Label>
+              <Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
             </div>
           </div>
+          <p className="text-xs text-gray-400 -mt-2">Leave the date as today to start now. The session auto-finishes at the end time.</p>
+
+          <div className="space-y-1.5">
+            <Label>Format</Label>
+            <div className="flex gap-1">
+              {(['doubles', 'singles'] as const).map(f => (
+                <button key={f} type="button" onClick={() => setFormat(f)}
+                  className={`flex-1 text-sm py-2 rounded-lg border capitalize ${format === f ? 'border-green-500 bg-green-50 text-green-700 font-medium' : 'border-gray-200 text-gray-600'}`}>
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <label className="flex items-start gap-2 cursor-pointer">
             <input type="checkbox" checked={rated} onChange={e => setRated(e.target.checked)} className="mt-0.5" />
             <span className="text-sm text-gray-700">
@@ -256,9 +322,10 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
             </span>
           </label>
           <Button onClick={startSession} disabled={busy} className="w-full">
-            <Play className="w-4 h-4 mr-1" />{busy ? 'Starting…' : 'Start session'}
+            <Play className="w-4 h-4 mr-1" />{busy ? 'Saving…' : 'Create session'}
           </Button>
         </div>
+        )}
       </div>
     )
   }
@@ -271,8 +338,14 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
           <h2 className="font-semibold text-gray-900 flex items-center gap-2">
             {session.name}
             {session.rated && <span className="text-[10px] font-bold text-green-700 bg-green-100 rounded-full px-2 py-0.5">RATED</span>}
+            {isScheduled && <span className="text-[10px] font-bold text-blue-700 bg-blue-100 rounded-full px-2 py-0.5">SCHEDULED</span>}
           </h2>
-          <p className="text-xs text-gray-400 capitalize">{session.format} · {session.court_count} courts</p>
+          <p className="text-xs text-gray-400 capitalize">
+            {session.format} · {session.court_count} courts
+            {session.starts_at && session.ends_at && (
+              <span className="normal-case"> · {new Date(session.starts_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}–{new Date(session.ends_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+            )}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={copyShare}>
