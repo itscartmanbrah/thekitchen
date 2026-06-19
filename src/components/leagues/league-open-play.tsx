@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast'
 import { buildMatches, playersNeeded, type QueuePlayer } from '@/lib/open-play'
 import {
   Play, Plus, UserPlus, Link2, Check, Trophy, Clock, Pause, LogOut, X, Swords,
+  ArrowLeft, CalendarDays,
 } from 'lucide-react'
 
 interface SessionRow {
@@ -54,7 +55,9 @@ interface Game {
 interface Member { user_id: string; profiles: { display_name: string; avatar_color: string; avatar_url: string | null } }
 
 export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; isOrganizer: boolean }) {
+  const [sessions, setSessions] = useState<SessionRow[]>([])
   const [session, setSession] = useState<SessionRow | null>(null)
+  const [creating, setCreating] = useState(false)
   const [players, setPlayers] = useState<SP[]>([])
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
@@ -70,7 +73,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
-  const [existingBookings, setExistingBookings] = useState<{ court_id: string; starts_at: string; ends_at: string }[]>([])
+  const [dayBookings, setDayBookings] = useState<{ court_id: string; starts_at: string; ends_at: string }[]>([])
+  const [dayOpenPlay, setDayOpenPlay] = useState<{ id: string; court_ids: string[] | null; starts_at: string; ends_at: string | null }[]>([])
 
   // add player
   const [addOpen, setAddOpen] = useState(false)
@@ -80,17 +84,22 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   const { toast } = useToast()
   const supabase = createClient()
 
-  async function fetchActive() {
+  async function fetchSessions(preferId?: string) {
     const nowIso = new Date().toISOString()
-    // most recent session that hasn't finished (scheduled or running)
-    const { data: s } = await supabase
+    // all sessions that haven't finished (scheduled or running)
+    const { data } = await supabase
       .from('play_sessions').select('*')
       .eq('league_id', leagueId)
       .is('ended_at', null)
       .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
-      .order('starts_at', { ascending: false }).limit(1).maybeSingle()
-    setSession((s as SessionRow) ?? null)
-    if (s) await loadState((s as SessionRow).id)
+      .order('starts_at', { ascending: true })
+    const list = (data as SessionRow[]) ?? []
+    setSessions(list)
+    const pick = (preferId && list.find(s => s.id === preferId))
+      || list.find(s => s.id === session?.id) || list[0] || null
+    setSession(pick)
+    if (pick) await loadState(pick.id)
+    else { setPlayers([]); setGames([]) }
     setLoading(false)
   }
 
@@ -112,33 +121,51 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   }
 
   useEffect(() => {
-    fetchActive()
+    fetchSessions()
     supabase.from('courts').select('id, name').eq('league_id', leagueId).eq('active', true).order('created_at')
       .then(({ data }) => setCourts((data as Court[]) ?? []))
   }, [leagueId])
 
   const isScheduled = !!session && !!session.starts_at && new Date(session.starts_at).getTime() > Date.now()
 
-  // Show what's already booked on the selected courts for the chosen date
+  // Day-wide schedule for the create calendar: every court's confirmed bookings
+  // + live Open Play sessions on the chosen date.
   useEffect(() => {
-    if (selectedCourts.length === 0) { setExistingBookings([]); return }
+    if (!creating) return
     const day = startDate || new Date().toISOString().split('T')[0]
     const dayStart = new Date(`${day}T00:00`); const dayEnd = new Date(dayStart); dayEnd.setDate(dayEnd.getDate() + 1)
     supabase.from('court_bookings')
       .select('court_id, starts_at, ends_at')
-      .in('court_id', selectedCourts).eq('status', 'booked')
+      .eq('league_id', leagueId).eq('status', 'booked')
       .gte('starts_at', dayStart.toISOString()).lt('starts_at', dayEnd.toISOString())
       .order('starts_at')
-      .then(({ data }) => setExistingBookings((data as any[]) ?? []))
-  }, [selectedCourts, startDate, leagueId])
+      .then(({ data }) => setDayBookings((data as any[]) ?? []))
+    supabase.from('play_sessions')
+      .select('id, court_ids, starts_at, ends_at')
+      .eq('league_id', leagueId).is('ended_at', null).not('court_ids', 'is', null)
+      .gte('starts_at', dayStart.toISOString()).lt('starts_at', dayEnd.toISOString())
+      .then(({ data }) => setDayOpenPlay((data as any[]) ?? []))
+  }, [creating, startDate, leagueId])
 
   const courtName = (id: string) => courts.find(c => c.id === id)?.name ?? 'Court'
   const chosenDay = startDate || new Date().toISOString().split('T')[0]
+  const existingBookings = dayBookings.filter(b => selectedCourts.includes(b.court_id))
   const chosenStart = startTime ? new Date(`${chosenDay}T${startTime}`) : null
   const chosenEnd = endTime ? new Date(`${chosenDay}T${endTime}`) : null
   const overlapping = (chosenStart && chosenEnd)
     ? existingBookings.filter(b => new Date(b.starts_at) < chosenEnd && new Date(b.ends_at) > chosenStart)
     : []
+
+  // Read-only day calendar shown beside the create form
+  const calHours = Array.from({ length: 16 }, (_, i) => i + 6) // 6am – 9pm
+  const startH = startTime ? parseInt(startTime.split(':')[0], 10) : null
+  const endH = endTime ? parseInt(endTime.split(':')[0], 10) : null
+  const calBooked = (courtId: string, h: number) =>
+    dayBookings.some(b => b.court_id === courtId && new Date(b.starts_at).getHours() <= h && new Date(b.ends_at).getHours() > h)
+  const calOpenPlay = (courtId: string, h: number) =>
+    dayOpenPlay.some(op => (op.court_ids ?? []).includes(courtId) && new Date(op.starts_at).getHours() <= h && (op.ends_at ? new Date(op.ends_at).getHours() > h : true))
+  const calChosen = (courtId: string, h: number) =>
+    selectedCourts.includes(courtId) && startH !== null && endH !== null && h >= startH && h < endH
 
   const playerMap = new Map(players.map(p => [p.id, p]))
   const queued = players.filter(p => p.status === 'queued').sort((a, b) => a.queue_order - b.queue_order)
@@ -158,7 +185,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     if (endsAt <= startsAt) { toast({ title: 'End time must be after start time', variant: 'destructive' }); return }
 
     setBusy(true)
-    const { error } = await supabase.rpc('create_play_session', {
+    const { data: newId, error } = await supabase.rpc('create_play_session', {
       p_league_id: leagueId, p_name: setupName.trim(), p_court_ids: selectedCourts,
       p_format: format, p_match_mode: 'balanced', p_rated: rated,
       p_starts_at: startsAt.toISOString(), p_ends_at: endsAt.toISOString(),
@@ -168,7 +195,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     else {
       toast({ title: startsAt.getTime() > Date.now() ? 'Session scheduled 📅' : 'Session started 🎾' })
       setSetupName(''); setSelectedCourts([]); setStartDate(''); setStartTime(''); setEndTime('')
-      await fetchActive()
+      setCreating(false)
+      await fetchSessions(newId as string)
     }
     setBusy(false)
   }
@@ -245,7 +273,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     if (!session) return
     const { error } = await supabase.rpc('end_play_session', { p_session_id: session.id })
     if (error) toast({ title: 'Could not end', description: error.message, variant: 'destructive' })
-    else { toast({ title: 'Session ended' }); fetchActive() }
+    else { toast({ title: 'Session ended' }); setSession(null); fetchSessions() }
   }
 
   function copyShare() {
@@ -260,8 +288,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
 
   if (loading) return <div className="text-center py-12 text-gray-500">Loading…</div>
 
-  // ── No active session ───────────────────────────────────────────────────────
-  if (!session) {
+  // ── No selected session: empty state ────────────────────────────────────────
+  if (!session && !creating) {
     if (!isOrganizer) {
       return (
         <div className="text-center py-16 text-gray-400">
@@ -271,10 +299,27 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
       )
     }
     return (
-      <div className="max-w-md">
-        <div className="flex items-center gap-2 mb-1">
-          <h2 className="font-semibold text-gray-900">Start an Open Play session</h2>
-        </div>
+      <div className="text-center py-16">
+        <Swords className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+        <p className="text-sm text-gray-400 mb-4">No Open Play sessions scheduled or running.</p>
+        <Button size="sm" onClick={() => setCreating(true)} disabled={courts.length === 0}>
+          <Plus className="w-4 h-4 mr-1" />New session
+        </Button>
+        {courts.length === 0 && (
+          <p className="text-xs text-amber-600 mt-3">Add a court first on the <strong>Courts</strong> tab.</p>
+        )}
+      </div>
+    )
+  }
+
+  // ── Create a session ────────────────────────────────────────────────────────
+  if (creating) {
+    return (
+      <div>
+        <button onClick={() => setCreating(false)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-3">
+          <ArrowLeft className="w-4 h-4" /> Sessions
+        </button>
+        <h2 className="font-semibold text-gray-900 mb-1">New Open Play session</h2>
         <p className="text-xs text-gray-400 mb-4">
           Check players in, auto-balance courts, and rotate the queue.{' '}
           <Link href="/open-play-guide" className="underline hover:text-green-600">How it works</Link>
@@ -284,6 +329,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
             Add a court first (on the <strong>Courts</strong> tab) — Open Play runs on your courts and blocks them from booking during the session.
           </div>
         ) : (
+        <div className="grid lg:grid-cols-2 gap-4 items-start">
         <div className="space-y-4 border rounded-xl p-4 bg-white">
           <div className="space-y-1.5">
             <Label htmlFor="s-name">Session name</Label>
@@ -324,27 +370,9 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
           </div>
           <p className="text-xs text-gray-400 -mt-2">Leave the date as today to start now. The session auto-finishes at the end time.</p>
 
-          {selectedCourts.length > 0 && existingBookings.length > 0 && (
-            <div className="rounded-lg border bg-gray-50 px-3 py-2.5">
-              <p className="text-xs font-medium text-gray-600 mb-1.5">Already booked on these courts — {new Date(`${chosenDay}T00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
-              <div className="space-y-1">
-                {existingBookings.map((b, i) => {
-                  const clash = chosenStart && chosenEnd && new Date(b.starts_at) < chosenEnd && new Date(b.ends_at) > chosenStart
-                  return (
-                    <div key={i} className={`flex items-center gap-2 text-xs ${clash ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
-                      <span className="w-16 shrink-0">{courtName(b.court_id)}</span>
-                      <span>{new Date(b.starts_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}–{new Date(b.ends_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
-                      {clash && <span className="text-red-500">· overlaps your window</span>}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
           {overlapping.length > 0 && (
             <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
-              Your selected window clashes with an existing booking above. Move the open-play time, pick another court, or cancel the booking first.
+              Your selected window clashes with a confirmed booking (shown in red on the calendar). Move the open-play time, pick another court, or cancel the booking first.
             </p>
           )}
 
@@ -371,14 +399,85 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
             <Play className="w-4 h-4 mr-1" />{busy ? 'Saving…' : 'Create session'}
           </Button>
         </div>
+
+        {/* RIGHT: read-only day calendar of bookings + open play */}
+        <div className="border rounded-xl p-4 bg-white">
+          <div className="flex items-center gap-2 mb-3">
+            <CalendarDays className="w-4 h-4 text-gray-400" />
+            <p className="text-sm font-medium text-gray-700">
+              {new Date(`${chosenDay}T00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+            </p>
+          </div>
+          <div className="overflow-x-auto -mx-1 px-1">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="text-[10px] text-gray-400 font-medium text-left pr-2 pb-1 w-14"></th>
+                  {calHours.map(h => (
+                    <th key={h} className="text-[9px] text-gray-400 font-normal pb-1">{((h + 11) % 12) + 1}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {courts.map(c => (
+                  <tr key={c.id}>
+                    <td className="text-[11px] text-gray-600 font-medium pr-2 truncate max-w-[56px]">{c.name}</td>
+                    {calHours.map(h => {
+                      const booked = calBooked(c.id, h)
+                      const op = calOpenPlay(c.id, h)
+                      const chosen = calChosen(c.id, h)
+                      const clash = chosen && booked
+                      let cls = 'bg-gray-50'
+                      if (op) cls = 'bg-blue-400'
+                      else if (booked) cls = 'bg-green-500'
+                      if (chosen) cls = clash ? 'bg-red-500' : 'bg-gray-900'
+                      return <td key={h} className={`h-6 border border-white ${cls}`} title={`${c.name} ${((h + 11) % 12) + 1}${h < 12 ? 'am' : 'pm'}${booked ? ' · booked' : op ? ' · open play' : ''}`} />
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex items-center gap-3 text-[10px] text-gray-500 mt-3 flex-wrap">
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-500 inline-block" />Booked</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-blue-400 inline-block" />Open Play</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-gray-900 inline-block" />Your session</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-red-500 inline-block" />Clash</span>
+          </div>
+          <p className="text-[11px] text-gray-400 mt-2">Pick courts and a time on the left — your session shows here so you can avoid clashes.</p>
+        </div>
+        </div>
         )}
       </div>
     )
   }
 
   // ── Active session (organizer console) ──────────────────────────────────────
+  if (!session) return null
   return (
     <div>
+      {/* Session switcher — multiple sessions can run at once */}
+      {(sessions.length > 1 || isOrganizer) && (
+        <div className="flex items-center gap-1.5 mb-3 flex-wrap">
+          {sessions.map(s => {
+            const active = s.id === session.id
+            const sched = !!s.starts_at && new Date(s.starts_at).getTime() > Date.now()
+            return (
+              <button key={s.id} onClick={() => { setSession(s); loadState(s.id) }}
+                className={`text-xs px-2.5 py-1 rounded-full border ${active ? 'border-green-500 bg-green-50 text-green-700 font-medium' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                {s.name}{sched && ' · 📅'}
+              </button>
+            )
+          })}
+          {isOrganizer && (
+            <button onClick={() => setCreating(true)}
+              className="text-xs px-2.5 py-1 rounded-full border border-dashed border-gray-300 text-gray-500 hover:bg-gray-50 flex items-center gap-1">
+              <Plus className="w-3 h-3" />New session
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
         <div>
           <h2 className="font-semibold text-gray-900 flex items-center gap-2">
