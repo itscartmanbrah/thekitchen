@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { PlayerAvatar } from '@/components/player-avatar'
+import { CountUp } from '@/components/ui/count-up'
 import { formatElo, getEloTier, getPickleballRating } from '@/lib/utils'
 import { Trophy } from 'lucide-react'
 import type { LeagueMemberWithProfile, MatchFormat } from '@/types/database'
@@ -291,6 +293,30 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
         </div>
       )}
 
+      {/* Summary cards */}
+      {displayed.length > 0 && (() => {
+        const myIdx = displayed.findIndex(m => m.user_id === currentUserId)
+        const topPb = getPickleballRating(ratingFor(displayed[0]))
+        return (
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            <div className="rounded-xl bg-gray-50 px-4 py-3">
+              <p className="text-xs text-gray-500">Players</p>
+              <div className="text-2xl font-semibold text-gray-900 mt-0.5"><CountUp value={displayed.length} /></div>
+            </div>
+            <div className="rounded-xl bg-gray-50 px-4 py-3">
+              <p className="text-xs text-gray-500">Top rating</p>
+              <div className={`text-2xl font-semibold mt-0.5 ${topPb.color}`}><CountUp value={parseFloat(topPb.rating)} decimals={2} /></div>
+            </div>
+            <div className="rounded-xl bg-green-50 border border-green-200 px-4 py-3">
+              <p className="text-xs text-green-700">Your rank</p>
+              <div className="text-2xl font-semibold text-gray-900 mt-0.5">
+                {myIdx >= 0 ? <>#<CountUp value={myIdx + 1} /></> : <span className="text-lg text-gray-400">—</span>}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
       <div className="space-y-2">
         {displayed.map((m, idx) => {
           const shownElo = ratingFor(m)
@@ -301,41 +327,42 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
           const form = formMap[m.user_id] ?? []
 
           return (
-            <Card key={m.id} className={isMe ? 'border-green-300 bg-green-50/50' : ''}>
-              <CardContent className="py-3 px-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 text-center shrink-0">
-                    {rankIcon(idx + 1) ?? (
-                      <span className="text-sm font-medium text-gray-500">#{idx + 1}</span>
-                    )}
-                  </div>
-                  <Link href={`/players/${m.user_id}`} className="shrink-0">
-                    <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} imageUrl={m.profiles.avatar_url} size="sm" />
+            <motion.div
+              key={m.id}
+              layout
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ layout: { duration: 0.4, type: 'spring', bounce: 0.2 }, duration: 0.3, delay: Math.min(idx * 0.03, 0.3) }}
+              className={`flex items-center gap-3 rounded-xl border bg-white px-4 py-3 ${isMe ? 'border-green-400 bg-green-50/60' : 'border-gray-200'}`}
+            >
+              <div className="w-7 text-center shrink-0">
+                {rankIcon(idx + 1) ?? (
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
+                )}
+              </div>
+              <Link href={`/players/${m.user_id}`} className="shrink-0">
+                <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} imageUrl={m.profiles.avatar_url} size="sm" />
+              </Link>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Link href={`/players/${m.user_id}`} className="font-medium text-sm truncate hover:underline">
+                    {m.profiles.display_name}
                   </Link>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Link href={`/players/${m.user_id}`} className="font-medium text-sm truncate hover:underline">
-                        {m.profiles.display_name}
-                      </Link>
-                      {isMe && <Badge variant="outline" className="text-xs py-0">You</Badge>}
-                      <FormDots results={form} />
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className={`text-xs font-semibold ${pb.color}`}>{pb.rating}</span>
-                      <span className="text-gray-300 text-xs">·</span>
-                      <span className={`text-xs ${tier.color}`}>{tier.label}</span>
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <div className="font-bold text-base">{formatElo(shownElo)}</div>
-                    <div className="text-xs text-gray-500">
-                      {m.wins}W {m.losses}L
-                      {winRate !== null && <span className="ml-1">({winRate}%)</span>}
-                    </div>
-                  </div>
+                  {isMe && <Badge variant="outline" className="text-xs py-0">You</Badge>}
                 </div>
-              </CardContent>
-            </Card>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className={`text-[11px] font-medium rounded-full px-2 py-0.5 bg-gray-100 ${tier.color}`}>{tier.label}</span>
+                  <FormDots results={form} />
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="font-bold text-base text-gray-900"><CountUp value={shownElo} /></div>
+                <div className="text-xs text-gray-500">
+                  {m.wins}W {m.losses}L
+                  {winRate !== null && <span className="ml-1">({winRate}%)</span>}
+                </div>
+              </div>
+            </motion.div>
           )
         })}
         {displayed.length === 0 && (

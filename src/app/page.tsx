@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { AppLogo } from '@/components/app-logo'
 import { InstallAppButton } from '@/components/install-app-button'
+import { LandingHero } from '@/components/landing-hero'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Users, Zap, BarChart3, Shield, Star } from 'lucide-react'
@@ -37,29 +38,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="max-w-6xl mx-auto px-4 pt-24 pb-16 text-center">
-        <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
-          <Zap className="w-4 h-4" />
-          ELO-powered pickleball rankings
-        </div>
-        <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-          Run your pickleball league<br />
-          <span className="text-green-600">like a pro.</span>
-        </h1>
-        <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-          The Kitchen tracks every dink, drive, and drop shot. Create leagues, log matches,
-          and watch your ELO rating climb with a fair, margin-aware ranking system.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" asChild className="text-base px-8">
-            <Link href="/signup">Start your league →</Link>
-          </Button>
-          <Button size="lg" variant="outline" asChild className="text-base px-8">
-            <Link href="/login">Sign in</Link>
-          </Button>
-        </div>
-        <p className="text-sm text-gray-500 mt-4">Free to create. Invite your crew with a 6-character code.</p>
-      </section>
+      <LandingHero />
 
       {/* How it works */}
       <section className="max-w-6xl mx-auto px-4 py-20">

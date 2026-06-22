@@ -1,24 +1,9 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { LeagueLeaderboard } from '@/components/leagues/league-leaderboard'
-import { LeagueMatches } from '@/components/leagues/league-matches'
-import { LeagueMembers } from '@/components/leagues/league-members'
-import { LeagueSettings } from '@/components/leagues/league-settings'
-import { LeagueActivity } from '@/components/leagues/league-activity'
-import { LeagueStats } from '@/components/leagues/league-stats'
 import { LeagueAnnouncements } from '@/components/leagues/league-announcements'
-import { LeagueWaitlist } from '@/components/leagues/league-waitlist'
-import { LeagueInviteLinks } from '@/components/leagues/league-invite-links'
 import { LeagueInviteScreen } from '@/components/leagues/league-invite-screen'
-import { LeagueSeasonManager } from '@/components/leagues/league-season-manager'
-import { LeagueChallenges } from '@/components/leagues/league-challenges'
-import { LeagueOfficiated } from '@/components/leagues/league-officiated'
-import { LeagueTournaments } from '@/components/leagues/league-tournaments'
-import { LeagueCourts } from '@/components/leagues/league-courts'
-import { LeagueBookings } from '@/components/leagues/league-bookings'
-import { LeagueOpenPlay } from '@/components/leagues/league-open-play'
+import { LeagueNav } from '@/components/leagues/league-nav'
 import { MapPin } from 'lucide-react'
 import { CopyInviteButton } from '@/components/leagues/copy-invite-button'
 import type { League, LeagueMember } from '@/types/database'
@@ -133,129 +118,19 @@ export default async function LeaguePage({ params }: { params: { id: string } })
         </div>
       </div>
 
-      {/* Announcements (always visible above tabs) */}
+      {/* Announcements (always visible above the nav) */}
       <LeagueAnnouncements leagueId={params.id} isAdmin={isAdmin} />
 
-      <Tabs defaultValue="leaderboard">
-        <TabsList className="mb-6 w-full overflow-x-auto flex h-auto gap-1 justify-start">
-          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-          <TabsTrigger value="matches">Matches</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="stats">Stats</TabsTrigger>
-          <TabsTrigger value="members">Members</TabsTrigger>
-          <TabsTrigger value="challenges">Challenges</TabsTrigger>
-          <TabsTrigger value="tournaments">Tournaments</TabsTrigger>
-          <TabsTrigger value="courts">Courts</TabsTrigger>
-          <TabsTrigger value="open-play">Open Play</TabsTrigger>
-          <TabsTrigger value="bookings">{isAdmin ? 'Bookings' : 'My Bookings'}</TabsTrigger>
-          {isOfficiator && (
-            <TabsTrigger value="officiated">Officiated</TabsTrigger>
-          )}
-          {isAdmin && (
-            <TabsTrigger value="requests" className="relative flex items-center gap-1.5">
-              Requests
-              {(pendingCount ?? 0) > 0 && (
-                <span className="bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                  {pendingCount}
-                </span>
-              )}
-            </TabsTrigger>
-          )}
-          {isAdmin && (
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          )}
-        </TabsList>
-
-        <TabsContent value="leaderboard">
-          <LeagueLeaderboard leagueId={params.id} currentUserId={user.id} activeSeason={activeSeason as any} />
-        </TabsContent>
-
-        <TabsContent value="matches">
-          <LeagueMatches
-            leagueId={params.id}
-            currentUserId={user.id}
-            isAdmin={isAdmin}
-          />
-        </TabsContent>
-
-        <TabsContent value="activity">
-          <LeagueActivity leagueId={params.id} />
-        </TabsContent>
-
-        <TabsContent value="stats">
-          <LeagueStats leagueId={params.id} />
-        </TabsContent>
-
-        <TabsContent value="challenges">
-          <LeagueChallenges leagueId={params.id} currentUserId={user.id} />
-        </TabsContent>
-
-        <TabsContent value="tournaments">
-          <LeagueTournaments
-            leagueId={params.id}
-            currentUserId={user.id}
-            isAdmin={isAdmin}
-            canReport={isOfficiator}
-          />
-        </TabsContent>
-
-        <TabsContent value="courts">
-          <LeagueCourts leagueId={params.id} currentUserId={user.id} isAdmin={isAdmin} />
-        </TabsContent>
-
-        <TabsContent value="open-play">
-          <LeagueOpenPlay leagueId={params.id} isOrganizer={isOfficiator} />
-        </TabsContent>
-
-        <TabsContent value="bookings">
-          <LeagueBookings leagueId={params.id} currentUserId={user.id} isAdmin={isAdmin} />
-        </TabsContent>
-
-        {isOfficiator && (
-          <TabsContent value="officiated">
-            <LeagueOfficiated leagueId={params.id} currentUserId={user.id} />
-          </TabsContent>
-        )}
-
-        <TabsContent value="members">
-          <LeagueMembers
-            leagueId={params.id}
-            currentUserId={user.id}
-            isAdmin={isAdmin}
-            isHeadAdmin={isHeadAdmin}
-          />
-        </TabsContent>
-
-        {isAdmin && (
-          <TabsContent value="requests">
-            <div className="max-w-lg">
-              <div className="flex items-center gap-2 mb-4">
-                <h2 className="font-semibold text-gray-900">Join requests</h2>
-                {(pendingCount ?? 0) > 0 && (
-                  <span className="bg-red-100 text-red-600 text-xs font-bold rounded-full px-2 py-0.5">
-                    {pendingCount} pending
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-gray-500 mb-4">
-                Review players who have requested to join. Assign their role before approving.
-              </p>
-              <LeagueWaitlist leagueId={params.id} />
-            </div>
-          </TabsContent>
-        )}
-
-        {isAdmin && (
-          <TabsContent value="settings" className="space-y-6">
-            <LeagueSettings league={league} isHeadAdmin={isHeadAdmin} />
-            <LeagueSeasonManager leagueId={params.id} currentUserId={user.id} />
-            <div className="max-w-lg">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Invite links</h3>
-              <LeagueInviteLinks leagueId={params.id} />
-            </div>
-          </TabsContent>
-        )}
-      </Tabs>
+      <LeagueNav
+        leagueId={params.id}
+        league={league}
+        currentUserId={user.id}
+        isAdmin={isAdmin}
+        isHeadAdmin={isHeadAdmin}
+        isOfficiator={isOfficiator}
+        activeSeason={(activeSeason as any) ?? null}
+        pendingCount={pendingCount ?? 0}
+      />
     </div>
   )
 }

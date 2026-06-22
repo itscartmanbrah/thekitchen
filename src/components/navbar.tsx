@@ -67,13 +67,7 @@ export function Navbar({ profile }: { profile: Profile | null }) {
                   <Link href="/my-bookings">My Bookings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/elo">How ELO Works</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/tournaments-guide">How Tournaments Work</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/open-play-guide">How Open Play Works</Link>
+                  <Link href="/help">Help &amp; guides</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
