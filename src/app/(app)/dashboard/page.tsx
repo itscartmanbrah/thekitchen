@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CreateLeagueDialog } from '@/components/leagues/create-league-dialog'
 import { JoinLeagueDialog } from '@/components/leagues/join-league-dialog'
@@ -28,13 +27,6 @@ export default async function DashboardPage() {
     admin: 'Admin',
     officiator: 'Officiator',
     player: 'Player',
-  }
-
-  const roleVariants: Record<string, 'default' | 'secondary' | 'outline'> = {
-    head_admin: 'default',
-    admin: 'secondary',
-    officiator: 'outline',
-    player: 'outline',
   }
 
   return (
@@ -72,39 +64,35 @@ export default async function DashboardPage() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {memberships.map((m: any) => (
-            <Link key={m.id} href={`/leagues/${m.league_id}`}>
-              <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                <div
-                  className="h-2 rounded-t-lg"
-                  style={{ backgroundColor: m.leagues.banner_color }}
-                />
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base leading-tight">{m.leagues.name}</CardTitle>
-                    <Badge variant={roleVariants[m.role]} className="shrink-0 text-xs">
-                      {roleLabels[m.role] ?? m.role}
-                    </Badge>
-                  </div>
+            <Link key={m.id} href={`/leagues/${m.league_id}`} className="group">
+              <div className="rounded-2xl overflow-hidden border bg-white shadow-sm hover:shadow-lg transition-shadow h-full">
+                {/* Gradient banner */}
+                <div className="relative h-24 p-4 flex items-end" style={{ backgroundColor: m.leagues.banner_color }}>
+                  <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-black/25 to-black/55" />
+                  <Badge variant="secondary" className="absolute top-3 right-3 shrink-0 text-[10px] bg-white/20 text-white border-white/30 backdrop-blur-sm">
+                    {roleLabels[m.role] ?? m.role}
+                  </Badge>
+                  <h3 className="relative text-white font-bold text-lg leading-tight drop-shadow-sm line-clamp-2">{m.leagues.name}</h3>
+                </div>
+                <div className="p-4">
                   {m.leagues.location && (
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
                       <MapPin className="w-3 h-3" />
                       {m.leagues.location}
                     </div>
                   )}
-                </CardHeader>
-                <CardContent>
                   <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-1 text-gray-600">
+                    <div className="flex items-center gap-1.5 text-gray-700">
                       <Trophy className="w-4 h-4 text-green-600" />
-                      <span className="font-semibold">{formatElo(m.elo_rating)}</span>
-                      <span className="text-gray-400">ELO</span>
+                      <span className="font-bold">{formatElo(m.elo_rating)}</span>
+                      <span className="text-gray-400 text-xs">ELO</span>
                     </div>
-                    <div className="text-gray-500">
+                    <div className="text-gray-500 text-xs font-medium">
                       {m.wins}W – {m.losses}L
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </Link>
           ))}
         </div>

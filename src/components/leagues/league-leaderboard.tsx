@@ -299,18 +299,18 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
         const topPb = getPickleballRating(ratingFor(displayed[0]))
         return (
           <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="rounded-xl bg-gray-50 px-4 py-3">
-              <p className="text-xs text-gray-500">Players</p>
-              <div className="text-2xl font-semibold text-gray-900 mt-0.5"><CountUp value={displayed.length} /></div>
+            <div className="rounded-2xl px-4 py-3.5 text-white shadow-md bg-gradient-to-br from-sky-500 to-blue-600">
+              <p className="text-xs text-white/80">Players</p>
+              <div className="text-2xl font-bold mt-0.5"><CountUp value={displayed.length} /></div>
             </div>
-            <div className="rounded-xl bg-gray-50 px-4 py-3">
-              <p className="text-xs text-gray-500">Top rating</p>
-              <div className={`text-2xl font-semibold mt-0.5 ${topPb.color}`}><CountUp value={parseFloat(topPb.rating)} decimals={2} /></div>
+            <div className="rounded-2xl px-4 py-3.5 text-white shadow-md bg-gradient-to-br from-violet-500 to-purple-600">
+              <p className="text-xs text-white/80">Top rating</p>
+              <div className="text-2xl font-bold mt-0.5"><CountUp value={parseFloat(topPb.rating)} decimals={2} /></div>
             </div>
-            <div className="rounded-xl bg-green-50 border border-green-200 px-4 py-3">
-              <p className="text-xs text-green-700">Your rank</p>
-              <div className="text-2xl font-semibold text-gray-900 mt-0.5">
-                {myIdx >= 0 ? <>#<CountUp value={myIdx + 1} /></> : <span className="text-lg text-gray-400">—</span>}
+            <div className="rounded-2xl px-4 py-3.5 text-white shadow-md bg-gradient-to-br from-green-500 to-emerald-600">
+              <p className="text-xs text-white/80">Your rank</p>
+              <div className="text-2xl font-bold mt-0.5">
+                {myIdx >= 0 ? <>#<CountUp value={myIdx + 1} /></> : <span className="text-lg text-white/70">—</span>}
               </div>
             </div>
           </div>

@@ -32,11 +32,11 @@ function relTime(iso: string) {
   return d < 0 ? `${s} ago` : `in ${s}`
 }
 
-function Kpi({ label, children, accent }: { label: string; children: React.ReactNode; accent?: boolean }) {
+function Kpi({ label, children, gradient }: { label: string; children: React.ReactNode; gradient: string }) {
   return (
-    <div className={`rounded-xl px-4 py-3 ${accent ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
-      <p className={`text-xs ${accent ? 'text-green-700' : 'text-gray-500'}`}>{label}</p>
-      <div className="text-2xl font-semibold text-gray-900 mt-0.5">{children}</div>
+    <div className={`rounded-2xl px-4 py-3.5 text-white shadow-md bg-gradient-to-br ${gradient}`}>
+      <p className="text-xs text-white/80">{label}</p>
+      <div className="text-2xl font-bold mt-0.5">{children}</div>
     </div>
   )
 }
@@ -127,16 +127,16 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
       {/* KPI cards */}
       {standing && (
         <motion.div {...item(0)} className="grid grid-cols-3 gap-3">
-          <Kpi label="Your rank" accent>
+          <Kpi label="Your rank" gradient="from-green-500 to-emerald-600">
             #<CountUp value={standing.rank} />
-            <span className="text-sm text-green-700 font-normal"> of {standing.total}</span>
+            <span className="text-sm text-white/80 font-normal"> of {standing.total}</span>
           </Kpi>
-          <Kpi label="Your rating">
-            {pb && <span className={pb.color}><CountUp value={parseFloat(pb.rating)} decimals={2} /></span>}
+          <Kpi label="Your rating" gradient="from-violet-500 to-purple-600">
+            {pb && <CountUp value={parseFloat(pb.rating)} decimals={2} />}
           </Kpi>
-          <Kpi label="Win rate">
-            {winRate !== null ? <CountUp value={winRate} suffix="%" /> : <span className="text-gray-400 text-lg">—</span>}
-            <span className="block text-xs text-gray-400 font-normal">{standing.wins}W · {standing.losses}L</span>
+          <Kpi label="Win rate" gradient="from-amber-500 to-orange-600">
+            {winRate !== null ? <CountUp value={winRate} suffix="%" /> : <span className="text-white/70 text-lg">—</span>}
+            <span className="block text-xs text-white/80 font-normal">{standing.wins}W · {standing.losses}L</span>
           </Kpi>
         </motion.div>
       )}

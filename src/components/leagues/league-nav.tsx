@@ -115,8 +115,8 @@ export function LeagueNav(props: NavProps) {
 
   return (
     <div>
-      {/* Tier 1 — groups */}
-      <div className="flex items-center gap-1 border-b mb-3 overflow-x-auto">
+      {/* Tier 1 — groups (segmented pill bar) */}
+      <div className="flex items-center gap-1.5 mb-4 overflow-x-auto p-1 bg-gray-100 rounded-xl">
         {groups.filter(g => !g.gear).map(g => {
           const on = activeGroup.key === g.key
           const Icon = g.icon
@@ -124,25 +124,25 @@ export function LeagueNav(props: NavProps) {
             <button
               key={g.key}
               onClick={() => selectGroup(g.key)}
-              className={`relative flex items-center gap-1.5 px-3 py-2 text-sm whitespace-nowrap transition-colors ${
-                on ? 'text-green-700 font-medium' : 'text-gray-500 hover:text-gray-800'
+              className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm whitespace-nowrap transition-colors ${
+                on ? 'text-white font-semibold' : 'text-gray-500 hover:text-gray-800'
               }`}
             >
-              <Icon className="w-4 h-4" />
-              {g.label}
-              {on && <motion.div layoutId="grp-underline" className="absolute left-0 right-0 -bottom-px h-0.5 bg-green-600 rounded-full" />}
+              {on && <motion.div layoutId="grp-pill" className="absolute inset-0 bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-sm" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />}
+              <Icon className="w-4 h-4 relative z-10" />
+              <span className="relative z-10">{g.label}</span>
             </button>
           )
         })}
 
         {/* Gear (admin) pushed right */}
         {groups.find(g => g.gear) && (
-          <div className="ml-auto pr-1">
+          <div className="ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className={`flex items-center gap-1.5 px-3 py-2 text-sm whitespace-nowrap transition-colors ${
-                    activeGroup.gear ? 'text-green-700 font-medium' : 'text-gray-500 hover:text-gray-800'
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm whitespace-nowrap transition-colors ${
+                    activeGroup.gear ? 'bg-gradient-to-br from-green-500 to-green-600 text-white font-semibold shadow-sm' : 'text-gray-500 hover:text-gray-800'
                   }`}
                 >
                   <Settings className="w-4 h-4" />

@@ -1,6 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Badge } from '@/components/ui/badge'
 import { LeagueAnnouncements } from '@/components/leagues/league-announcements'
 import { LeagueInviteScreen } from '@/components/leagues/league-invite-screen'
 import { LeagueNav } from '@/components/leagues/league-nav'
@@ -87,34 +86,36 @@ export default async function LeaguePage({ params }: { params: { id: string } })
 
   return (
     <div>
-      {/* League header */}
-      <div className="mb-5">
+      {/* League header — vibrant gradient hero */}
+      <div className="relative overflow-hidden rounded-2xl mb-6 shadow-lg">
         {(league as any).banner_image_url ? (
-          <div className="h-28 sm:h-36 rounded-lg mb-4 overflow-hidden">
-            <img src={(league as any).banner_image_url} alt="" className="w-full h-full object-cover" />
-          </div>
+          <img src={(league as any).banner_image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
-          <div className="h-3 rounded-lg mb-4" style={{ backgroundColor: league.banner_color }} />
+          <div className="absolute inset-0" style={{ backgroundColor: league.banner_color }} />
         )}
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-bold text-gray-900">{league.name}</h1>
-              <Badge variant="outline">{roleLabels[membership.role]}</Badge>
+        {/* depth + legibility overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-black/35 to-black/60" />
+        <div className="relative p-6 sm:p-7 flex items-start justify-between gap-4 flex-wrap">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span className="text-[11px] font-semibold uppercase tracking-wide bg-white/20 text-white border border-white/30 rounded-full px-2.5 py-0.5 backdrop-blur-sm">
+                {roleLabels[membership.role]}
+              </span>
               {activeSeason && (
-                <span className="text-xs bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-semibold bg-green-400/90 text-green-950 rounded-full px-2.5 py-0.5">
                   {activeSeason.name}
                 </span>
               )}
             </div>
-            {league.description && <p className="text-gray-600 mb-1">{league.description}</p>}
+            <h1 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-sm">{league.name}</h1>
+            {league.description && <p className="text-white/85 mt-1 max-w-xl">{league.description}</p>}
             {league.location && (
-              <div className="flex items-center gap-1 text-sm text-gray-500">
+              <div className="flex items-center gap-1 text-sm text-white/75 mt-1.5">
                 <MapPin className="w-3.5 h-3.5" />{league.location}
               </div>
             )}
           </div>
-          <CopyInviteButton inviteCode={league.invite_code} />
+          <CopyInviteButton inviteCode={league.invite_code} onLight />
         </div>
       </div>
 
