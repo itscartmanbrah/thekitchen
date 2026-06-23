@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRealtime } from '@/lib/use-realtime'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -178,6 +179,12 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
     }
   }
   useEffect(() => { setSelected([]); if (courts.length) fetchBookings() }, [selectedDate, courts.length, leagueId])
+
+  // Live: refresh the grid when bookings or open-play change for this league.
+  useRealtime(`courts:${leagueId}`, [
+    { table: 'court_bookings', filter: `league_id=eq.${leagueId}` },
+    { table: 'play_sessions', filter: `league_id=eq.${leagueId}` },
+  ], () => { if (courts.length) fetchBookings() }, [leagueId])
 
   async function confirmBooking() {
     if (!selected.length) return

@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
+import { useRealtime } from '@/lib/use-realtime'
 import { CountUp } from '@/components/ui/count-up'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { getPickleballRating } from '@/lib/utils'
@@ -53,9 +54,7 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
   const [pendingReq, setPendingReq] = useState(0)
   const [pendingBookings, setPendingBookings] = useState(0)
 
-  useEffect(() => {
-    let alive = true
-    async function load() {
+  const load = useCallback(async () => {
       const nowIso = new Date().toISOString()
 
       const [membersRes, opRes, bookRes, matchRes] = await Promise.all([
@@ -69,8 +68,6 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
         supabase.from('matches').select('id, team1_score, team2_score, format, completed_at, match_players(user_id, team)')
           .eq('league_id', leagueId).eq('status', 'completed').order('completed_at', { ascending: false }).limit(3),
       ])
-
-      if (!alive) return
 
       const members = (membersRes.data ?? []) as any[]
       const myIdx = members.findIndex(m => m.user_id === currentUserId)
@@ -104,15 +101,22 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
           supabase.from('league_members').select('*', { count: 'exact', head: true }).eq('league_id', leagueId).eq('status', 'pending'),
           supabase.from('court_bookings').select('*', { count: 'exact', head: true }).eq('league_id', leagueId).eq('status', 'pending'),
         ])
-        if (!alive) return
         setPendingReq(pr.count ?? 0)
         setPendingBookings(pb.count ?? 0)
       }
       setLoading(false)
-    }
-    load()
-    return () => { alive = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leagueId, currentUserId, isAdmin])
+
+  useEffect(() => { load() }, [load])
+
+  // Live updates: refetch when anything the overview shows changes.
+  useRealtime(`overview:${leagueId}`, [
+    { table: 'league_members', filter: `league_id=eq.${leagueId}` },
+    { table: 'matches', filter: `league_id=eq.${leagueId}` },
+    { table: 'court_bookings', filter: `league_id=eq.${leagueId}` },
+    { table: 'play_sessions', filter: `league_id=eq.${leagueId}` },
+  ], () => load(), [leagueId])
 
   if (loading) return <div className="text-center py-12 text-gray-400 text-sm">Loading overview…</div>
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRealtime } from '@/lib/use-realtime'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -71,6 +72,11 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
   }
 
   useEffect(() => { fetchMembers(); fetchBanned() }, [leagueId, isAdmin])
+
+  // Live: refresh the roster when membership changes (joins, role/status edits).
+  useRealtime(`members:${leagueId}`, [
+    { table: 'league_members', filter: `league_id=eq.${leagueId}` },
+  ], () => { fetchMembers(); if (isAdmin) fetchBanned() }, [leagueId, isAdmin])
 
   async function confirmBan() {
     if (!banTarget) return

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRealtime } from '@/lib/use-realtime'
 import { Button } from '@/components/ui/button'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -181,6 +182,11 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
 
   useEffect(() => { fetchBookings() }, [leagueId, scope, isAdmin, currentUserId])
   useEffect(() => { fetchPending() }, [leagueId, isAdmin])
+
+  // Live: refresh when any booking in this league changes.
+  useRealtime(`bookings:${leagueId}`, [
+    { table: 'court_bookings', filter: `league_id=eq.${leagueId}` },
+  ], () => { fetchBookings(); if (isAdmin) fetchPending() }, [leagueId, isAdmin])
 
   const pendingSessions = buildSessions(pending)
 

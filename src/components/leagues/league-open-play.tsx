@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { useRealtime } from '@/lib/use-realtime'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -125,6 +126,13 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     supabase.from('courts').select('id, name').eq('league_id', leagueId).eq('active', true).order('created_at')
       .then(({ data }) => setCourts((data as Court[]) ?? []))
   }, [leagueId])
+
+  // Live: players checking in, games starting/ending, sessions opening/closing.
+  useRealtime(`openplay:${leagueId}`, [
+    { table: 'play_sessions', filter: `league_id=eq.${leagueId}` },
+    { table: 'session_players' },
+    { table: 'session_games' },
+  ], () => fetchSessions(), [leagueId])
 
   const isScheduled = !!session && !!session.starts_at && new Date(session.starts_at).getTime() > Date.now()
 
