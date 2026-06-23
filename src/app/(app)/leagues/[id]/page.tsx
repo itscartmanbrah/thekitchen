@@ -1,9 +1,10 @@
+import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { LeagueAnnouncements } from '@/components/leagues/league-announcements'
 import { LeagueInviteScreen } from '@/components/leagues/league-invite-screen'
 import { LeagueNav } from '@/components/leagues/league-nav'
-import { MapPin } from 'lucide-react'
+import { MapPin, ArrowLeft } from 'lucide-react'
 import { CopyInviteButton } from '@/components/leagues/copy-invite-button'
 import type { League, LeagueMember } from '@/types/database'
 
@@ -86,6 +87,10 @@ export default async function LeaguePage({ params }: { params: { id: string } })
 
   return (
     <div>
+      <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-3 transition-colors">
+        <ArrowLeft className="w-4 h-4" /> Leagues
+      </Link>
+
       {/* League header — athletic scoreboard panel */}
       <div className="relative overflow-hidden rounded-2xl mb-6 shadow-lg bg-slate-900">
         {(league as any).banner_image_url && (
