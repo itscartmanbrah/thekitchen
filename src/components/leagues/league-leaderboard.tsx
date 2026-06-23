@@ -299,18 +299,18 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
         const topPb = getPickleballRating(ratingFor(displayed[0]))
         return (
           <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="rounded-2xl px-4 py-3.5 text-white shadow-md bg-gradient-to-br from-sky-500 to-blue-600">
-              <p className="text-xs text-white/80">Players</p>
-              <div className="text-2xl font-bold mt-0.5"><CountUp value={displayed.length} /></div>
+            <div className="rounded-xl bg-slate-900 px-4 py-3.5 shadow-md border-t-[3px] border-sky-500">
+              <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Players</p>
+              <div className="text-2xl font-extrabold text-white mt-1"><CountUp value={displayed.length} /></div>
             </div>
-            <div className="rounded-2xl px-4 py-3.5 text-white shadow-md bg-gradient-to-br from-violet-500 to-purple-600">
-              <p className="text-xs text-white/80">Top rating</p>
-              <div className="text-2xl font-bold mt-0.5"><CountUp value={parseFloat(topPb.rating)} decimals={2} /></div>
+            <div className="rounded-xl bg-slate-900 px-4 py-3.5 shadow-md border-t-[3px] border-violet-500">
+              <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Top rating</p>
+              <div className="text-2xl font-extrabold text-white mt-1"><CountUp value={parseFloat(topPb.rating)} decimals={2} /></div>
             </div>
-            <div className="rounded-2xl px-4 py-3.5 text-white shadow-md bg-gradient-to-br from-green-500 to-emerald-600">
-              <p className="text-xs text-white/80">Your rank</p>
-              <div className="text-2xl font-bold mt-0.5">
-                {myIdx >= 0 ? <>#<CountUp value={myIdx + 1} /></> : <span className="text-lg text-white/70">—</span>}
+            <div className="rounded-xl bg-slate-900 px-4 py-3.5 shadow-md border-t-[3px] border-green-500">
+              <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Your rank</p>
+              <div className="text-2xl font-extrabold text-white mt-1">
+                {myIdx >= 0 ? <>#<CountUp value={myIdx + 1} /></> : <span className="text-lg text-slate-500">—</span>}
               </div>
             </div>
           </div>
@@ -337,7 +337,7 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
             >
               <div className="w-7 text-center shrink-0">
                 {rankIcon(idx + 1) ?? (
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-slate-900 text-xs font-extrabold italic text-white">{idx + 1}</span>
                 )}
               </div>
               <Link href={`/players/${m.user_id}`} className="shrink-0">

@@ -86,31 +86,32 @@ export default async function LeaguePage({ params }: { params: { id: string } })
 
   return (
     <div>
-      {/* League header — vibrant gradient hero */}
-      <div className="relative overflow-hidden rounded-2xl mb-6 shadow-lg">
-        {(league as any).banner_image_url ? (
-          <img src={(league as any).banner_image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        ) : (
-          <div className="absolute inset-0" style={{ backgroundColor: league.banner_color }} />
+      {/* League header — athletic scoreboard panel */}
+      <div className="relative overflow-hidden rounded-2xl mb-6 shadow-lg bg-slate-900">
+        {(league as any).banner_image_url && (
+          <img src={(league as any).banner_image_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" />
         )}
-        {/* depth + legibility overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-black/35 to-black/60" />
+        {/* diagonal jersey stripes */}
+        <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0 2px, transparent 2px 16px)' }} />
+        {/* league-color accent edge */}
+        <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ backgroundColor: league.banner_color }} />
         <div className="relative p-6 sm:p-7 flex items-start justify-between gap-4 flex-wrap">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="text-[11px] font-semibold uppercase tracking-wide bg-white/20 text-white border border-white/30 rounded-full px-2.5 py-0.5 backdrop-blur-sm">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <span className="text-[10px] font-bold uppercase tracking-widest bg-white/10 text-white border border-white/20 rounded px-2 py-0.5">
                 {roleLabels[membership.role]}
               </span>
               {activeSeason && (
-                <span className="text-[11px] font-semibold bg-green-400/90 text-green-950 rounded-full px-2.5 py-0.5">
+                <span className="text-[10px] font-bold uppercase tracking-widest rounded px-2 py-0.5 text-slate-900" style={{ backgroundColor: league.banner_color, color: '#fff' }}>
                   {activeSeason.name}
                 </span>
               )}
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-sm">{league.name}</h1>
-            {league.description && <p className="text-white/85 mt-1 max-w-xl">{league.description}</p>}
+            <h1 className="text-3xl sm:text-4xl font-extrabold italic uppercase tracking-tight text-white leading-none">{league.name}</h1>
+            <div className="h-1 w-12 rounded-full mt-3" style={{ backgroundColor: league.banner_color }} />
+            {league.description && <p className="text-white/70 mt-3 max-w-xl">{league.description}</p>}
             {league.location && (
-              <div className="flex items-center gap-1 text-sm text-white/75 mt-1.5">
+              <div className="flex items-center gap-1 text-sm text-white/60 mt-1.5">
                 <MapPin className="w-3.5 h-3.5" />{league.location}
               </div>
             )}

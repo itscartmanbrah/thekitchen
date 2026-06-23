@@ -115,8 +115,8 @@ export function LeagueNav(props: NavProps) {
 
   return (
     <div>
-      {/* Tier 1 — groups (segmented pill bar) */}
-      <div className="flex items-center gap-1.5 mb-4 overflow-x-auto p-1 bg-gray-100 rounded-xl">
+      {/* Tier 1 — groups (athletic segmented bar) */}
+      <div className="flex items-center gap-1 mb-4 overflow-x-auto p-1 bg-slate-100 rounded-xl">
         {groups.filter(g => !g.gear).map(g => {
           const on = activeGroup.key === g.key
           const Icon = g.icon
@@ -124,12 +124,12 @@ export function LeagueNav(props: NavProps) {
             <button
               key={g.key}
               onClick={() => selectGroup(g.key)}
-              className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm whitespace-nowrap transition-colors ${
-                on ? 'text-white font-semibold' : 'text-gray-500 hover:text-gray-800'
+              className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-colors ${
+                on ? 'text-white' : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              {on && <motion.div layoutId="grp-pill" className="absolute inset-0 bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-sm" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />}
-              <Icon className="w-4 h-4 relative z-10" />
+              {on && <motion.div layoutId="grp-pill" className="absolute inset-0 bg-slate-900 rounded-lg shadow-sm" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />}
+              <Icon className={`w-4 h-4 relative z-10 ${on ? 'text-green-400' : ''}`} />
               <span className="relative z-10">{g.label}</span>
             </button>
           )
@@ -141,11 +141,11 @@ export function LeagueNav(props: NavProps) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm whitespace-nowrap transition-colors ${
-                    activeGroup.gear ? 'bg-gradient-to-br from-green-500 to-green-600 text-white font-semibold shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-colors ${
+                    activeGroup.gear ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'
                   }`}
                 >
-                  <Settings className="w-4 h-4" />
+                  <Settings className={`w-4 h-4 ${activeGroup.gear ? 'text-green-400' : ''}`} />
                   <span className="hidden sm:inline">Manage</span>
                   {pendingCount > 0 && (
                     <span className="bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">{pendingCount}</span>
@@ -176,8 +176,8 @@ export function LeagueNav(props: NavProps) {
               <button
                 key={s.key}
                 onClick={() => go(s.key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors ${
-                  on ? 'bg-green-100 text-green-700 font-medium' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wide whitespace-nowrap transition-colors border-b-2 ${
+                  on ? 'border-green-500 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-700'
                 }`}
               >
                 {s.label}

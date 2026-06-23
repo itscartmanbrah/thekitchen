@@ -66,13 +66,15 @@ export default async function DashboardPage() {
           {memberships.map((m: any) => (
             <Link key={m.id} href={`/leagues/${m.league_id}`} className="group">
               <div className="rounded-2xl overflow-hidden border bg-white shadow-sm hover:shadow-lg transition-shadow h-full">
-                {/* Gradient banner */}
-                <div className="relative h-24 p-4 flex items-end" style={{ backgroundColor: m.leagues.banner_color }}>
-                  <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-black/25 to-black/55" />
-                  <Badge variant="secondary" className="absolute top-3 right-3 shrink-0 text-[10px] bg-white/20 text-white border-white/30 backdrop-blur-sm">
+                {/* Athletic jersey banner */}
+                <div className="relative h-24 p-4 flex items-end bg-slate-900">
+                  <div className="absolute inset-0" style={{ backgroundColor: m.leagues.banner_color, opacity: 0.85 }} />
+                  <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0 2px, transparent 2px 14px)' }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
+                  <Badge variant="secondary" className="absolute top-3 right-3 shrink-0 text-[9px] font-bold uppercase tracking-widest bg-white/15 text-white border-white/25 backdrop-blur-sm">
                     {roleLabels[m.role] ?? m.role}
                   </Badge>
-                  <h3 className="relative text-white font-bold text-lg leading-tight drop-shadow-sm line-clamp-2">{m.leagues.name}</h3>
+                  <h3 className="relative text-white font-extrabold italic uppercase text-lg leading-none tracking-tight drop-shadow-sm line-clamp-2">{m.leagues.name}</h3>
                 </div>
                 <div className="p-4">
                   {m.leagues.location && (

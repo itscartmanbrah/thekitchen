@@ -30,7 +30,7 @@ export function LandingHero() {
         ELO-powered pickleball rankings
       </motion.div>
 
-      <motion.h1 {...up(1)} className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+      <motion.h1 {...up(1)} className="text-5xl md:text-6xl font-extrabold italic uppercase tracking-tight text-gray-900 mb-6 leading-[0.95]">
         Run your pickleball league<br />
         <span className="tk-shiny">like a pro.</span>
       </motion.h1>

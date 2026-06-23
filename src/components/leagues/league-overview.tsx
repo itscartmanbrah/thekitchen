@@ -32,11 +32,11 @@ function relTime(iso: string) {
   return d < 0 ? `${s} ago` : `in ${s}`
 }
 
-function Kpi({ label, children, gradient }: { label: string; children: React.ReactNode; gradient: string }) {
+function Kpi({ label, children, accent }: { label: string; children: React.ReactNode; accent: string }) {
   return (
-    <div className={`rounded-2xl px-4 py-3.5 text-white shadow-md bg-gradient-to-br ${gradient}`}>
-      <p className="text-xs text-white/80">{label}</p>
-      <div className="text-2xl font-bold mt-0.5">{children}</div>
+    <div className={`rounded-xl bg-slate-900 px-4 py-3.5 shadow-md border-t-[3px] ${accent}`}>
+      <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">{label}</p>
+      <div className="text-2xl font-extrabold text-white mt-1">{children}</div>
     </div>
   )
 }
@@ -127,16 +127,16 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
       {/* KPI cards */}
       {standing && (
         <motion.div {...item(0)} className="grid grid-cols-3 gap-3">
-          <Kpi label="Your rank" gradient="from-green-500 to-emerald-600">
+          <Kpi label="Your rank" accent="border-green-500">
             #<CountUp value={standing.rank} />
-            <span className="text-sm text-white/80 font-normal"> of {standing.total}</span>
+            <span className="text-sm text-slate-400 font-normal"> of {standing.total}</span>
           </Kpi>
-          <Kpi label="Your rating" gradient="from-violet-500 to-purple-600">
+          <Kpi label="Your rating" accent="border-violet-500">
             {pb && <CountUp value={parseFloat(pb.rating)} decimals={2} />}
           </Kpi>
-          <Kpi label="Win rate" gradient="from-amber-500 to-orange-600">
-            {winRate !== null ? <CountUp value={winRate} suffix="%" /> : <span className="text-white/70 text-lg">—</span>}
-            <span className="block text-xs text-white/80 font-normal">{standing.wins}W · {standing.losses}L</span>
+          <Kpi label="Win rate" accent="border-amber-500">
+            {winRate !== null ? <CountUp value={winRate} suffix="%" /> : <span className="text-slate-500 text-lg">—</span>}
+            <span className="block text-xs text-slate-400 font-normal">{standing.wins}W · {standing.losses}L</span>
           </Kpi>
         </motion.div>
       )}
