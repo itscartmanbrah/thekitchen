@@ -1,7 +1,6 @@
 'use client'
 
-import { useCallback, useMemo } from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { useCallback, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   LayoutDashboard, Trophy, CalendarRange, Users, Settings,
@@ -46,11 +45,14 @@ interface NavProps {
 
 export function LeagueNav(props: NavProps) {
   const { leagueId, league, currentUserId, isAdmin, isHeadAdmin, isOfficiator, activeSeason, pendingCount } = props
-  const router = useRouter()
-  const pathname = usePathname()
-  const params = useSearchParams()
 
-  const active = (params.get('v') as Leaf) || 'overview'
+  // Tab state is local so switching is instant — no server round-trip. We read
+  // any deep-link (?v=) once on mount and reflect changes back into the URL with
+  // history.replaceState, which doesn't trigger a Next navigation/re-render.
+  const [active, setActive] = useState<Leaf>(() => {
+    if (typeof window === 'undefined') return 'overview'
+    return (new URLSearchParams(window.location.search).get('v') as Leaf) || 'overview'
+  })
 
   // ── Group + sub definitions (role-filtered) ─────────────────────────────────
   const groups = useMemo(() => {
@@ -95,11 +97,14 @@ export function LeagueNav(props: NavProps) {
   )
 
   const go = useCallback((leaf: Leaf) => {
-    const sp = new URLSearchParams(params.toString())
+    setActive(leaf)
+    if (typeof window === 'undefined') return
+    const sp = new URLSearchParams(window.location.search)
     if (leaf === 'overview') sp.delete('v')
     else sp.set('v', leaf)
-    router.replace(`${pathname}${sp.toString() ? `?${sp}` : ''}`, { scroll: false })
-  }, [params, pathname, router])
+    const qs = sp.toString()
+    window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`)
+  }, [])
 
   // Selecting a group jumps to its first sub (or the group itself for Overview)
   const selectGroup = useCallback((key: string) => {
