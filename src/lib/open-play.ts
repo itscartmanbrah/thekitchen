@@ -85,6 +85,42 @@ function bestSplitAvoidingRepeats(four: RosterPlayer[], partneredWith: Map<strin
   return { team1: best[0].map(p => p.id), team2: best[1].map(p => p.id) }
 }
 
+// King of the Court: winners move up a court, losers move down, re-paired each
+// round. `lastRound` maps court number (1 = top) → who won/lost there.
+export interface CourtResult { winners: string[]; losers: string[] }
+
+// Re-pair 2–4 ids into the freshest teams (avoid repeat partners).
+function repair(ids: string[], partneredWith: Map<string, Set<string>>): Pairing {
+  if (ids.length <= 2) return { team1: ids.slice(0, 1), team2: ids.slice(1, 2) }
+  const [a, b, c, d] = ids
+  const options: [string[], string[]][] = [[[a, b], [c, d]], [[a, c], [b, d]], [[a, d], [b, c]]]
+  const rep = (x: string, y: string) => (partneredWith.get(x)?.has(y) ? 1 : 0)
+  let best = options[0]; let bestCost = Infinity
+  for (const [t1, t2] of options) {
+    const cost = rep(t1[0], t1[1]) + rep(t2[0], t2[1])
+    if (cost < bestCost) { bestCost = cost; best = [t1, t2] }
+  }
+  return { team1: best[0], team2: best[1] }
+}
+
+export function buildKingRound(
+  lastRound: Map<number, CourtResult>,
+  courtCount: number,
+  partneredWith: Map<string, Set<string>>,
+): Pairing[] {
+  const groups: Pairing[] = []
+  for (let c = 1; c <= courtCount; c++) {
+    const here = lastRound.get(c)
+    if (!here) return []   // incomplete results → caller falls back to a fresh seed
+    let roster: string[]
+    if (c === 1) roster = [...here.winners, ...(lastRound.get(2)?.winners ?? [])]
+    else if (c === courtCount) roster = [...(lastRound.get(c - 1)?.losers ?? []), ...here.losers]
+    else roster = [...(lastRound.get(c - 1)?.losers ?? []), ...(lastRound.get(c + 1)?.winners ?? [])]
+    groups.push(repair(roster, partneredWith))
+  }
+  return groups
+}
+
 // Mexicano round: players already sorted best→worst by standings. On each court
 // the top 4 of the remaining play 1&4 vs 2&3, so the closest-ranked players meet.
 export function buildMexicanoRound(

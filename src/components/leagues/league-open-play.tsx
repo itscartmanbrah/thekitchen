@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
-import { buildFairGroups, buildMexicanoRound, type RosterPlayer } from '@/lib/open-play'
+import { buildFairGroups, buildMexicanoRound, buildKingRound, type RosterPlayer, type CourtResult } from '@/lib/open-play'
 import {
   Play, Plus, UserPlus, Link2, Check, Pause, X, Swords,
   ArrowLeft, CalendarDays, Wand2, Lock, Unlock, Repeat, Trash2, Monitor,
@@ -67,6 +67,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   const [games, setGames] = useState<Game[]>([])           // staged + in_progress
   const [partnered, setPartnered] = useState<Map<string, Set<string>>>(new Map())
   const [points, setPoints] = useState<Map<string, number>>(new Map())   // session points (Americano-style)
+  const [lastRound, setLastRound] = useState<Map<number, CourtResult>>(new Map())   // King of the Court movement
   const [scoreGame, setScoreGame] = useState<Game | null>(null)          // score-entry dialog
   const [s1, setS1] = useState(''); const [s2, setS2] = useState('')
   const [loading, setLoading] = useState(true)
@@ -83,7 +84,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   const [courts, setCourts] = useState<Court[]>([])
   const [selectedCourts, setSelectedCourts] = useState<string[]>([])
   const [format, setFormat] = useState<'singles' | 'doubles'>('doubles')
-  const [mode, setMode] = useState<'balanced' | 'americano' | 'mexicano'>('balanced')
+  const [mode, setMode] = useState<'balanced' | 'americano' | 'mexicano' | 'king'>('balanced')
   const [rated, setRated] = useState(false)
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
@@ -123,7 +124,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     const [{ data: sp }, { data: g }, { data: done }] = await Promise.all([
       supabase.from('session_players').select('*').eq('session_id', sessionId).order('queue_order'),
       supabase.from('session_games').select('*').eq('session_id', sessionId).in('status', ['staged', 'in_progress']),
-      supabase.from('session_games').select('team1_ids, team2_ids, team1_score, team2_score').eq('session_id', sessionId).eq('status', 'completed'),
+      supabase.from('session_games').select('team1_ids, team2_ids, team1_score, team2_score, court_number, winner_team, completed_at').eq('session_id', sessionId).eq('status', 'completed').order('completed_at'),
     ])
     // attach avatar_url for members
     const rows = (sp as SP[]) ?? []
@@ -144,16 +145,25 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
       if (!pmap.has(b)) pmap.set(b, new Set()); pmap.get(b)!.add(a)
     }
     const addPts = (id: string, n: number) => pts.set(id, (pts.get(id) ?? 0) + n)
-    type DoneGame = { team1_ids: string[]; team2_ids: string[]; team1_score: number | null; team2_score: number | null }
-    for (const game of ((done ?? []) as DoneGame[])) {
+    type DoneGame = { team1_ids: string[]; team2_ids: string[]; team1_score: number | null; team2_score: number | null; court_number: number | null; winner_team: number | null }
+    const doneGames = (done ?? []) as DoneGame[]   // ordered by completed_at asc
+    const lr = new Map<number, CourtResult>()
+    for (const game of doneGames) {
       for (const t of [game.team1_ids, game.team2_ids]) {
         for (let i = 0; i < t.length; i++) for (let j = i + 1; j < t.length; j++) addPair(t[i], t[j])
       }
       game.team1_ids.forEach(id => addPts(id, game.team1_score ?? 0))
       game.team2_ids.forEach(id => addPts(id, game.team2_score ?? 0))
+      // latest result per court drives King-of-the-Court movement
+      if (game.court_number != null && game.winner_team != null) {
+        lr.set(game.court_number, game.winner_team === 1
+          ? { winners: game.team1_ids, losers: game.team2_ids }
+          : { winners: game.team2_ids, losers: game.team1_ids })
+      }
     }
     setPartnered(pmap)
     setPoints(pts)
+    setLastRound(lr)
   }
 
   useEffect(() => {
@@ -227,7 +237,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   const liveGames = games.filter(g => g.status === 'in_progress').sort((a, b) => (a.court_number ?? 0) - (b.court_number ?? 0))
   const stagedGroups = games.filter(g => g.status === 'staged')
   const perGame = session?.format === 'doubles' ? 4 : 2
-  const isFormat = session?.match_mode === 'americano' || session?.match_mode === 'mexicano'
+  const isFormat = session?.match_mode === 'americano' || session?.match_mode === 'mexicano' || session?.match_mode === 'king'
+  const isKing = session?.match_mode === 'king'
   const occupiedCourts = new Set(liveGames.map(g => g.court_number))
   const freeCourts = session
     ? Array.from({ length: session.court_count }, (_, i) => i + 1).filter(c => !occupiedCourts.has(c))
@@ -362,13 +373,23 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     if (!session) return
     if (liveGames.length > 0) { toast({ title: 'Finish the current round first', description: 'Enter every court’s score, then start the next round.' }); return }
     const ready = bench
+    const availableIds = new Set(ready.map(p => p.id))
+    const seedBalanced = () => {
+      const roster: RosterPlayer[] = ready.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: now - new Date(p.queued_since).getTime() }))
+      return buildFairGroups(roster, session.format, session.court_count, partnered)
+    }
     let groups
     if (session.match_mode === 'mexicano') {
       const ranked = [...ready].sort((a, b) => (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || b.wins - a.wins)
       groups = buildMexicanoRound(ranked, session.format, session.court_count)
+    } else if (session.match_mode === 'king') {
+      groups = buildKingRound(lastRound, session.court_count, partnered)
+      // first round, or anyone moved/left → fall back to a fresh balanced seed
+      if (groups.length === 0 || groups.some(g => [...g.team1, ...g.team2].some(id => !availableIds.has(id)))) {
+        groups = seedBalanced()
+      }
     } else {
-      const roster: RosterPlayer[] = ready.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: now - new Date(p.queued_since).getTime() }))
-      groups = buildFairGroups(roster, session.format, session.court_count, partnered)
+      groups = seedBalanced()
     }
     if (groups.length === 0) { toast({ title: `Need ${perGame} ready players`, variant: 'destructive' }); return }
     setBusy(true)
@@ -565,14 +586,15 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
 
           <div className="space-y-1.5">
             <Label>Play style</Label>
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-2 gap-1.5">
               {([
                 { k: 'balanced', label: 'Drop-in', desc: 'Queue + courts' },
+                { k: 'king', label: 'King of the Court', desc: 'Winners up, losers down' },
                 { k: 'americano', label: 'Americano', desc: 'Rotate partners' },
-                { k: 'mexicano', label: 'Mexicano', desc: 'By standings' },
+                { k: 'mexicano', label: 'Mexicano', desc: 'Pair by standings' },
               ] as const).map(m => (
                 <button key={m.k} type="button" onClick={() => setMode(m.k)}
-                  className={`text-center py-2 rounded-lg border ${mode === m.k ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 text-gray-600'}`}>
+                  className={`text-left px-3 py-2 rounded-lg border ${mode === m.k ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 text-gray-600'}`}>
                   <span className="block text-sm font-medium">{m.label}</span>
                   <span className="block text-[10px] text-gray-400">{m.desc}</span>
                 </button>
@@ -582,7 +604,9 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
               <p className="text-[11px] text-gray-400">
                 {mode === 'americano'
                   ? 'Everyone rotates partners each round; ranked by total points. Enter each game’s score to advance.'
-                  : 'Pairs the closest-ranked players each round (1&4 vs 2&3); ranked by points.'}
+                  : mode === 'mexicano'
+                    ? 'Pairs the closest-ranked players each round (1&4 vs 2&3); ranked by points.'
+                    : 'Each round, winners move up a court and losers move down — Court 1 is the “Kings” court. Partners are re-shuffled each round. Enter every court’s score to advance.'}
               </p>
             )}
           </div>
@@ -737,7 +761,11 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
             return (
               <div key={courtNo} className={`bg-slate-800 border border-slate-700/60 rounded-xl p-3 border-l-[3px] ${over ? 'border-l-red-500' : game ? 'border-l-green-500' : 'border-l-slate-600'}`}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-white font-bold italic text-sm">COURT {courtNo}</span>
+                  <span className="text-white font-bold italic text-sm">
+                    COURT {courtNo}
+                    {isKing && courtNo === 1 && <span className="ml-1.5 text-[9px] not-italic font-bold text-amber-300 bg-amber-500/20 rounded px-1.5 py-0.5 align-middle">KINGS</span>}
+                    {isKing && courtNo === session.court_count && session.court_count > 1 && <span className="ml-1.5 text-[9px] not-italic font-medium text-slate-400 align-middle">bottom</span>}
+                  </span>
                   {game ? (
                     over
                       ? <span className="text-[9px] uppercase tracking-wide font-bold text-white bg-red-500 rounded px-1.5 py-0.5">Overtime {mmss(game.started_at)}</span>
@@ -813,7 +841,9 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
                   ? 'Round in progress — enter every court’s score to finish it.'
                   : session.match_mode === 'mexicano'
                     ? 'Pairs the closest-ranked players each round (1&4 vs 2&3).'
-                    : 'Rotates partners each round so everyone mixes.'}
+                    : session.match_mode === 'king'
+                      ? 'Winners move up a court, losers move down — Court 1 is the Kings court.'
+                      : 'Rotates partners each round so everyone mixes.'}
               </p>
             </div>
             <button onClick={generateRound} disabled={busy || liveGames.length > 0}
