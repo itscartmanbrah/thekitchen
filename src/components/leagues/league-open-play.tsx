@@ -12,10 +12,10 @@ import {
 } from '@/components/ui/dialog'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
-import { buildMatches, playersNeeded, type QueuePlayer } from '@/lib/open-play'
+import { buildFairGroups, type RosterPlayer } from '@/lib/open-play'
 import {
-  Play, Plus, UserPlus, Link2, Check, Trophy, Clock, Pause, LogOut, X, Swords,
-  ArrowLeft, CalendarDays,
+  Play, Plus, UserPlus, Link2, Check, Pause, X, Swords,
+  ArrowLeft, CalendarDays, Wand2, Lock, Unlock, Repeat, Trash2,
 } from 'lucide-react'
 
 interface SessionRow {
@@ -40,18 +40,21 @@ interface SP {
   avatar_color: string
   avatar_url?: string | null
   skill: number
-  status: 'queued' | 'playing' | 'resting' | 'left'
+  status: 'queued' | 'playing' | 'resting' | 'left' | 'staged'
   queue_order: number
+  queued_since: string
   wins: number
   losses: number
   games: number
 }
 interface Game {
   id: string
-  court_number: number
+  court_number: number | null
   team1_ids: string[]
   team2_ids: string[]
-  status: 'in_progress' | 'completed'
+  status: 'staged' | 'in_progress' | 'completed'
+  locked: boolean
+  started_at: string
 }
 interface Member { user_id: string; profiles: { display_name: string; avatar_color: string; avatar_url: string | null } }
 
@@ -60,10 +63,14 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   const [session, setSession] = useState<SessionRow | null>(null)
   const [creating, setCreating] = useState(false)
   const [players, setPlayers] = useState<SP[]>([])
-  const [games, setGames] = useState<Game[]>([])
+  const [games, setGames] = useState<Game[]>([])           // staged + in_progress
+  const [partnered, setPartnered] = useState<Map<string, Set<string>>>(new Map())
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [now, setNow] = useState(Date.now())
+  const [selectedBench, setSelectedBench] = useState<string | null>(null)   // tap-to-place
+  const [subTarget, setSubTarget] = useState<{ gameId: string; outId: string } | null>(null)
 
   // setup
   const [setupName, setSetupName] = useState('')
@@ -105,9 +112,10 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   }
 
   async function loadState(sessionId: string) {
-    const [{ data: sp }, { data: g }] = await Promise.all([
+    const [{ data: sp }, { data: g }, { data: done }] = await Promise.all([
       supabase.from('session_players').select('*').eq('session_id', sessionId).order('queue_order'),
-      supabase.from('session_games').select('*').eq('session_id', sessionId).eq('status', 'in_progress').order('court_number'),
+      supabase.from('session_games').select('*').eq('session_id', sessionId).in('status', ['staged', 'in_progress']),
+      supabase.from('session_games').select('team1_ids, team2_ids').eq('session_id', sessionId).eq('status', 'completed'),
     ])
     // attach avatar_url for members
     const rows = (sp as SP[]) ?? []
@@ -119,6 +127,19 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     }
     setPlayers(rows)
     setGames((g as Game[]) ?? [])
+
+    // partner history (for Auto Fill repeat-avoidance): who has partnered whom
+    const pmap = new Map<string, Set<string>>()
+    const addPair = (a: string, b: string) => {
+      if (!pmap.has(a)) pmap.set(a, new Set()); pmap.get(a)!.add(b)
+      if (!pmap.has(b)) pmap.set(b, new Set()); pmap.get(b)!.add(a)
+    }
+    for (const game of ((done ?? []) as { team1_ids: string[]; team2_ids: string[] }[])) {
+      for (const t of [game.team1_ids, game.team2_ids]) {
+        for (let i = 0; i < t.length; i++) for (let j = i + 1; j < t.length; j++) addPair(t[i], t[j])
+      }
+    }
+    setPartnered(pmap)
   }
 
   useEffect(() => {
@@ -133,6 +154,12 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     { table: 'session_players' },
     { table: 'session_games' },
   ], () => fetchSessions(), [leagueId])
+
+  // 1s tick drives the court timers and wait timers.
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(t)
+  }, [])
 
   const isScheduled = !!session && !!session.starts_at && new Date(session.starts_at).getTime() > Date.now()
 
@@ -176,10 +203,25 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     selectedCourts.includes(courtId) && startH !== null && endH !== null && h >= startH && h < endH
 
   const playerMap = new Map(players.map(p => [p.id, p]))
-  const queued = players.filter(p => p.status === 'queued').sort((a, b) => a.queue_order - b.queue_order)
-  const playing = players.filter(p => p.status === 'playing')
+  // Bench = available players, fairest first (fewest games, then longest wait).
+  const bench = players.filter(p => p.status === 'queued')
+    .sort((a, b) => a.games - b.games || new Date(a.queued_since).getTime() - new Date(b.queued_since).getTime())
   const resting = players.filter(p => p.status === 'resting')
-  const openCourts = session ? session.court_count - games.length : 0
+  const liveGames = games.filter(g => g.status === 'in_progress').sort((a, b) => (a.court_number ?? 0) - (b.court_number ?? 0))
+  const stagedGroups = games.filter(g => g.status === 'staged')
+  const perGame = session?.format === 'doubles' ? 4 : 2
+  const occupiedCourts = new Set(liveGames.map(g => g.court_number))
+  const freeCourts = session
+    ? Array.from({ length: session.court_count }, (_, i) => i + 1).filter(c => !occupiedCourts.has(c))
+    : []
+  const playingCount = players.filter(p => p.status === 'playing').length
+
+  const mmss = (fromIso: string) => {
+    const s = Math.max(0, Math.floor((now - new Date(fromIso).getTime()) / 1000))
+    const m = Math.floor(s / 60)
+    return `${m}:${String(s % 60).padStart(2, '0')}`
+  }
+  const OVERTIME_MIN = 15
 
   // ── actions ───────────────────────────────────────────────────────────────
   async function startSession() {
@@ -235,34 +277,66 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     else { setGuestName(''); loadState(session!.id) }
   }
 
-  async function fillCourts() {
-    if (!session) return
-    const q: QueuePlayer[] = queued.map(p => ({ id: p.id, skill: p.skill }))
-    const { pairings } = buildMatches(q, session.format, openCourts)
-    if (pairings.length === 0) {
-      toast({ title: 'Not enough players in the queue', variant: 'destructive' })
-      return
-    }
+  async function rpc(fn: string, args: Record<string, unknown>, successReload = true) {
     setBusy(true)
-    // assign to the lowest-numbered free courts
-    const occupied = new Set(games.map(g => g.court_number))
-    let court = 1
-    for (const p of pairings) {
-      while (occupied.has(court)) court++
-      occupied.add(court)
-      const { error } = await supabase.rpc('create_session_game', {
-        p_session_id: session.id, p_court: court, p_team1: p.team1, p_team2: p.team2,
-      })
+    const { error } = await supabase.rpc(fn, args)
+    if (error) toast({ title: 'Something went wrong', description: error.message, variant: 'destructive' })
+    else if (successReload && session) await loadState(session.id)
+    setBusy(false)
+    return !error
+  }
+
+  // Auto Fill builds balanced on-deck groups for any free courts.
+  async function autoFill() {
+    if (!session) return
+    const maxGroups = Math.max(0, freeCourts.length - stagedGroups.length)
+    if (maxGroups <= 0) { toast({ title: 'No free courts', description: 'Finish a game or disband an on-deck group first.' }); return }
+    const roster: RosterPlayer[] = bench.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: now - new Date(p.queued_since).getTime() }))
+    const groups = buildFairGroups(roster, session.format, maxGroups, partnered)
+    if (groups.length === 0) { toast({ title: `Need ${perGame} on the bench`, variant: 'destructive' }); return }
+    setBusy(true)
+    for (const grp of groups) {
+      const { error } = await supabase.rpc('stage_session_group', { p_session_id: session.id, p_team1: grp.team1, p_team2: grp.team2 })
       if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); break }
     }
     await loadState(session.id)
     setBusy(false)
   }
 
-  async function recordWinner(game: Game, winner: 1 | 2) {
-    const { error } = await supabase.rpc('complete_session_game', { p_game_id: game.id, p_winner: winner })
-    if (error) { toast({ title: 'Could not record', description: error.message, variant: 'destructive' }); return }
-    await loadState(session!.id)
+  const addEmptyGroup = () => session && rpc('stage_session_group', { p_session_id: session.id, p_team1: [], p_team2: [] })
+
+  // Tap a bench player, then tap an empty slot to place them.
+  function teamsWith(g: Game, addId: string): [string[], string[]] {
+    const cap = perGame / 2
+    const t1 = [...g.team1_ids], t2 = [...g.team2_ids]
+    if (t1.length < cap) t1.push(addId); else t2.push(addId)
+    return [t1, t2]
+  }
+  async function placeInGroup(g: Game) {
+    if (!selectedBench || (g.team1_ids.length + g.team2_ids.length) >= perGame) return
+    const [t1, t2] = teamsWith(g, selectedBench)
+    setSelectedBench(null)
+    await rpc('set_session_group', { p_game_id: g.id, p_team1: t1, p_team2: t2 })
+  }
+  function removeFromGroup(g: Game, pid: string) {
+    rpc('set_session_group', { p_game_id: g.id, p_team1: g.team1_ids.filter(x => x !== pid), p_team2: g.team2_ids.filter(x => x !== pid) })
+  }
+  const toggleLock = (g: Game) => rpc('lock_session_group', { p_game_id: g.id, p_locked: !g.locked })
+  const sendToCourt = (g: Game, court: number) => rpc('assign_session_group', { p_game_id: g.id, p_court: court })
+  const disband = (g: Game) => rpc('disband_session_group', { p_game_id: g.id })
+
+  // Substitute: tap Sub on a player, then tap a bench player to swap in.
+  async function benchTap(pid: string) {
+    if (subTarget) {
+      const ok = await rpc('sub_session_player', { p_game_id: subTarget.gameId, p_out: subTarget.outId, p_in: pid })
+      if (ok) setSubTarget(null)
+      return
+    }
+    setSelectedBench(prev => prev === pid ? null : pid)
+  }
+
+  async function finishGame(game: Game, winner: 1 | 2) {
+    await rpc('complete_session_game', { p_game_id: game.id, p_winner: winner })
   }
 
   async function setStatus(playerId: string, status: string) {
@@ -292,7 +366,6 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   }
 
   const nameOf = (id: string) => playerMap.get(id)?.display_name ?? '?'
-  const avatarOf = (id: string) => playerMap.get(id)
 
   if (loading) return <div className="text-center py-12 text-gray-500">Loading…</div>
 
@@ -516,100 +589,201 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
         </label>
       )}
 
-      {/* Courts board */}
-      <div className="grid gap-2 sm:grid-cols-2 mb-4">
-        {Array.from({ length: session.court_count }, (_, i) => i + 1).map(courtNo => {
-          const game = games.find(g => g.court_number === courtNo)
-          return (
-            <div key={courtNo} className="border rounded-xl p-3 bg-white">
-              <p className="text-xs font-semibold text-gray-400 mb-2">Court {courtNo}</p>
-              {game ? (
-                <div className="space-y-2">
-                  {[1, 2].map(team => {
-                    const ids = team === 1 ? game.team1_ids : game.team2_ids
-                    return (
-                      <button
-                        key={team}
-                        disabled={!isOrganizer}
-                        onClick={() => isOrganizer && recordWinner(game, team as 1 | 2)}
-                        className={`w-full flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-left ${isOrganizer ? 'hover:bg-green-50 hover:border-green-300 border border-transparent' : ''}`}
-                        title={isOrganizer ? 'Tap if this team won' : undefined}
-                      >
-                        {ids.map(id => {
-                          const p = avatarOf(id)
-                          return p ? <PlayerAvatar key={id} name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" /> : null
-                        })}
-                        <span className="text-xs font-medium text-gray-800 truncate">{ids.map(nameOf).join(' & ')}</span>
-                      </button>
-                    )
-                  })}
-                  {isOrganizer && <p className="text-[10px] text-center text-gray-400">Tap the winning team</p>}
-                </div>
-              ) : (
-                <div className="text-xs text-gray-300 py-3 text-center">Open</div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-
-      {isOrganizer && openCourts > 0 && (
-        <Button size="sm" onClick={fillCourts} disabled={busy || queued.length < (session.format === 'doubles' ? 4 : 2)} className="mb-4">
-          <Plus className="w-4 h-4 mr-1" />Fill {openCourts} open court{openCourts > 1 ? 's' : ''}
-        </Button>
-      )}
-
-      {/* Queue */}
-      <div className="mb-4">
-        <p className="text-xs font-semibold text-gray-500 mb-2 flex items-center gap-1">
-          <Clock className="w-3.5 h-3.5" />In the queue ({queued.length})
-          {playersNeeded(queued.length, session.format) > 0 && openCourts > 0 && (
-            <span className="text-gray-400 font-normal">· need {playersNeeded(queued.length, session.format)} more for a court</span>
-          )}
-        </p>
-        <div className="space-y-1.5">
-          {queued.map((p, i) => (
-            <div key={p.id} className="flex items-center gap-2.5 bg-white border rounded-lg px-3 py-2">
-              <span className="text-xs text-gray-400 w-4">{i + 1}</span>
-              <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
-              <span className="text-sm text-gray-800 flex-1 truncate">
-                {p.display_name}
-                {!p.user_id && <span className="text-[10px] text-gray-400 ml-1">guest</span>}
-              </span>
-              <span className="text-xs text-gray-400">{p.wins}W {p.losses}L</span>
-              {isOrganizer && (
-                <>
-                  <button onClick={() => setStatus(p.id, 'resting')} className="text-gray-300 hover:text-amber-500" title="Rest">
-                    <Pause className="w-3.5 h-3.5" />
-                  </button>
-                  <button onClick={() => setStatus(p.id, 'left')} className="text-gray-300 hover:text-red-500" title="Remove">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </>
-              )}
+      {/* ── Scoreboard console ─────────────────────────────────────────────── */}
+      <div className="bg-slate-900 rounded-2xl p-4 sm:p-5 mb-2">
+        {/* Player totals */}
+        <div className="flex gap-2 mb-5">
+          {[
+            { label: 'Checked in', val: players.filter(p => p.status !== 'left').length, color: 'text-white' },
+            { label: 'Ready', val: bench.length, color: 'text-green-400' },
+            { label: 'Playing', val: playingCount, color: 'text-white' },
+            { label: 'Resting', val: resting.length, color: 'text-white' },
+          ].map(s => (
+            <div key={s.label} className="flex-1 bg-slate-800 rounded-lg px-3 py-2">
+              <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">{s.label}</div>
+              <div className={`text-xl font-bold ${s.color}`}>{s.val}</div>
             </div>
           ))}
-          {queued.length === 0 && <p className="text-sm text-gray-400 py-3 text-center">Queue is empty — add players to get going.</p>}
         </div>
-      </div>
 
-      {/* Resting */}
-      {resting.length > 0 && (
-        <div className="mb-2">
-          <p className="text-xs font-semibold text-gray-500 mb-2">Resting ({resting.length})</p>
-          <div className="space-y-1.5">
-            {resting.map(p => (
-              <div key={p.id} className="flex items-center gap-2.5 bg-gray-50 border rounded-lg px-3 py-2">
-                <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
-                <span className="text-sm text-gray-600 flex-1 truncate">{p.display_name}</span>
-                {isOrganizer && (
-                  <button onClick={() => setStatus(p.id, 'queued')} className="text-xs text-green-600 hover:underline">Back in</button>
+        {/* Courts */}
+        <div className="text-[11px] uppercase tracking-[0.2em] text-green-400 font-bold mb-2.5">Courts</div>
+        <div className="grid sm:grid-cols-2 gap-2.5 mb-5">
+          {Array.from({ length: session.court_count }, (_, i) => i + 1).map(courtNo => {
+            const game = liveGames.find(g => g.court_number === courtNo)
+            const over = game ? (now - new Date(game.started_at).getTime()) / 60000 > OVERTIME_MIN : false
+            return (
+              <div key={courtNo} className={`bg-slate-800 rounded-lg p-3 border-l-[3px] ${over ? 'border-red-500' : game ? 'border-green-500' : 'border-slate-700'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white font-bold italic text-sm">COURT {courtNo}</span>
+                  {game ? (
+                    over
+                      ? <span className="text-[9px] uppercase tracking-wide font-bold text-white bg-red-500 rounded px-1.5 py-0.5">Overtime {mmss(game.started_at)}</span>
+                      : <span className="text-[11px] text-green-400 font-medium tabular-nums">{mmss(game.started_at)}</span>
+                  ) : <span className="text-[10px] uppercase tracking-wide text-slate-500">Open</span>}
+                </div>
+                {game ? (
+                  <div className="space-y-1.5">
+                    {([1, 2] as const).map(team => {
+                      const ids = team === 1 ? game.team1_ids : game.team2_ids
+                      return (
+                        <div key={team} className="flex items-center gap-1.5">
+                          <div className="flex-1 min-w-0">
+                            {ids.map(id => (
+                              <span key={id} className="inline-flex items-center gap-1 mr-1.5 text-[13px] text-slate-100">
+                                {nameOf(id)}
+                                {isOrganizer && (
+                                  <button onClick={() => { setSubTarget({ gameId: game.id, outId: id }); toast({ title: 'Pick a bench player to sub in' }) }}
+                                    className="text-slate-500 hover:text-green-400" title="Substitute">
+                                    <Repeat className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </span>
+                            ))}
+                          </div>
+                          {isOrganizer && (
+                            <button onClick={() => finishGame(game, team)} disabled={busy}
+                              className="text-[10px] uppercase tracking-wide font-bold text-slate-900 bg-green-400 hover:bg-green-300 rounded px-2 py-1 shrink-0">
+                              Won
+                            </button>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-[11px] text-slate-600 py-3 text-center">Send a group from On Deck</div>
                 )}
               </div>
-            ))}
-          </div>
+            )
+          })}
         </div>
-      )}
+
+        {/* On Deck */}
+        {isOrganizer && (
+          <>
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-[11px] uppercase tracking-[0.2em] text-green-400 font-bold">On Deck</span>
+              <div className="flex gap-1.5">
+                <button onClick={autoFill} disabled={busy}
+                  className="text-[10px] uppercase tracking-wide font-bold text-slate-900 bg-green-400 hover:bg-green-300 rounded px-2.5 py-1.5 flex items-center gap-1">
+                  <Wand2 className="w-3 h-3" />Auto fill
+                </button>
+                <button onClick={addEmptyGroup} disabled={busy}
+                  className="text-[10px] uppercase tracking-wide font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded px-2.5 py-1.5 flex items-center gap-1">
+                  <Plus className="w-3 h-3" />Group
+                </button>
+              </div>
+            </div>
+            {selectedBench && (
+              <p className="text-[11px] text-green-300 mb-2">Tap an empty slot to place <strong>{nameOf(selectedBench)}</strong> · <button onClick={() => setSelectedBench(null)} className="underline">cancel</button></p>
+            )}
+            {stagedGroups.length === 0 ? (
+              <p className="text-[11px] text-slate-600 mb-5">No groups staged. Hit <strong>Auto fill</strong> to build balanced games from the bench.</p>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-2.5 mb-5">
+                {stagedGroups.map((g, gi) => {
+                  const ids = [...g.team1_ids, ...g.team2_ids]
+                  const full = ids.length >= perGame
+                  return (
+                    <div key={g.id} className="bg-slate-800/60 border border-slate-700 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[12px] text-slate-400 font-medium">Group {gi + 1}</span>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => toggleLock(g)} className={g.locked ? 'text-green-400' : 'text-slate-500 hover:text-slate-300'} title={g.locked ? 'Unlock' : 'Lock'}>
+                            {g.locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                          </button>
+                          <button onClick={() => disband(g)} className="text-slate-500 hover:text-red-400" title="Disband"><Trash2 className="w-3.5 h-3.5" /></button>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {ids.map(id => (
+                          <button key={id} onClick={() => removeFromGroup(g, id)}
+                            className="inline-flex items-center gap-1 text-[12px] text-slate-100 bg-slate-700 rounded px-2 py-1 hover:bg-red-500/20">
+                            {nameOf(id)}<X className="w-2.5 h-2.5 text-slate-400" />
+                          </button>
+                        ))}
+                        {Array.from({ length: perGame - ids.length }).map((_, k) => (
+                          <button key={k} onClick={() => placeInGroup(g)} disabled={!selectedBench}
+                            className={`text-[12px] rounded px-3 py-1 border border-dashed ${selectedBench ? 'border-green-500 text-green-400 hover:bg-green-500/10' : 'border-slate-700 text-slate-600'}`}>
+                            +
+                          </button>
+                        ))}
+                      </div>
+                      {full && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-[10px] uppercase tracking-wide text-slate-500">Send to</span>
+                          {freeCourts.length === 0
+                            ? <span className="text-[10px] text-slate-600">no free court</span>
+                            : freeCourts.map(c => (
+                              <button key={c} onClick={() => sendToCourt(g, c)} disabled={busy}
+                                className="text-[10px] uppercase font-bold text-slate-900 bg-green-400 hover:bg-green-300 rounded px-2 py-1">
+                                Court {c}
+                              </button>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Bench & roster */}
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-green-400 font-bold">Bench {bench.length > 0 && <span className="text-slate-500">· {bench.length}</span>}</span>
+          {isOrganizer && (
+            <button onClick={openAdd} className="text-[10px] uppercase tracking-wide font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded px-2.5 py-1.5 flex items-center gap-1">
+              <UserPlus className="w-3 h-3" />Add player
+            </button>
+          )}
+        </div>
+        {subTarget && (
+          <p className="text-[11px] text-green-300 mb-2">Tap a bench player to swap in for <strong>{nameOf(subTarget.outId)}</strong> · <button onClick={() => setSubTarget(null)} className="underline">cancel</button></p>
+        )}
+        <div className="space-y-1.5">
+          {bench.map(p => {
+            const sel = selectedBench === p.id
+            return (
+              <div key={p.id} className={`flex items-center gap-2.5 rounded-lg px-3 py-2 ${sel ? 'bg-green-500/20 ring-1 ring-green-500' : 'bg-slate-800'}`}>
+                <button onClick={() => isOrganizer && benchTap(p.id)} className="flex items-center gap-2.5 flex-1 min-w-0 text-left" disabled={!isOrganizer}>
+                  <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
+                  <span className="text-[13px] text-slate-100 truncate">
+                    {p.display_name}
+                    {!p.user_id && <span className="text-[10px] text-slate-500 ml-1">guest</span>}
+                  </span>
+                </button>
+                <span className="text-[11px] text-slate-500 tabular-nums shrink-0">waited {mmss(p.queued_since)} · {p.games}g</span>
+                {isOrganizer && (
+                  <>
+                    <button onClick={() => setStatus(p.id, 'resting')} className="text-slate-500 hover:text-amber-400 shrink-0" title="Rest"><Pause className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setStatus(p.id, 'left')} className="text-slate-500 hover:text-red-400 shrink-0" title="Remove"><X className="w-3.5 h-3.5" /></button>
+                  </>
+                )}
+              </div>
+            )
+          })}
+          {bench.length === 0 && <p className="text-[12px] text-slate-600 py-3 text-center">Bench is empty — add players to get going.</p>}
+        </div>
+
+        {/* Resting */}
+        {resting.length > 0 && (
+          <div className="mt-4">
+            <span className="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-bold">Resting · {resting.length}</span>
+            <div className="space-y-1.5 mt-2">
+              {resting.map(p => (
+                <div key={p.id} className="flex items-center gap-2.5 bg-slate-800/50 rounded-lg px-3 py-2">
+                  <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
+                  <span className="text-[13px] text-slate-300 flex-1 truncate">{p.display_name}</span>
+                  {isOrganizer && <button onClick={() => setStatus(p.id, 'queued')} className="text-[11px] text-green-400 hover:underline">Back in</button>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Add player dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>

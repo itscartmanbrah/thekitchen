@@ -58,3 +58,51 @@ export function playersNeeded(queueLength: number, format: 'singles' | 'doubles'
   const perGame = format === 'doubles' ? 4 : 2
   return Math.max(0, perGame - queueLength)
 }
+
+// ── Fair rotation (Auto Fill) ───────────────────────────────────────────────
+export interface RosterPlayer extends QueuePlayer {
+  games: number    // games already played this session
+  waitMs: number   // how long they've been waiting
+}
+
+// Best doubles split that balances skill AND avoids re-pairing recent partners.
+function bestSplitAvoidingRepeats(four: RosterPlayer[], partneredWith: Map<string, Set<string>>): Pairing {
+  const [a, b, c, d] = four
+  const options: [RosterPlayer[], RosterPlayer[]][] = [
+    [[a, b], [c, d]],
+    [[a, c], [b, d]],
+    [[a, d], [b, c]],
+  ]
+  const repeat = (x: RosterPlayer, y: RosterPlayer) => (partneredWith.get(x.id)?.has(y.id) ? 1 : 0)
+  let best = options[0]
+  let bestCost = Infinity
+  for (const [t1, t2] of options) {
+    const skillDiff = Math.abs((t1[0].skill + t1[1].skill) - (t2[0].skill + t2[1].skill))
+    const reps = repeat(t1[0], t1[1]) + repeat(t2[0], t2[1])
+    const cost = skillDiff + reps * 100000   // repeats dominate; skill breaks ties
+    if (cost < bestCost) { bestCost = cost; best = [t1, t2] }
+  }
+  return { team1: best[0].map(p => p.id), team2: best[1].map(p => p.id) }
+}
+
+// Build up to `maxGroups` balanced groups from the bench, prioritising players
+// who've played fewest games (then waited longest), and avoiding repeat partners.
+export function buildFairGroups(
+  bench: RosterPlayer[],
+  format: 'singles' | 'doubles',
+  maxGroups: number,
+  partneredWith: Map<string, Set<string>>,
+): Pairing[] {
+  const perGame = format === 'doubles' ? 4 : 2
+  const ordered = [...bench].sort((a, b) => a.games - b.games || b.waitMs - a.waitMs)
+  const groups: Pairing[] = []
+  let i = 0
+  while (groups.length < maxGroups && i + perGame <= ordered.length) {
+    const group = ordered.slice(i, i + perGame)
+    groups.push(format === 'doubles'
+      ? bestSplitAvoidingRepeats(group, partneredWith)
+      : { team1: [group[0].id], team2: [group[1].id] })
+    i += perGame
+  }
+  return groups
+}
