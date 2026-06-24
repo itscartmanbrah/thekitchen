@@ -13,10 +13,11 @@ import {
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
 import { buildFairGroups, buildMexicanoRound, buildKingRound, type RosterPlayer, type CourtResult } from '@/lib/open-play'
+import { LeagueOpenPlayHistory } from '@/components/leagues/league-open-play-history'
 import {
   Play, Plus, UserPlus, Link2, Check, Pause, X, Swords,
   ArrowLeft, CalendarDays, Wand2, Lock, Unlock, Repeat, Trash2, Monitor,
-  Volume2, VolumeX, Star, Search,
+  Volume2, VolumeX, Star, Search, History,
 } from 'lucide-react'
 
 interface SessionRow {
@@ -65,6 +66,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   const [sessions, setSessions] = useState<SessionRow[]>([])
   const [session, setSession] = useState<SessionRow | null>(null)
   const [creating, setCreating] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
   const [players, setPlayers] = useState<SP[]>([])
   const [games, setGames] = useState<Game[]>([])           // staged + in_progress
   const [partnered, setPartnered] = useState<Map<string, Set<string>>>(new Map())
@@ -564,13 +566,19 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
 
   if (loading) return <div className="text-center py-12 text-gray-500">Loading…</div>
 
+  // ── History ─────────────────────────────────────────────────────────────────
+  if (showHistory) return <LeagueOpenPlayHistory leagueId={leagueId} onBack={() => setShowHistory(false)} />
+
   // ── No selected session: empty state ────────────────────────────────────────
   if (!session && !creating) {
     if (!isOrganizer) {
       return (
         <div className="text-center py-16 text-gray-400">
           <Swords className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-          <p className="text-sm">No Open Play session running right now.</p>
+          <p className="text-sm mb-4">No Open Play session running right now.</p>
+          <button onClick={() => setShowHistory(true)} className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-green-600">
+            <History className="w-3.5 h-3.5" />View past sessions
+          </button>
         </div>
       )
     }
@@ -578,9 +586,14 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
       <div className="text-center py-16">
         <Swords className="w-8 h-8 mx-auto mb-2 text-gray-300" />
         <p className="text-sm text-gray-400 mb-4">No Open Play sessions scheduled or running.</p>
-        <Button size="sm" onClick={() => setCreating(true)} disabled={courts.length === 0}>
-          <Plus className="w-4 h-4 mr-1" />New session
-        </Button>
+        <div className="flex items-center justify-center gap-2">
+          <Button size="sm" onClick={() => setCreating(true)} disabled={courts.length === 0}>
+            <Plus className="w-4 h-4 mr-1" />New session
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setShowHistory(true)}>
+            <History className="w-4 h-4 mr-1" />History
+          </Button>
+        </div>
         {courts.length === 0 && (
           <p className="text-xs text-amber-600 mt-3">Add a court first on the <strong>Courts</strong> tab.</p>
         )}
@@ -797,6 +810,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
           </p>
         </div>
         <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => setShowHistory(true)}><History className="w-3.5 h-3.5 mr-1" />History</Button>
           <Button size="sm" variant="outline" asChild>
             <a href={`/play/${session.share_code}/board`} target="_blank" rel="noopener noreferrer"><Monitor className="w-3.5 h-3.5 mr-1" />Board</a>
           </Button>
