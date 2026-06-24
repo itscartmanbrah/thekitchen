@@ -16,6 +16,7 @@ import { buildFairGroups, type RosterPlayer } from '@/lib/open-play'
 import {
   Play, Plus, UserPlus, Link2, Check, Pause, X, Swords,
   ArrowLeft, CalendarDays, Wand2, Lock, Unlock, Repeat, Trash2, Monitor,
+  Volume2, VolumeX, Star, Search,
 } from 'lucide-react'
 
 interface SessionRow {
@@ -71,6 +72,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   const [now, setNow] = useState(Date.now())
   const [selectedBench, setSelectedBench] = useState<string | null>(null)   // tap-to-place
   const [subTarget, setSubTarget] = useState<{ gameId: string; outId: string } | null>(null)
+  const [announce, setAnnounce] = useState(false)        // text-to-speech call-outs
+  const [benchFilter, setBenchFilter] = useState('')     // bench name search
 
   // setup
   const [setupName, setSetupName] = useState('')
@@ -88,6 +91,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   const [addOpen, setAddOpen] = useState(false)
   const [members, setMembers] = useState<Member[]>([])
   const [guestName, setGuestName] = useState('')
+  const [regulars, setRegulars] = useState<{ id: string; name: string; skill: number }[]>([])
 
   const { toast } = useToast()
   const supabase = createClient()
@@ -253,11 +257,32 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
 
   async function openAdd() {
     setAddOpen(true)
-    const { data } = await supabase
-      .from('league_members')
-      .select('user_id, profiles(display_name, avatar_color, avatar_url)')
-      .eq('league_id', leagueId).eq('status', 'active')
-    setMembers((data as unknown as Member[]) ?? [])
+    const [{ data: mem }, { data: reg }] = await Promise.all([
+      supabase.from('league_members').select('user_id, profiles(display_name, avatar_color, avatar_url)')
+        .eq('league_id', leagueId).eq('status', 'active'),
+      supabase.from('open_play_regulars').select('id, name, skill').eq('league_id', leagueId).order('name'),
+    ])
+    setMembers((mem as unknown as Member[]) ?? [])
+    setRegulars((reg as any[]) ?? [])
+  }
+
+  async function addRegularToSession(name: string, skill: number) {
+    const { error } = await supabase.rpc('add_session_player', { p_session_id: session!.id, p_user_id: null, p_guest_name: name, p_skill: skill })
+    if (error) toast({ title: 'Could not add', description: error.message, variant: 'destructive' })
+    else loadState(session!.id)
+  }
+  async function saveRegular() {
+    const n = guestName.trim()
+    if (!n) return
+    const { error } = await supabase.from('open_play_regulars').insert({ league_id: leagueId, name: n })
+    if (error) { toast({ title: error.code === '23505' ? 'Already saved' : 'Could not save', description: error.code === '23505' ? undefined : error.message, variant: 'destructive' }); return }
+    toast({ title: `Saved ${n} as a regular` })
+    const { data } = await supabase.from('open_play_regulars').select('id, name, skill').eq('league_id', leagueId).order('name')
+    setRegulars((data as any[]) ?? [])
+  }
+  async function removeRegular(id: string) {
+    await supabase.from('open_play_regulars').delete().eq('id', id)
+    setRegulars(prev => prev.filter(r => r.id !== id))
   }
 
   async function addMember(userId: string) {
@@ -286,11 +311,13 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     return !error
   }
 
-  // Auto Fill builds balanced on-deck groups for any free courts.
+  // Auto Fill builds balanced on-deck groups. It stages up to one group per
+  // court (so when every court is busy you still line up the next round and can
+  // see who's next), capped by how many full groups the bench can fill.
   async function autoFill() {
     if (!session) return
-    const maxGroups = Math.max(0, freeCourts.length - stagedGroups.length)
-    if (maxGroups <= 0) { toast({ title: 'No free courts', description: 'Finish a game or disband an on-deck group first.' }); return }
+    const maxGroups = Math.max(0, session.court_count - stagedGroups.length)
+    if (maxGroups <= 0) { toast({ title: 'On Deck is full', description: 'Send a group to a court to free up an On Deck slot.' }); return }
     const roster: RosterPlayer[] = bench.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: now - new Date(p.queued_since).getTime() }))
     const groups = buildFairGroups(roster, session.format, maxGroups, partnered)
     if (groups.length === 0) { toast({ title: `Need ${perGame} on the bench`, variant: 'destructive' }); return }
@@ -322,8 +349,19 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     rpc('set_session_group', { p_game_id: g.id, p_team1: g.team1_ids.filter(x => x !== pid), p_team2: g.team2_ids.filter(x => x !== pid) })
   }
   const toggleLock = (g: Game) => rpc('lock_session_group', { p_game_id: g.id, p_locked: !g.locked })
-  const sendToCourt = (g: Game, court: number) => rpc('assign_session_group', { p_game_id: g.id, p_court: court })
   const disband = (g: Game) => rpc('disband_session_group', { p_game_id: g.id })
+
+  function speak(text: string) {
+    if (!announce || typeof window === 'undefined' || !('speechSynthesis' in window)) return
+    window.speechSynthesis.cancel()
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(text))
+  }
+  async function sendToCourt(g: Game, court: number) {
+    const t1 = g.team1_ids.map(nameOf).join(' and ')
+    const t2 = g.team2_ids.map(nameOf).join(' and ')
+    const ok = await rpc('assign_session_group', { p_game_id: g.id, p_court: court })
+    if (ok) speak(`Court ${court}. ${t1}, versus ${t2}`)
+  }
 
   // Substitute: tap Sub on a player, then tap a bench player to swap in.
   async function benchTap(pid: string) {
@@ -668,6 +706,11 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
             <div className="flex items-center justify-between mb-2.5">
               <span className="text-[11px] uppercase tracking-[0.2em] text-green-400 font-bold">On Deck</span>
               <div className="flex gap-1.5">
+                <button onClick={() => setAnnounce(a => !a)}
+                  className={`rounded px-2 py-1.5 flex items-center ${announce ? 'bg-green-400 text-slate-900' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+                  title={announce ? 'Voice call-outs on' : 'Voice call-outs off'}>
+                  {announce ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                </button>
                 <button onClick={autoFill} disabled={busy}
                   className="text-[10px] uppercase tracking-wide font-bold text-slate-900 bg-green-400 hover:bg-green-300 rounded px-2.5 py-1.5 flex items-center gap-1">
                   <Wand2 className="w-3 h-3" />Auto fill
@@ -746,8 +789,15 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
         {subTarget && (
           <p className="text-[11px] text-green-300 mb-2">Tap a bench player to swap in for <strong>{nameOf(subTarget.outId)}</strong> · <button onClick={() => setSubTarget(null)} className="underline">cancel</button></p>
         )}
+        {bench.length > 6 && (
+          <div className="relative mb-2">
+            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <input value={benchFilter} onChange={e => setBenchFilter(e.target.value)} placeholder="Search bench…"
+              className="w-full bg-slate-800 text-slate-100 placeholder-slate-500 text-[13px] rounded-lg pl-8 pr-3 py-2 outline-none focus:ring-1 focus:ring-green-500" />
+          </div>
+        )}
         <div className="space-y-1.5">
-          {bench.map(p => {
+          {bench.filter(p => p.display_name.toLowerCase().includes(benchFilter.toLowerCase())).map(p => {
             const sel = selectedBench === p.id
             return (
               <div key={p.id} className={`flex items-center gap-2.5 rounded-lg px-3 py-2 ${sel ? 'bg-green-500/20 ring-1 ring-green-500' : 'bg-slate-800'}`}>
@@ -798,9 +848,36 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
               <div className="flex gap-2">
                 <Input placeholder="Guest name" value={guestName} onChange={e => setGuestName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') addGuest() }} />
+                <Button variant="outline" size="icon" onClick={saveRegular} disabled={!guestName.trim()} title="Save as a regular">
+                  <Star className="w-4 h-4" />
+                </Button>
                 <Button onClick={addGuest} disabled={!guestName.trim()}>Add</Button>
               </div>
+              <p className="text-xs text-gray-400">Tap the star to save a frequent player for next time.</p>
             </div>
+
+            {regulars.length > 0 && (
+              <div className="space-y-1.5">
+                <Label>Regulars</Label>
+                <div className="space-y-1 max-h-40 overflow-y-auto pr-1">
+                  {regulars.map(r => {
+                    const inSession = players.some(p => !p.user_id && p.display_name.toLowerCase() === r.name.toLowerCase() && p.status !== 'left')
+                    return (
+                      <div key={r.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-gray-200">
+                        <Star className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <span className="text-sm flex-1 truncate">{r.name}</span>
+                        <button onClick={() => removeRegular(r.id)} className="text-gray-300 hover:text-red-500" title="Forget"><X className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => addRegularToSession(r.name, r.skill)} disabled={inSession}
+                          className={`text-xs font-medium rounded px-2 py-1 ${inSession ? 'text-gray-300' : 'text-green-700 bg-green-50 hover:bg-green-100'}`}>
+                          {inSession ? 'In' : 'Add'}
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="space-y-1.5">
               <Label>League members</Label>
               <div className="space-y-1 max-h-60 overflow-y-auto pr-1">
