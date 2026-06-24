@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
-import { buildFairGroups, type RosterPlayer } from '@/lib/open-play'
+import { buildFairGroups, buildMexicanoRound, type RosterPlayer } from '@/lib/open-play'
 import {
   Play, Plus, UserPlus, Link2, Check, Pause, X, Swords,
   ArrowLeft, CalendarDays, Wand2, Lock, Unlock, Repeat, Trash2, Monitor,
@@ -83,6 +83,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   const [courts, setCourts] = useState<Court[]>([])
   const [selectedCourts, setSelectedCourts] = useState<string[]>([])
   const [format, setFormat] = useState<'singles' | 'doubles'>('doubles')
+  const [mode, setMode] = useState<'balanced' | 'americano' | 'mexicano'>('balanced')
   const [rated, setRated] = useState(false)
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
@@ -223,6 +224,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   const liveGames = games.filter(g => g.status === 'in_progress').sort((a, b) => (a.court_number ?? 0) - (b.court_number ?? 0))
   const stagedGroups = games.filter(g => g.status === 'staged')
   const perGame = session?.format === 'doubles' ? 4 : 2
+  const isFormat = session?.match_mode === 'americano' || session?.match_mode === 'mexicano'
   const occupiedCourts = new Set(liveGames.map(g => g.court_number))
   const freeCourts = session
     ? Array.from({ length: session.court_count }, (_, i) => i + 1).filter(c => !occupiedCourts.has(c))
@@ -250,14 +252,14 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     setBusy(true)
     const { data: newId, error } = await supabase.rpc('create_play_session', {
       p_league_id: leagueId, p_name: setupName.trim(), p_court_ids: selectedCourts,
-      p_format: format, p_match_mode: 'balanced', p_rated: rated,
+      p_format: format, p_match_mode: mode, p_rated: rated,
       p_starts_at: startsAt.toISOString(), p_ends_at: endsAt.toISOString(),
       p_allow_self_join: true,
     })
     if (error) toast({ title: 'Could not create', description: error.message, variant: 'destructive' })
     else {
       toast({ title: startsAt.getTime() > Date.now() ? 'Session scheduled 📅' : 'Session started 🎾' })
-      setSetupName(''); setSelectedCourts([]); setStartDate(''); setStartTime(''); setEndTime('')
+      setSetupName(''); setSelectedCourts([]); setStartDate(''); setStartTime(''); setEndTime(''); setMode('balanced')
       setCreating(false)
       await fetchSessions(newId as string)
     }
@@ -340,6 +342,31 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   }
 
   const addEmptyGroup = () => session && rpc('stage_session_group', { p_session_id: session.id, p_team1: [], p_team2: [] })
+
+  // Americano / Mexicano: generate a whole round of games across the courts.
+  async function generateRound() {
+    if (!session) return
+    if (liveGames.length > 0) { toast({ title: 'Finish the current round first', description: 'Enter every court’s score, then start the next round.' }); return }
+    const ready = bench
+    let groups
+    if (session.match_mode === 'mexicano') {
+      const ranked = [...ready].sort((a, b) => (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || b.wins - a.wins)
+      groups = buildMexicanoRound(ranked, session.format, session.court_count)
+    } else {
+      const roster: RosterPlayer[] = ready.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: now - new Date(p.queued_since).getTime() }))
+      groups = buildFairGroups(roster, session.format, session.court_count, partnered)
+    }
+    if (groups.length === 0) { toast({ title: `Need ${perGame} ready players`, variant: 'destructive' }); return }
+    setBusy(true)
+    let court = 1
+    for (const g of groups) {
+      const { error } = await supabase.rpc('create_session_game', { p_session_id: session.id, p_court: court, p_team1: g.team1, p_team2: g.team2 })
+      if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); break }
+      court++
+    }
+    await loadState(session.id)
+    setBusy(false)
+  }
 
   // Tap a bench player, then tap an empty slot to place them.
   function teamsWith(g: Game, addId: string): [string[], string[]] {
@@ -522,6 +549,30 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
             </div>
           </div>
 
+          <div className="space-y-1.5">
+            <Label>Play style</Label>
+            <div className="grid grid-cols-3 gap-1">
+              {([
+                { k: 'balanced', label: 'Drop-in', desc: 'Queue + courts' },
+                { k: 'americano', label: 'Americano', desc: 'Rotate partners' },
+                { k: 'mexicano', label: 'Mexicano', desc: 'By standings' },
+              ] as const).map(m => (
+                <button key={m.k} type="button" onClick={() => setMode(m.k)}
+                  className={`text-center py-2 rounded-lg border ${mode === m.k ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 text-gray-600'}`}>
+                  <span className="block text-sm font-medium">{m.label}</span>
+                  <span className="block text-[10px] text-gray-400">{m.desc}</span>
+                </button>
+              ))}
+            </div>
+            {mode !== 'balanced' && (
+              <p className="text-[11px] text-gray-400">
+                {mode === 'americano'
+                  ? 'Everyone rotates partners each round; ranked by total points. Enter each game’s score to advance.'
+                  : 'Pairs the closest-ranked players each round (1&4 vs 2&3); ranked by points.'}
+              </p>
+            )}
+          </div>
+
           <label className="flex items-start gap-2 cursor-pointer">
             <input type="checkbox" checked={rated} onChange={e => setRated(e.target.checked)} className="mt-0.5" />
             <span className="text-sm text-gray-700">
@@ -618,6 +669,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
             {session.name}
             {session.rated && <span className="text-[10px] font-bold text-green-700 bg-green-100 rounded-full px-2 py-0.5">RATED</span>}
             {isScheduled && <span className="text-[10px] font-bold text-blue-700 bg-blue-100 rounded-full px-2 py-0.5">SCHEDULED</span>}
+            {isFormat && <span className="text-[10px] font-bold text-violet-700 bg-violet-100 rounded-full px-2 py-0.5 uppercase">{session.match_mode}</span>}
           </h2>
           <p className="text-xs text-gray-400 capitalize">
             {session.format} · {session.court_count} courts
@@ -737,8 +789,28 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
           )
         })()}
 
+        {/* Rounds (Americano / Mexicano) */}
+        {isOrganizer && isFormat && (
+          <div className="mb-6 bg-slate-800 border border-slate-700/60 rounded-xl p-3.5 flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-sm font-medium text-white capitalize">{session.match_mode} rounds</p>
+              <p className="text-[12px] text-slate-400">
+                {liveGames.length > 0
+                  ? 'Round in progress — enter every court’s score to finish it.'
+                  : session.match_mode === 'mexicano'
+                    ? 'Pairs the closest-ranked players each round (1&4 vs 2&3).'
+                    : 'Rotates partners each round so everyone mixes.'}
+              </p>
+            </div>
+            <button onClick={generateRound} disabled={busy || liveGames.length > 0}
+              className="text-[11px] uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 disabled:opacity-40 rounded-lg px-3 py-2 flex items-center gap-1.5">
+              <Play className="w-3.5 h-3.5" />Generate round
+            </button>
+          </div>
+        )}
+
         {/* On Deck */}
-        {isOrganizer && (
+        {isOrganizer && !isFormat && (
           <>
             <div className="flex items-center justify-between mb-2.5">
               <span className="text-[11px] uppercase tracking-[0.18em] text-green-400 font-bold">On Deck</span>

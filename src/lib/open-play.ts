@@ -85,6 +85,24 @@ function bestSplitAvoidingRepeats(four: RosterPlayer[], partneredWith: Map<strin
   return { team1: best[0].map(p => p.id), team2: best[1].map(p => p.id) }
 }
 
+// Mexicano round: players already sorted best→worst by standings. On each court
+// the top 4 of the remaining play 1&4 vs 2&3, so the closest-ranked players meet.
+export function buildMexicanoRound(
+  ranked: { id: string }[],
+  format: 'singles' | 'doubles',
+  maxCourts: number,
+): Pairing[] {
+  const perGame = format === 'doubles' ? 4 : 2
+  const groups: Pairing[] = []
+  for (let i = 0; i + perGame <= ranked.length && groups.length < maxCourts; i += perGame) {
+    const g = ranked.slice(i, i + perGame)
+    groups.push(format === 'doubles'
+      ? { team1: [g[0].id, g[3].id], team2: [g[1].id, g[2].id] }
+      : { team1: [g[0].id], team2: [g[1].id] })
+  }
+  return groups
+}
+
 // Build up to `maxGroups` balanced groups from the bench, prioritising players
 // who've played fewest games (then waited longest), and avoiding repeat partners.
 export function buildFairGroups(
