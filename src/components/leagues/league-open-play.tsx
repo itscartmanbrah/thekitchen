@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast'
 import { buildFairGroups, type RosterPlayer } from '@/lib/open-play'
 import {
   Play, Plus, UserPlus, Link2, Check, Pause, X, Swords,
-  ArrowLeft, CalendarDays, Wand2, Lock, Unlock, Repeat, Trash2,
+  ArrowLeft, CalendarDays, Wand2, Lock, Unlock, Repeat, Trash2, Monitor,
 } from 'lucide-react'
 
 interface SessionRow {
@@ -574,6 +574,9 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
           </p>
         </div>
         <div className="flex gap-2">
+          <Button size="sm" variant="outline" asChild>
+            <a href={`/play/${session.share_code}/board`} target="_blank" rel="noopener noreferrer"><Monitor className="w-3.5 h-3.5 mr-1" />Board</a>
+          </Button>
           <Button size="sm" variant="outline" onClick={copyShare}>
             {copied ? <Check className="w-3.5 h-3.5 mr-1" /> : <Link2 className="w-3.5 h-3.5 mr-1" />}Share
           </Button>
