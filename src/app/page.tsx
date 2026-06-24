@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { AppLogo } from '@/components/app-logo'
 import { InstallAppButton } from '@/components/install-app-button'
 import { LandingHero } from '@/components/landing-hero'
+import { LandingOpenPlay } from '@/components/landing-openplay'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Users, Zap, BarChart3, Shield, Star } from 'lucide-react'
@@ -39,6 +40,9 @@ export default function LandingPage() {
 
       {/* Hero */}
       <LandingHero />
+
+      {/* Open Play — the flagship */}
+      <LandingOpenPlay />
 
       {/* How it works */}
       <section className="max-w-6xl mx-auto px-4 py-20">
