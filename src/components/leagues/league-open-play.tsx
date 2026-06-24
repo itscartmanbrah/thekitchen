@@ -162,12 +162,15 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
       .then(({ data }) => setCourts((data as Court[]) ?? []))
   }, [leagueId])
 
-  // Live: players checking in, games starting/ending, sessions opening/closing.
-  useRealtime(`openplay:${leagueId}`, [
+  // Sessions opening/closing → refresh the list. Players/games changing → just
+  // reload the current session's state (lighter than refetching every session).
+  useRealtime(`openplay-s:${leagueId}`, [
     { table: 'play_sessions', filter: `league_id=eq.${leagueId}` },
+  ], () => fetchSessions(), [leagueId])
+  useRealtime(`openplay-g:${leagueId}`, [
     { table: 'session_players' },
     { table: 'session_games' },
-  ], () => fetchSessions(), [leagueId])
+  ], () => { if (session) loadState(session.id) }, [leagueId])
 
   // 1s tick drives the court timers and wait timers.
   useEffect(() => {
@@ -277,10 +280,18 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
     setRegulars((reg as any[]) ?? [])
   }
 
+  // Optimistic insert so the bench updates instantly; realtime reconciles after.
+  function pushPlayer(id: string, name: string, color: string, avatarUrl: string | null, userId: string | null, skill = 1000) {
+    setPlayers(prev => prev.some(p => p.id === id) ? prev : [...prev, {
+      id, user_id: userId, display_name: name, avatar_color: color, avatar_url: avatarUrl,
+      skill, status: 'queued', queue_order: 0, queued_since: new Date().toISOString(), wins: 0, losses: 0, games: 0,
+    }])
+  }
+
   async function addRegularToSession(name: string, skill: number) {
-    const { error } = await supabase.rpc('add_session_player', { p_session_id: session!.id, p_user_id: null, p_guest_name: name, p_skill: skill })
+    const { data: id, error } = await supabase.rpc('add_session_player', { p_session_id: session!.id, p_user_id: null, p_guest_name: name, p_skill: skill })
     if (error) toast({ title: 'Could not add', description: error.message, variant: 'destructive' })
-    else loadState(session!.id)
+    else if (id) pushPlayer(id as string, name, '#64748b', null, null, skill)
   }
   async function saveRegular() {
     const n = guestName.trim()
@@ -297,20 +308,23 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   }
 
   async function addMember(userId: string) {
-    const { error } = await supabase.rpc('add_session_player', {
+    const m = members.find(x => x.user_id === userId)
+    const { data: id, error } = await supabase.rpc('add_session_player', {
       p_session_id: session!.id, p_user_id: userId, p_guest_name: null, p_skill: null,
     })
     if (error) toast({ title: 'Could not add', description: error.message, variant: 'destructive' })
-    else loadState(session!.id)
+    else if (id && m) pushPlayer(id as string, m.profiles.display_name, m.profiles.avatar_color, m.profiles.avatar_url, userId)
   }
 
   async function addGuest() {
-    if (!guestName.trim()) return
-    const { error } = await supabase.rpc('add_session_player', {
-      p_session_id: session!.id, p_user_id: null, p_guest_name: guestName.trim(), p_skill: null,
+    const name = guestName.trim()
+    if (!name) return
+    setGuestName('')
+    const { data: id, error } = await supabase.rpc('add_session_player', {
+      p_session_id: session!.id, p_user_id: null, p_guest_name: name, p_skill: null,
     })
-    if (error) toast({ title: 'Could not add guest', description: error.message, variant: 'destructive' })
-    else { setGuestName(''); loadState(session!.id) }
+    if (error) { toast({ title: 'Could not add guest', description: error.message, variant: 'destructive' }); setGuestName(name) }
+    else if (id) pushPlayer(id as string, name, '#64748b', null, null)
   }
 
   async function rpc(fn: string, args: Record<string, unknown>, successReload = true) {
