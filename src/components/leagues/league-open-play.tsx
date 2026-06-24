@@ -992,15 +992,24 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
         <DialogContent className="sm:max-w-xs">
           <DialogHeader><DialogTitle>Enter the score</DialogTitle></DialogHeader>
           {scoreGame && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="flex-1 text-sm text-gray-700 truncate">{scoreGame.team1_ids.map(nameOf).join(' & ')}</span>
-                <Input type="number" inputMode="numeric" min={0} value={s1} onChange={e => setS1(e.target.value)} className="w-16 text-center" autoFocus />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="flex-1 text-sm text-gray-700 truncate">{scoreGame.team2_ids.map(nameOf).join(' & ')}</span>
-                <Input type="number" inputMode="numeric" min={0} value={s2} onChange={e => setS2(e.target.value)} className="w-16 text-center" />
-              </div>
+            <div className="space-y-2">
+              {([1, 2] as const).map(team => {
+                const ids = team === 1 ? scoreGame.team1_ids : scoreGame.team2_ids
+                return (
+                  <div key={team} className="flex items-center gap-3 rounded-xl border bg-white p-3">
+                    <span className="flex-1 text-sm font-medium text-gray-800 leading-snug">{ids.map(nameOf).join(' & ')}</span>
+                    <input
+                      type="number" inputMode="numeric" min={0} placeholder="0"
+                      value={team === 1 ? s1 : s2}
+                      onChange={e => (team === 1 ? setS1 : setS2)(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') submitScore() }}
+                      autoFocus={team === 1}
+                      className="w-16 h-12 shrink-0 text-center text-2xl font-bold text-gray-900 border rounded-lg outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </div>
+                )
+              })}
+              <p className="text-[11px] text-gray-400 text-center pt-1">The higher score wins. Ties aren’t allowed.</p>
             </div>
           )}
           <DialogFooter>
