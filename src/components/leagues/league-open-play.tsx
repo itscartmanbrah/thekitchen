@@ -645,229 +645,231 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
         </label>
       )}
 
-      {/* ── Console ─────────────────────────────────────────────────────────── */}
-      {/* Player totals */}
-      <div className="grid grid-cols-4 gap-2 mb-5">
-        {[
-          { label: 'Checked in', val: players.filter(p => p.status !== 'left').length, color: 'text-gray-900' },
-          { label: 'Ready', val: bench.length, color: 'text-green-600' },
-          { label: 'Playing', val: playingCount, color: 'text-gray-900' },
-          { label: 'Resting', val: resting.length, color: 'text-gray-900' },
-        ].map(s => (
-          <div key={s.label} className="bg-gray-50 rounded-xl px-3 py-2">
-            <div className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">{s.label}</div>
-            <div className={`text-xl font-bold ${s.color}`}>{s.val}</div>
-          </div>
-        ))}
-      </div>
+      {/* ── Scoreboard console (softened dark) ──────────────────────────────── */}
+      <div className="bg-slate-900 rounded-2xl p-4 sm:p-5 mb-2 shadow-sm">
+        {/* Player totals */}
+        <div className="grid grid-cols-4 gap-2 mb-5">
+          {[
+            { label: 'Checked in', val: players.filter(p => p.status !== 'left').length, accent: 'border-sky-500', color: 'text-white' },
+            { label: 'Ready', val: bench.length, accent: 'border-green-500', color: 'text-green-400' },
+            { label: 'Playing', val: playingCount, accent: 'border-violet-500', color: 'text-white' },
+            { label: 'Resting', val: resting.length, accent: 'border-amber-500', color: 'text-white' },
+          ].map(s => (
+            <div key={s.label} className={`bg-slate-800 rounded-xl px-3 py-2 border-t-2 ${s.accent}`}>
+              <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">{s.label}</div>
+              <div className={`text-xl font-bold ${s.color}`}>{s.val}</div>
+            </div>
+          ))}
+        </div>
 
-      {/* Courts */}
-      <div className="text-[11px] uppercase tracking-[0.18em] text-green-600 font-bold mb-2.5">Courts</div>
-      <div className="grid sm:grid-cols-2 gap-2.5 mb-6">
-        {Array.from({ length: session.court_count }, (_, i) => i + 1).map(courtNo => {
-          const game = liveGames.find(g => g.court_number === courtNo)
-          const over = game ? (now - new Date(game.started_at).getTime()) / 60000 > OVERTIME_MIN : false
-          return (
-            <div key={courtNo} className={`bg-white border rounded-xl p-3 border-l-[3px] ${over ? 'border-l-red-500' : game ? 'border-l-green-500' : 'border-l-gray-200'}`}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-900 font-bold italic text-sm">COURT {courtNo}</span>
-                {game ? (
-                  over
-                    ? <span className="text-[9px] uppercase tracking-wide font-bold text-white bg-red-500 rounded px-1.5 py-0.5">Overtime {mmss(game.started_at)}</span>
-                    : <span className="text-[11px] text-green-600 font-medium tabular-nums">{mmss(game.started_at)}</span>
-                ) : <span className="text-[10px] uppercase tracking-wide text-gray-300">Open</span>}
-              </div>
-              {game ? (
-                <div className="space-y-1.5">
-                  {([1, 2] as const).map(team => {
-                    const ids = team === 1 ? game.team1_ids : game.team2_ids
-                    return (
-                      <div key={team} className="flex items-center gap-1.5 flex-wrap">
-                        {ids.map(id => (
-                          <span key={id} className="inline-flex items-center gap-1 text-[13px] text-gray-800">
-                            {nameOf(id)}
-                            {isOrganizer && (
-                              <button onClick={() => { setSubTarget({ gameId: game.id, outId: id }); toast({ title: 'Pick a bench player to sub in' }) }}
-                                className="text-gray-300 hover:text-green-600" title="Substitute"><Repeat className="w-3 h-3" /></button>
-                            )}
-                          </span>
-                        ))}
-                        {team === 1 && <span className="text-[10px] font-bold text-gray-300">vs</span>}
-                      </div>
-                    )
-                  })}
-                  {isOrganizer && (
-                    <button onClick={() => openScore(game)} disabled={busy}
-                      className="mt-1.5 w-full text-[11px] uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg py-1.5">
-                      Enter score
-                    </button>
-                  )}
+        {/* Courts */}
+        <div className="text-[11px] uppercase tracking-[0.18em] text-green-400 font-bold mb-2.5">Courts</div>
+        <div className="grid sm:grid-cols-2 gap-2.5 mb-6">
+          {Array.from({ length: session.court_count }, (_, i) => i + 1).map(courtNo => {
+            const game = liveGames.find(g => g.court_number === courtNo)
+            const over = game ? (now - new Date(game.started_at).getTime()) / 60000 > OVERTIME_MIN : false
+            return (
+              <div key={courtNo} className={`bg-slate-800 border border-slate-700/60 rounded-xl p-3 border-l-[3px] ${over ? 'border-l-red-500' : game ? 'border-l-green-500' : 'border-l-slate-600'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white font-bold italic text-sm">COURT {courtNo}</span>
+                  {game ? (
+                    over
+                      ? <span className="text-[9px] uppercase tracking-wide font-bold text-white bg-red-500 rounded px-1.5 py-0.5">Overtime {mmss(game.started_at)}</span>
+                      : <span className="text-[11px] text-green-400 font-medium tabular-nums">{mmss(game.started_at)}</span>
+                  ) : <span className="text-[10px] uppercase tracking-wide text-slate-600">Open</span>}
                 </div>
-              ) : (
-                <div className="text-[11px] text-gray-300 py-3 text-center">Send a group from On Deck</div>
-              )}
+                {game ? (
+                  <div className="space-y-1.5">
+                    {([1, 2] as const).map(team => {
+                      const ids = team === 1 ? game.team1_ids : game.team2_ids
+                      return (
+                        <div key={team} className="flex items-center gap-1.5 flex-wrap">
+                          {ids.map(id => (
+                            <span key={id} className="inline-flex items-center gap-1 text-[13px] text-slate-100">
+                              {nameOf(id)}
+                              {isOrganizer && (
+                                <button onClick={() => { setSubTarget({ gameId: game.id, outId: id }); toast({ title: 'Pick a bench player to sub in' }) }}
+                                  className="text-slate-500 hover:text-green-400" title="Substitute"><Repeat className="w-3 h-3" /></button>
+                              )}
+                            </span>
+                          ))}
+                          {team === 1 && <span className="text-[10px] font-bold text-slate-600">vs</span>}
+                        </div>
+                      )
+                    })}
+                    {isOrganizer && (
+                      <button onClick={() => openScore(game)} disabled={busy}
+                        className="mt-1.5 w-full text-[11px] uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 rounded-lg py-1.5">
+                        Enter score
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-[11px] text-slate-600 py-3 text-center">Send a group from On Deck</div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Standings */}
+        {(() => {
+          const standings = players.filter(p => p.status !== 'left')
+            .map(p => ({ ...p, pts: points.get(p.id) ?? 0 }))
+            .filter(p => p.games > 0)
+            .sort((a, b) => b.pts - a.pts || b.wins - a.wins || a.losses - b.losses)
+          if (standings.length === 0) return null
+          return (
+            <div className="mb-6">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-green-400 font-bold mb-2.5">Standings</div>
+              <div className="border border-slate-700/60 rounded-xl overflow-hidden">
+                {standings.map((p, i) => (
+                  <div key={p.id} className={`flex items-center gap-2.5 px-3 py-2 text-sm ${i > 0 ? 'border-t border-slate-700/60' : ''} ${p.status === 'playing' ? 'bg-green-500/10' : 'bg-slate-800'}`}>
+                    <span className="w-5 text-center text-xs font-bold text-slate-500">{i + 1}</span>
+                    <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
+                    <span className="flex-1 truncate text-slate-100">{p.display_name}</span>
+                    <span className="text-xs text-slate-500">{p.wins}–{p.losses}</span>
+                    <span className="text-sm font-bold text-white tabular-nums w-10 text-right">{p.pts}<span className="text-[10px] font-normal text-slate-500 ml-0.5">pts</span></span>
+                  </div>
+                ))}
+              </div>
             </div>
           )
-        })}
-      </div>
+        })()}
 
-      {/* Standings */}
-      {(() => {
-        const standings = players.filter(p => p.status !== 'left')
-          .map(p => ({ ...p, pts: points.get(p.id) ?? 0 }))
-          .filter(p => p.games > 0)
-          .sort((a, b) => b.pts - a.pts || b.wins - a.wins || a.losses - b.losses)
-        if (standings.length === 0) return null
-        return (
-          <div className="mb-6">
-            <div className="text-[11px] uppercase tracking-[0.18em] text-green-600 font-bold mb-2.5">Standings</div>
-            <div className="border rounded-xl overflow-hidden">
-              {standings.map((p, i) => (
-                <div key={p.id} className={`flex items-center gap-2.5 px-3 py-2 text-sm ${i > 0 ? 'border-t' : ''} ${p.status === 'playing' ? 'bg-green-50/50' : 'bg-white'}`}>
-                  <span className="w-5 text-center text-xs font-bold text-gray-400">{i + 1}</span>
+        {/* On Deck */}
+        {isOrganizer && (
+          <>
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-[11px] uppercase tracking-[0.18em] text-green-400 font-bold">On Deck</span>
+              <div className="flex gap-1.5">
+                <button onClick={() => setAnnounce(a => !a)}
+                  className={`rounded-lg px-2 py-1.5 flex items-center ${announce ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+                  title={announce ? 'Voice call-outs on' : 'Voice call-outs off'}>
+                  {announce ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                </button>
+                <button onClick={autoFill} disabled={busy}
+                  className="text-[10px] uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 rounded-lg px-2.5 py-1.5 flex items-center gap-1">
+                  <Wand2 className="w-3 h-3" />Auto fill
+                </button>
+                <button onClick={addEmptyGroup} disabled={busy}
+                  className="text-[10px] uppercase tracking-wide font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg px-2.5 py-1.5 flex items-center gap-1">
+                  <Plus className="w-3 h-3" />Group
+                </button>
+              </div>
+            </div>
+            {selectedBench && (
+              <p className="text-[11px] text-green-300 mb-2">Tap an empty slot to place <strong>{nameOf(selectedBench)}</strong> · <button onClick={() => setSelectedBench(null)} className="underline">cancel</button></p>
+            )}
+            {stagedGroups.length === 0 ? (
+              <p className="text-[12px] text-slate-500 mb-6">No groups staged. Hit <strong className="text-slate-300">Auto fill</strong> to build balanced games from the bench — it works even when every court is busy, so you can line up who&apos;s next.</p>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-2.5 mb-6">
+                {stagedGroups.map((g, gi) => {
+                  const ids = [...g.team1_ids, ...g.team2_ids]
+                  const full = ids.length >= perGame
+                  return (
+                    <div key={g.id} className="bg-slate-800 border border-slate-700/60 rounded-xl p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[12px] text-slate-400 font-medium">Group {gi + 1}</span>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => toggleLock(g)} className={g.locked ? 'text-green-400' : 'text-slate-500 hover:text-slate-300'} title={g.locked ? 'Unlock' : 'Lock'}>
+                            {g.locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                          </button>
+                          <button onClick={() => disband(g)} className="text-slate-500 hover:text-red-400" title="Disband"><Trash2 className="w-3.5 h-3.5" /></button>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {ids.map(id => (
+                          <button key={id} onClick={() => removeFromGroup(g, id)}
+                            className="inline-flex items-center gap-1 text-[12px] text-slate-100 bg-slate-700 rounded px-2 py-1 hover:bg-red-500/20">
+                            {nameOf(id)}<X className="w-2.5 h-2.5 text-slate-400" />
+                          </button>
+                        ))}
+                        {Array.from({ length: perGame - ids.length }).map((_, k) => (
+                          <button key={k} onClick={() => placeInGroup(g)} disabled={!selectedBench}
+                            className={`text-[12px] rounded px-3 py-1 border border-dashed ${selectedBench ? 'border-green-500 text-green-400 hover:bg-green-500/10' : 'border-slate-600 text-slate-600'}`}>+</button>
+                        ))}
+                      </div>
+                      {full && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-[10px] uppercase tracking-wide text-slate-500">Send to</span>
+                          {freeCourts.length === 0
+                            ? <span className="text-[10px] text-slate-500">waiting for a court</span>
+                            : freeCourts.map(c => (
+                              <button key={c} onClick={() => sendToCourt(g, c)} disabled={busy}
+                                className="text-[10px] uppercase font-bold text-white bg-green-600 hover:bg-green-500 rounded px-2 py-1">Court {c}</button>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Bench & roster */}
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[11px] uppercase tracking-[0.18em] text-green-400 font-bold">Bench {bench.length > 0 && <span className="text-slate-500">· {bench.length}</span>}</span>
+          {isOrganizer && (
+            <button onClick={openAdd} className="text-[10px] uppercase tracking-wide font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg px-2.5 py-1.5 flex items-center gap-1">
+              <UserPlus className="w-3 h-3" />Add player
+            </button>
+          )}
+        </div>
+        {subTarget && (
+          <p className="text-[11px] text-green-300 mb-2">Tap a bench player to swap in for <strong>{nameOf(subTarget.outId)}</strong> · <button onClick={() => setSubTarget(null)} className="underline">cancel</button></p>
+        )}
+        {bench.length > 6 && (
+          <div className="relative mb-2">
+            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <input value={benchFilter} onChange={e => setBenchFilter(e.target.value)} placeholder="Search bench…"
+              className="w-full bg-slate-800 text-slate-100 placeholder-slate-500 border border-slate-700 rounded-lg pl-8 pr-3 py-2 text-sm outline-none focus:ring-1 focus:ring-green-500" />
+          </div>
+        )}
+        <div className="space-y-1.5">
+          {bench.filter(p => p.display_name.toLowerCase().includes(benchFilter.toLowerCase())).map(p => {
+            const sel = selectedBench === p.id
+            return (
+              <div key={p.id} className={`flex items-center gap-2.5 rounded-lg px-3 py-2 ${sel ? 'bg-green-500/15 ring-1 ring-green-500' : 'bg-slate-800'}`}>
+                <button onClick={() => isOrganizer && benchTap(p.id)} className="flex items-center gap-2.5 flex-1 min-w-0 text-left" disabled={!isOrganizer}>
                   <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
-                  <span className="flex-1 truncate text-gray-800">{p.display_name}</span>
-                  <span className="text-xs text-gray-400">{p.wins}–{p.losses}</span>
-                  <span className="text-sm font-bold text-gray-900 tabular-nums w-10 text-right">{p.pts}<span className="text-[10px] font-normal text-gray-400 ml-0.5">pts</span></span>
+                  <span className="text-sm text-slate-100 truncate">
+                    {p.display_name}
+                    {!p.user_id && <span className="text-[10px] text-slate-500 ml-1">guest</span>}
+                  </span>
+                </button>
+                <span className="text-[11px] text-slate-500 tabular-nums shrink-0">waited {mmss(p.queued_since)} · {p.games}g</span>
+                {isOrganizer && (
+                  <>
+                    <button onClick={() => setStatus(p.id, 'resting')} className="text-slate-500 hover:text-amber-400 shrink-0" title="Rest"><Pause className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setStatus(p.id, 'left')} className="text-slate-500 hover:text-red-400 shrink-0" title="Remove"><X className="w-3.5 h-3.5" /></button>
+                  </>
+                )}
+              </div>
+            )
+          })}
+          {bench.length === 0 && <p className="text-[12px] text-slate-500 py-3 text-center">Bench is empty — add players to get going.</p>}
+        </div>
+
+        {/* Resting */}
+        {resting.length > 0 && (
+          <div className="mt-4">
+            <span className="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-bold">Resting · {resting.length}</span>
+            <div className="space-y-1.5 mt-2">
+              {resting.map(p => (
+                <div key={p.id} className="flex items-center gap-2.5 bg-slate-800/60 rounded-lg px-3 py-2">
+                  <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
+                  <span className="text-sm text-slate-300 flex-1 truncate">{p.display_name}</span>
+                  {isOrganizer && <button onClick={() => setStatus(p.id, 'queued')} className="text-[11px] text-green-400 hover:underline">Back in</button>}
                 </div>
               ))}
             </div>
           </div>
-        )
-      })()}
-
-      {/* On Deck */}
-      {isOrganizer && (
-        <>
-          <div className="flex items-center justify-between mb-2.5">
-            <span className="text-[11px] uppercase tracking-[0.18em] text-green-600 font-bold">On Deck</span>
-            <div className="flex gap-1.5">
-              <button onClick={() => setAnnounce(a => !a)}
-                className={`rounded-lg px-2 py-1.5 flex items-center border ${announce ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-400 hover:text-gray-700'}`}
-                title={announce ? 'Voice call-outs on' : 'Voice call-outs off'}>
-                {announce ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-              </button>
-              <button onClick={autoFill} disabled={busy}
-                className="text-[10px] uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg px-2.5 py-1.5 flex items-center gap-1">
-                <Wand2 className="w-3 h-3" />Auto fill
-              </button>
-              <button onClick={addEmptyGroup} disabled={busy}
-                className="text-[10px] uppercase tracking-wide font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg px-2.5 py-1.5 flex items-center gap-1">
-                <Plus className="w-3 h-3" />Group
-              </button>
-            </div>
-          </div>
-          {selectedBench && (
-            <p className="text-[11px] text-green-700 mb-2">Tap an empty slot to place <strong>{nameOf(selectedBench)}</strong> · <button onClick={() => setSelectedBench(null)} className="underline">cancel</button></p>
-          )}
-          {stagedGroups.length === 0 ? (
-            <p className="text-[12px] text-gray-400 mb-6">No groups staged. Hit <strong>Auto fill</strong> to build balanced games from the bench — it works even when every court is busy, so you can line up who&apos;s next.</p>
-          ) : (
-            <div className="grid sm:grid-cols-2 gap-2.5 mb-6">
-              {stagedGroups.map((g, gi) => {
-                const ids = [...g.team1_ids, ...g.team2_ids]
-                const full = ids.length >= perGame
-                return (
-                  <div key={g.id} className="bg-gray-50 border rounded-xl p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[12px] text-gray-500 font-medium">Group {gi + 1}</span>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => toggleLock(g)} className={g.locked ? 'text-green-600' : 'text-gray-300 hover:text-gray-500'} title={g.locked ? 'Unlock' : 'Lock'}>
-                          {g.locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
-                        </button>
-                        <button onClick={() => disband(g)} className="text-gray-300 hover:text-red-500" title="Disband"><Trash2 className="w-3.5 h-3.5" /></button>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                      {ids.map(id => (
-                        <button key={id} onClick={() => removeFromGroup(g, id)}
-                          className="inline-flex items-center gap-1 text-[12px] text-gray-700 bg-white border rounded px-2 py-1 hover:border-red-300">
-                          {nameOf(id)}<X className="w-2.5 h-2.5 text-gray-400" />
-                        </button>
-                      ))}
-                      {Array.from({ length: perGame - ids.length }).map((_, k) => (
-                        <button key={k} onClick={() => placeInGroup(g)} disabled={!selectedBench}
-                          className={`text-[12px] rounded px-3 py-1 border border-dashed ${selectedBench ? 'border-green-500 text-green-600 hover:bg-green-50' : 'border-gray-300 text-gray-300'}`}>+</button>
-                      ))}
-                    </div>
-                    {full && (
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] uppercase tracking-wide text-gray-400">Send to</span>
-                        {freeCourts.length === 0
-                          ? <span className="text-[10px] text-gray-400">waiting for a court</span>
-                          : freeCourts.map(c => (
-                            <button key={c} onClick={() => sendToCourt(g, c)} disabled={busy}
-                              className="text-[10px] uppercase font-bold text-white bg-green-600 hover:bg-green-700 rounded px-2 py-1">Court {c}</button>
-                          ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Bench & roster */}
-      <div className="flex items-center justify-between mb-2.5">
-        <span className="text-[11px] uppercase tracking-[0.18em] text-green-600 font-bold">Bench {bench.length > 0 && <span className="text-gray-400">· {bench.length}</span>}</span>
-        {isOrganizer && (
-          <button onClick={openAdd} className="text-[10px] uppercase tracking-wide font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg px-2.5 py-1.5 flex items-center gap-1">
-            <UserPlus className="w-3 h-3" />Add player
-          </button>
         )}
       </div>
-      {subTarget && (
-        <p className="text-[11px] text-green-700 mb-2">Tap a bench player to swap in for <strong>{nameOf(subTarget.outId)}</strong> · <button onClick={() => setSubTarget(null)} className="underline">cancel</button></p>
-      )}
-      {bench.length > 6 && (
-        <div className="relative mb-2">
-          <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-          <input value={benchFilter} onChange={e => setBenchFilter(e.target.value)} placeholder="Search bench…"
-            className="w-full border rounded-lg pl-8 pr-3 py-2 text-sm outline-none focus:ring-1 focus:ring-green-400" />
-        </div>
-      )}
-      <div className="space-y-1.5">
-        {bench.filter(p => p.display_name.toLowerCase().includes(benchFilter.toLowerCase())).map(p => {
-          const sel = selectedBench === p.id
-          return (
-            <div key={p.id} className={`flex items-center gap-2.5 rounded-lg px-3 py-2 border ${sel ? 'bg-green-50 ring-1 ring-green-400 border-green-200' : 'bg-white'}`}>
-              <button onClick={() => isOrganizer && benchTap(p.id)} className="flex items-center gap-2.5 flex-1 min-w-0 text-left" disabled={!isOrganizer}>
-                <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
-                <span className="text-sm text-gray-800 truncate">
-                  {p.display_name}
-                  {!p.user_id && <span className="text-[10px] text-gray-400 ml-1">guest</span>}
-                </span>
-              </button>
-              <span className="text-[11px] text-gray-400 tabular-nums shrink-0">waited {mmss(p.queued_since)} · {p.games}g</span>
-              {isOrganizer && (
-                <>
-                  <button onClick={() => setStatus(p.id, 'resting')} className="text-gray-300 hover:text-amber-500 shrink-0" title="Rest"><Pause className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => setStatus(p.id, 'left')} className="text-gray-300 hover:text-red-500 shrink-0" title="Remove"><X className="w-3.5 h-3.5" /></button>
-                </>
-              )}
-            </div>
-          )
-        })}
-        {bench.length === 0 && <p className="text-[12px] text-gray-400 py-3 text-center">Bench is empty — add players to get going.</p>}
-      </div>
-
-      {/* Resting */}
-      {resting.length > 0 && (
-        <div className="mt-4">
-          <span className="text-[11px] uppercase tracking-[0.18em] text-gray-400 font-bold">Resting · {resting.length}</span>
-          <div className="space-y-1.5 mt-2">
-            {resting.map(p => (
-              <div key={p.id} className="flex items-center gap-2.5 bg-gray-50 border rounded-lg px-3 py-2">
-                <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
-                <span className="text-sm text-gray-600 flex-1 truncate">{p.display_name}</span>
-                {isOrganizer && <button onClick={() => setStatus(p.id, 'queued')} className="text-[11px] text-green-600 hover:underline">Back in</button>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Score entry dialog */}
       <Dialog open={!!scoreGame} onOpenChange={o => !o && setScoreGame(null)}>
