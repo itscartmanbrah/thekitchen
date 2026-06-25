@@ -18,7 +18,7 @@ const modeLabel: Record<string, string> = {
   king: 'King of the Court', americano: 'Americano', mexicano: 'Mexicano',
 }
 
-export function LeagueOpenPlayHistory({ leagueId, onBack }: { leagueId: string; onBack: () => void }) {
+export function LeagueOpenPlayHistory({ leagueId, createdBy, onBack }: { leagueId: string | null; createdBy?: string | null; onBack: () => void }) {
   const supabase = createClient()
   const [sessions, setSessions] = useState<Ended[]>([])
   const [loading, setLoading] = useState(true)
@@ -28,13 +28,13 @@ export function LeagueOpenPlayHistory({ leagueId, onBack }: { leagueId: string; 
 
   useEffect(() => {
     const nowIso = new Date().toISOString()
-    supabase.from('play_sessions')
+    let q = supabase.from('play_sessions')
       .select('id, name, match_mode, format, rated, court_count, started_at, ended_at, ends_at')
-      .eq('league_id', leagueId)
       .or(`ended_at.not.is.null,ends_at.lt.${nowIso}`)
-      .order('started_at', { ascending: false })
+    q = createdBy ? q.is('league_id', null).eq('created_by', createdBy) : q.eq('league_id', leagueId as string)
+    q.order('started_at', { ascending: false })
       .then(({ data }) => { setSessions((data as Ended[]) ?? []); setLoading(false) })
-  }, [leagueId])
+  }, [leagueId, createdBy])
 
   async function toggle(id: string) {
     if (openId === id) { setOpenId(null); return }

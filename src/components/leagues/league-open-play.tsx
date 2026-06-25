@@ -62,7 +62,8 @@ interface Game {
 }
 interface Member { user_id: string; profiles: { display_name: string; avatar_color: string; avatar_url: string | null } }
 
-export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; isOrganizer: boolean }) {
+export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { leagueId: string | null; isOrganizer: boolean; solo?: boolean }) {
+  const [userId, setUserId] = useState<string | null>(null)
   const [sessions, setSessions] = useState<SessionRow[]>([])
   const [session, setSession] = useState<SessionRow | null>(null)
   const [creating, setCreating] = useState(false)
@@ -109,13 +110,16 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
 
   async function fetchSessions(preferId?: string) {
     const nowIso = new Date().toISOString()
-    // all sessions that haven't finished (scheduled or running)
-    const { data } = await supabase
-      .from('play_sessions').select('*')
-      .eq('league_id', leagueId)
-      .is('ended_at', null)
-      .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
-      .order('starts_at', { ascending: true })
+    let q = supabase.from('play_sessions').select('*')
+      .is('ended_at', null).or(`ends_at.is.null,ends_at.gt.${nowIso}`)
+    if (solo) {
+      const uid = userId ?? (await supabase.auth.getUser()).data.user?.id ?? null
+      if (uid) setUserId(uid)
+      q = q.is('league_id', null).eq('created_by', uid ?? '00000000-0000-0000-0000-000000000000')
+    } else {
+      q = q.eq('league_id', leagueId as string)
+    }
+    const { data } = await q.order('started_at', { ascending: false })
     const list = (data as SessionRow[]) ?? []
     setSessions(list)
     const pick = (preferId && list.find(s => s.id === preferId))
@@ -180,17 +184,22 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   }
 
   useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
     fetchSessions()
-    supabase.from('courts').select('id, name').eq('league_id', leagueId).eq('active', true).order('created_at')
-      .then(({ data }) => setCourts((data as Court[]) ?? []))
+    if (!solo) {
+      supabase.from('courts').select('id, name').eq('league_id', leagueId as string).eq('active', true).order('created_at')
+        .then(({ data }) => setCourts((data as Court[]) ?? []))
+    }
   }, [leagueId])
 
   // Sessions opening/closing → refresh the list. Players/games changing → just
   // reload the current session's state (lighter than refetching every session).
-  useRealtime(`openplay-s:${leagueId}`, [
-    { table: 'play_sessions', filter: `league_id=eq.${leagueId}` },
-  ], () => fetchSessions(), [leagueId])
-  useRealtime(`openplay-g:${leagueId}`, [
+  useRealtime(`openplay-s:${leagueId ?? 'solo'}`, [
+    solo
+      ? { table: 'play_sessions', ...(userId ? { filter: `created_by=eq.${userId}` } : {}) }
+      : { table: 'play_sessions', filter: `league_id=eq.${leagueId}` },
+  ], () => fetchSessions(), [leagueId, userId])
+  useRealtime(`openplay-g:${leagueId ?? 'solo'}`, [
     { table: 'session_players' },
     { table: 'session_games' },
   ], () => { if (session) loadState(session.id) }, [leagueId])
@@ -295,6 +304,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
 
   async function openAdd() {
     setAddOpen(true)
+    if (solo) return   // standalone sessions have no league members/regulars
     const [{ data: mem }, { data: reg }] = await Promise.all([
       supabase.from('league_members').select('user_id, profiles(display_name, avatar_color, avatar_url)')
         .eq('league_id', leagueId).eq('status', 'active'),
@@ -567,10 +577,22 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
   if (loading) return <div className="text-center py-12 text-gray-500">Loading…</div>
 
   // ── History ─────────────────────────────────────────────────────────────────
-  if (showHistory) return <LeagueOpenPlayHistory leagueId={leagueId} onBack={() => setShowHistory(false)} />
+  if (showHistory) return <LeagueOpenPlayHistory leagueId={leagueId} createdBy={solo ? userId : null} onBack={() => setShowHistory(false)} />
 
   // ── No selected session: empty state ────────────────────────────────────────
   if (!session && !creating) {
+    if (solo) {
+      return (
+        <div className="text-center py-16">
+          <Swords className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+          <p className="text-sm text-gray-400 mb-4">No active session.</p>
+          <div className="flex items-center justify-center gap-2">
+            <Button size="sm" asChild><Link href="/play/new"><Plus className="w-4 h-4 mr-1" />Start a session</Link></Button>
+            <Button size="sm" variant="outline" onClick={() => setShowHistory(true)}><History className="w-4 h-4 mr-1" />History</Button>
+          </div>
+        </div>
+      )
+    }
     if (!isOrganizer) {
       return (
         <div className="text-center py-16 text-gray-400">
@@ -785,12 +807,19 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
               </button>
             )
           })}
-          {isOrganizer && (
+          {isOrganizer && !solo && (
             <button onClick={() => setCreating(true)}
               className="text-xs px-2.5 py-1 rounded-full border border-dashed border-gray-300 text-gray-500 hover:bg-gray-50 flex items-center gap-1">
               <Plus className="w-3 h-3" />New session
             </button>
           )}
+        </div>
+      )}
+
+      {solo && (
+        <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-sm text-green-800">Want to keep these players and track ratings over time?</p>
+          <Button size="sm" asChild><Link href="/signup">Create a free account</Link></Button>
         </div>
       )}
 
@@ -1168,6 +1197,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
               </div>
             )}
 
+            {!solo && (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label>League members</Label>
@@ -1184,6 +1214,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer }: { leagueId: string; is
                 ))}
               </div>
             </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddOpen(false)}>Done</Button>

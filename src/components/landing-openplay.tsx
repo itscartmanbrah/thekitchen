@@ -67,11 +67,11 @@ export function LandingOpenPlay() {
         </motion.div>
 
         <motion.div {...up(6)} className="text-center">
-          <Link href="/signup"
+          <Link href="/play/new"
             className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-slate-950 font-bold rounded-xl px-7 py-3 text-base transition-colors">
-            Run your first session →
+            Run a session now →
           </Link>
-          <p className="text-xs text-slate-500 mt-3">Free to start · players join from a link, no app needed</p>
+          <p className="text-xs text-slate-500 mt-3">No sign-up needed · players join from a link, no app needed</p>
         </motion.div>
       </div>
     </section>
