@@ -55,7 +55,7 @@ export default function NewSoloSessionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <PlayHeader right={<Link href="/login" className="text-sm text-gray-500 hover:text-green-600">Sign in</Link>} />
+      <PlayHeader />
 
       <ResumeSessionBanner />
 
