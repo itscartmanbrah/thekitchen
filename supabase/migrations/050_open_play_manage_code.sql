@@ -7,7 +7,9 @@ update play_sessions set manage_code = substr(md5(random()::text || id::text), 1
 alter table play_sessions alter column manage_code set default substr(md5(random()::text), 1, 12);
 create unique index if not exists play_sessions_manage_code_key on play_sessions(manage_code);
 
--- create_solo_session now returns the id + share/manage codes.
+-- create_solo_session now returns the id + share/manage codes (was uuid → must
+-- drop first to change the return type).
+drop function if exists create_solo_session(text, int, text, text);
 create or replace function create_solo_session(
   p_name text, p_court_count int, p_format text, p_match_mode text
 ) returns json
