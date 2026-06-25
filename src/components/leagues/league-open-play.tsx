@@ -18,6 +18,7 @@ import { OpenPlayQR } from '@/components/open-play-qr'
 import { LiveTimer } from '@/components/live-timer'
 import { OpenPlaySkeleton } from '@/components/open-play-skeleton'
 import { SessionRecap } from '@/components/session-recap'
+import { StyleExplainer, StyleBadge } from '@/components/open-play-styles'
 import { setActiveHost, clearActiveHost } from '@/lib/active-host'
 import {
   Play, Plus, UserPlus, Link2, Check, Pause, X, Swords,
@@ -756,16 +757,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 </button>
               ))}
             </div>
-            {mode !== 'balanced' && (
-              <p className="text-[11px] text-gray-400">
-                {mode === 'americano'
-                  ? 'Everyone rotates partners each round; ranked by total points. Enter each game’s score to advance.'
-                  : mode === 'mexicano'
-                    ? 'Pairs the closest-ranked players each round (1&4 vs 2&3); ranked by points.'
-                    : 'Each round, winners move up a court and losers move down — Court 1 is the “Kings” court. Partners are re-shuffled each round. Enter every court’s score to advance.'}
-                {selectedCourts.length === 1 && <span className="block mt-1 text-gray-500"><strong>On one court:</strong> the round’s games play one at a time — send a game, enter its score, then send the next; Generate the next round once all are scored.</span>}
-              </p>
-            )}
+            <StyleExplainer mode={mode} courtCount={selectedCourts.length} />
           </div>
 
           <label className="flex items-start gap-2 cursor-pointer">
@@ -871,7 +863,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             {session.name}
             {session.rated && <span className="text-[10px] font-bold text-green-700 bg-green-100 rounded-full px-2 py-0.5">RATED</span>}
             {isScheduled && <span className="text-[10px] font-bold text-blue-700 bg-blue-100 rounded-full px-2 py-0.5">SCHEDULED</span>}
-            {isFormat && <span className="text-[10px] font-bold text-violet-700 bg-violet-100 rounded-full px-2 py-0.5 uppercase">{session.match_mode}</span>}
+            <StyleBadge mode={session.match_mode} courtCount={session.court_count} />
           </h2>
           <p className="text-xs text-gray-400 capitalize">
             {session.format} · {session.court_count} courts
