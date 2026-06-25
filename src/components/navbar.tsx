@@ -64,6 +64,9 @@ export function Navbar({ profile }: { profile: Profile | null }) {
                   <Link href="/profile">Profile</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link href="/play/host">My Open Play</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link href="/my-bookings">My Bookings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
