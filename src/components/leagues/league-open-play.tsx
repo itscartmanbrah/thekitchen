@@ -17,6 +17,7 @@ import { LeagueOpenPlayHistory } from '@/components/leagues/league-open-play-his
 import { OpenPlayQR } from '@/components/open-play-qr'
 import { LiveTimer } from '@/components/live-timer'
 import { OpenPlaySkeleton } from '@/components/open-play-skeleton'
+import { SessionRecap } from '@/components/session-recap'
 import { setActiveHost, clearActiveHost } from '@/lib/active-host'
 import {
   Play, Plus, UserPlus, Link2, Check, Pause, X, Swords,
@@ -75,6 +76,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const [creating, setCreating] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [qrOpen, setQrOpen] = useState(false)
+  const [recapId, setRecapId] = useState<string | null>(null)
   const [saveOpen, setSaveOpen] = useState(false)
   const [saveEmail, setSaveEmail] = useState('')
   const [savePw, setSavePw] = useState('')
@@ -449,7 +451,12 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
       const ranked = [...ready].sort((a, b) => (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || b.wins - a.wins)
       groups = buildMexicanoRound(ranked, session.format, groupCount)
     } else if (session.match_mode === 'king') {
-      groups = buildKingRound(lastRound, lastRoundCount || groupCount, partnered)
+      // players who sat out last round, longest wait first → rotate them in
+      const lastIds = new Set(Array.from(lastRound.values()).flatMap(r => [...r.winners, ...r.losers]))
+      const extras = ready.filter(p => !lastIds.has(p.id))
+        .sort((a, b) => new Date(a.queued_since).getTime() - new Date(b.queued_since).getTime())
+        .map(p => p.id)
+      groups = buildKingRound(lastRound, lastRoundCount || groupCount, partnered, extras)
       if (groups.length === 0 || groups.some(g => [...g.team1, ...g.team2].some(id => !availableIds.has(id)))) {
         groups = seedBalanced(groupCount)   // first round, or roster changed
       }
@@ -560,9 +567,11 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
 
   async function endSession() {
     if (!session) return
-    const { error } = await supabase.rpc('end_play_session', { p_session_id: session.id })
+    if (!window.confirm('End this session and see the recap?')) return
+    const endedId = session.id
+    const { error } = await supabase.rpc('end_play_session', { p_session_id: endedId })
     if (error) toast({ title: 'Could not end', description: error.message, variant: 'destructive' })
-    else { toast({ title: 'Session ended' }); if (solo) clearActiveHost(); setSession(null); fetchSessions() }
+    else { if (solo) clearActiveHost(); setRecapId(endedId); setSession(null); fetchSessions() }
   }
 
   // C — keep the session permanently. Either convert the anonymous account into
@@ -616,14 +625,17 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   if (!session && !creating) {
     if (solo) {
       return (
-        <div className="text-center py-16">
-          <Swords className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-          <p className="text-sm text-gray-400 mb-4">No active session.</p>
-          <div className="flex items-center justify-center gap-2">
-            <Button size="sm" asChild><Link href="/play/new"><Plus className="w-4 h-4 mr-1" />Start a session</Link></Button>
-            <Button size="sm" variant="outline" onClick={() => setShowHistory(true)}><History className="w-4 h-4 mr-1" />History</Button>
+        <>
+          <div className="text-center py-16">
+            <Swords className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+            <p className="text-sm text-gray-400 mb-4">No active session.</p>
+            <div className="flex items-center justify-center gap-2">
+              <Button size="sm" asChild><Link href="/play/new"><Plus className="w-4 h-4 mr-1" />Start a session</Link></Button>
+              <Button size="sm" variant="outline" onClick={() => setShowHistory(true)}><History className="w-4 h-4 mr-1" />History</Button>
+            </div>
           </div>
-        </div>
+          {recapId && <SessionRecap sessionId={recapId} onClose={() => setRecapId(null)} />}
+        </>
       )
     }
     if (!isOrganizer) {
@@ -638,21 +650,24 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
       )
     }
     return (
-      <div className="text-center py-16">
-        <Swords className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-        <p className="text-sm text-gray-400 mb-4">No Open Play sessions scheduled or running.</p>
-        <div className="flex items-center justify-center gap-2">
-          <Button size="sm" onClick={() => setCreating(true)} disabled={courts.length === 0}>
-            <Plus className="w-4 h-4 mr-1" />New session
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => setShowHistory(true)}>
-            <History className="w-4 h-4 mr-1" />History
-          </Button>
+      <>
+        <div className="text-center py-16">
+          <Swords className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+          <p className="text-sm text-gray-400 mb-4">No Open Play sessions scheduled or running.</p>
+          <div className="flex items-center justify-center gap-2">
+            <Button size="sm" onClick={() => setCreating(true)} disabled={courts.length === 0}>
+              <Plus className="w-4 h-4 mr-1" />New session
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setShowHistory(true)}>
+              <History className="w-4 h-4 mr-1" />History
+            </Button>
+          </div>
+          {courts.length === 0 && (
+            <p className="text-xs text-amber-600 mt-3">Add a court first on the <strong>Courts</strong> tab.</p>
+          )}
         </div>
-        {courts.length === 0 && (
-          <p className="text-xs text-amber-600 mt-3">Add a court first on the <strong>Courts</strong> tab.</p>
-        )}
-      </div>
+        {recapId && <SessionRecap sessionId={recapId} onClose={() => setRecapId(null)} />}
+      </>
     )
   }
 
@@ -1186,6 +1201,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {recapId && <SessionRecap sessionId={recapId} onClose={() => setRecapId(null)} />}
 
       {/* QR check-in dialog */}
       <Dialog open={qrOpen} onOpenChange={setQrOpen}>

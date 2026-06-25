@@ -103,19 +103,31 @@ function repair(ids: string[], partneredWith: Map<string, Set<string>>): Pairing
   return { team1: best[0], team2: best[1] }
 }
 
+// `benchExtras` (longest-waiting first) are players who sat out last round. They
+// rotate IN through the bottom rung, pushing the bottom's stuck losers out to
+// rest — so with more players than court capacity, everyone keeps cycling.
 export function buildKingRound(
   lastRound: Map<number, CourtResult>,
   courtCount: number,
   partneredWith: Map<string, Set<string>>,
+  benchExtras: string[] = [],
 ): Pairing[] {
   const groups: Pairing[] = []
+  const extras = [...benchExtras]
   for (let c = 1; c <= courtCount; c++) {
     const here = lastRound.get(c)
     if (!here) return []   // incomplete results → caller falls back to a fresh seed
     let roster: string[]
-    if (c === 1) roster = [...here.winners, ...(lastRound.get(2)?.winners ?? [])]
-    else if (c === courtCount) roster = [...(lastRound.get(c - 1)?.losers ?? []), ...here.losers]
-    else roster = [...(lastRound.get(c - 1)?.losers ?? []), ...(lastRound.get(c + 1)?.winners ?? [])]
+    if (c === 1) {
+      roster = [...here.winners, ...(lastRound.get(2)?.winners ?? [])]
+    } else if (c === courtCount) {
+      const down = lastRound.get(c - 1)?.losers ?? []
+      const stayed = here.losers
+      const swapN = Math.min(extras.length, stayed.length)   // fresh players replace the stuck
+      roster = [...down, ...stayed.slice(swapN), ...extras.splice(0, swapN)]
+    } else {
+      roster = [...(lastRound.get(c - 1)?.losers ?? []), ...(lastRound.get(c + 1)?.winners ?? [])]
+    }
     groups.push(repair(roster, partneredWith))
   }
   return groups
