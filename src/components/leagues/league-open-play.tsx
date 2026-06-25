@@ -573,15 +573,37 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     else { toast({ title: 'Session ended' }); if (solo) clearActiveHost(); setSession(null); fetchSessions() }
   }
 
-  // C — convert the invisible anonymous account into a permanent one.
+  // C — keep the session permanently. Either convert the anonymous account into
+  // a new one, or — if the email already has an account — sign into it and move
+  // this session there.
   async function saveAccount() {
-    if (!saveEmail.trim() || savePw.length < 6) { toast({ title: 'Enter an email and a password (6+ chars)', variant: 'destructive' }); return }
+    const email = saveEmail.trim()
+    if (!email || savePw.length < 6) { toast({ title: 'Enter an email and a password (6+ chars)', variant: 'destructive' }); return }
+    if (!session) return
+    const manageCode = session.manage_code
     setBusy(true)
-    const { error } = await supabase.auth.updateUser({ email: saveEmail.trim(), password: savePw })
+
+    // 1) try converting the current (anonymous) account to this new email
+    const { error: updErr } = await supabase.auth.updateUser({ email, password: savePw })
+    if (!updErr) {
+      setBusy(false); setSaveOpen(false)
+      toast({ title: 'Saved! 🎉', description: 'Sign in with that email on any device to pick up where you left off.' })
+      return
+    }
+
+    // 2) email already has an account → sign into it and move this session in
+    const { error: signErr } = await supabase.auth.signInWithPassword({ email, password: savePw })
+    if (signErr) {
+      setBusy(false)
+      toast({ title: 'Could not save', description: 'That email already has an account — enter its correct password to save into it, or use a different email.', variant: 'destructive' })
+      return
+    }
+    const { error: adoptErr } = await supabase.rpc('adopt_solo_session', { p_manage_code: manageCode })
     setBusy(false)
-    if (error) { toast({ title: 'Could not save', description: error.message, variant: 'destructive' }); return }
+    if (adoptErr) { toast({ title: 'Signed in, but couldn’t move the session', description: adoptErr.message, variant: 'destructive' }); return }
     setSaveOpen(false)
-    toast({ title: 'Saved! 🎉', description: 'You can now sign in with that email on any device to pick up where you left off.' })
+    toast({ title: 'Saved to your account 🎉', description: 'Signed in — this session is now in your account.' })
+    await fetchSessions()
   }
 
   function copyShare() {
