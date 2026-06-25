@@ -6,7 +6,7 @@ import { CreateLeagueDialog } from '@/components/leagues/create-league-dialog'
 import { JoinLeagueDialog } from '@/components/leagues/join-league-dialog'
 import { ProfileCompletionBanner } from '@/components/profile-completion-banner'
 import { formatElo } from '@/lib/utils'
-import { Trophy, MapPin, TrendingUp } from 'lucide-react'
+import { Trophy, MapPin, TrendingUp, Swords, Play, Plus } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -21,6 +21,20 @@ export default async function DashboardPage() {
     `)
     .eq('user_id', user.id)
     .order('joined_at', { ascending: false })
+
+  // Standalone (leagueless) Open Play sessions this user hosts.
+  const nowIso = new Date().toISOString()
+  const { data: soloSessions } = await supabase
+    .from('play_sessions')
+    .select('id, name, match_mode, format, court_count, started_at, manage_code')
+    .eq('created_by', user.id).is('league_id', null).is('ended_at', null)
+    .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
+    .order('started_at', { ascending: false })
+
+  const soloModeLabel: Record<string, string> = {
+    balanced: 'Drop-in', skill: 'Drop-in', mixed: 'Drop-in', ladder: 'King of the Court',
+    king: 'King of the Court', americano: 'Americano', mexicano: 'Mexicano',
+  }
 
   const roleLabels: Record<string, string> = {
     head_admin: 'Head Admin',
@@ -99,6 +113,38 @@ export default async function DashboardPage() {
           ))}
         </div>
       )}
+
+      {/* Standalone Open Play sessions (no league needed) */}
+      <div className="mt-10">
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2"><Swords className="w-5 h-5 text-green-600" />Open Play</h2>
+            <p className="text-gray-600 text-sm mt-0.5">Run a drop-in session — no league or court needed.</p>
+          </div>
+          <Link href="/play/new" className="inline-flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg px-4 py-2">
+            <Plus className="w-4 h-4" />Start a session
+          </Link>
+        </div>
+
+        {soloSessions && soloSessions.length > 0 && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {(soloSessions as any[]).map(s => (
+              <Link key={s.id} href={`/play/host/${s.manage_code}`} className="group">
+                <div className="rounded-xl border bg-white p-4 hover:border-green-300 hover:shadow-md transition-all h-full flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-gray-900 truncate">{s.name}</span>
+                      <span className="text-[10px] font-bold uppercase text-violet-700 bg-violet-100 rounded-full px-2 py-0.5">{soloModeLabel[s.match_mode] ?? s.match_mode}</span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-0.5 capitalize">{s.format} · {s.court_count} court{s.court_count > 1 ? 's' : ''}</p>
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-green-700 text-sm font-medium shrink-0"><Play className="w-3.5 h-3.5" />Resume</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
