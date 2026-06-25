@@ -99,6 +99,11 @@ export default function NewSoloSessionPage() {
                 </button>
               ))}
             </div>
+            {mode !== 'balanced' && courts === 1 && (
+              <p className="text-[11px] text-gray-500 bg-gray-50 border rounded-lg px-3 py-2">
+                <strong>On one court:</strong> each round&apos;s games play one at a time. Tap <strong>Generate</strong> to build the round, <strong>send a game</strong> to the court, <strong>enter its score</strong>, then send the next. After all games are scored, Generate the next round.
+              </p>
+            )}
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}

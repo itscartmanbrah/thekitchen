@@ -437,7 +437,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   // sends as many as the free courts allow.
   async function generateRound(start: boolean) {
     if (!session) return
-    if (liveGames.length > 0 || stagedGroups.length > 0) { toast({ title: 'Finish the current round first', description: 'Score every game (and clear On Deck) before generating the next round.' }); return }
+    if (liveGames.length > 0) { toast({ title: 'Enter the scores first', description: `Record the score for the game${liveGames.length > 1 ? 's' : ''} on court, then generate the next round.` }); return }
+    if (stagedGroups.length > 0) { toast({ title: 'Clear On Deck first', description: 'Send the staged games to a court (or disband them) before generating a new round.' }); return }
     const ready = bench
     const availableIds = new Set(ready.map(p => p.id))
     const groupCount = Math.floor(ready.length / perGame)
@@ -461,7 +462,9 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
       const lastIds = new Set(Array.from(lastRound.values()).flatMap(r => [...r.winners, ...r.losers]))
       const extras = ready.filter(p => !lastIds.has(p.id)).sort(byFairness).map(p => p.id)
       groups = buildKingRound(lastRound, lastRoundCount || groupCount, partnered, extras)
-      if (groups.length === 0 || groups.some(g => [...g.team1, ...g.team2].some(id => !availableIds.has(id)))) {
+      const fellBack = groups.length === 0 || groups.some(g => [...g.team1, ...g.team2].some(id => !availableIds.has(id)))
+      if (fellBack) {
+        if (lastRound.size > 0) toast({ title: 'Starting a fresh round', description: 'The ladder reset because the line-up changed since last round.' })
         groups = seedBalanced(groupCount)   // first round, or roster changed
       }
     } else {
@@ -774,6 +777,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                   : mode === 'mexicano'
                     ? 'Pairs the closest-ranked players each round (1&4 vs 2&3); ranked by points.'
                     : 'Each round, winners move up a court and losers move down — Court 1 is the “Kings” court. Partners are re-shuffled each round. Enter every court’s score to advance.'}
+                {selectedCourts.length === 1 && <span className="block mt-1 text-gray-500"><strong>On one court:</strong> the round’s games play one at a time — send a game, enter its score, then send the next; Generate the next round once all are scored.</span>}
               </p>
             )}
           </div>
