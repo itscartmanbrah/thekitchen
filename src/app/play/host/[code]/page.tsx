@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { setActiveHost } from '@/lib/active-host'
 import { PlayHeader, PlayBack } from '@/components/play-header'
+import { OpenPlaySkeleton } from '@/components/open-play-skeleton'
 import { LeagueOpenPlay } from '@/components/leagues/league-open-play'
 
 export default function SoloHostByCodePage({ params }: { params: { code: string } }) {
@@ -38,7 +39,7 @@ export default function SoloHostByCodePage({ params }: { params: { code: string 
       <PlayHeader right={<Link href="/play/new" className="text-sm text-gray-500 hover:text-green-600">New session</Link>} />
       <main className="max-w-3xl mx-auto px-4 py-6">
         <PlayBack />
-        {state === 'loading' && <div className="text-center py-16 text-gray-400 text-sm">Opening your session…</div>}
+        {state === 'loading' && <OpenPlaySkeleton />}
         {state === 'error' && (
           <div className="text-center py-16">
             <p className="text-gray-500 mb-4">We couldn&apos;t open that session — the link may be invalid or the session has ended.</p>

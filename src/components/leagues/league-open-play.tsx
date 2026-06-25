@@ -15,6 +15,8 @@ import { useToast } from '@/hooks/use-toast'
 import { buildFairGroups, buildMexicanoRound, buildKingRound, type RosterPlayer, type CourtResult } from '@/lib/open-play'
 import { LeagueOpenPlayHistory } from '@/components/leagues/league-open-play-history'
 import { OpenPlayQR } from '@/components/open-play-qr'
+import { LiveTimer } from '@/components/live-timer'
+import { OpenPlaySkeleton } from '@/components/open-play-skeleton'
 import { setActiveHost, clearActiveHost } from '@/lib/active-host'
 import {
   Play, Plus, UserPlus, Link2, Check, Pause, X, Swords,
@@ -88,7 +90,6 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [now, setNow] = useState(Date.now())
   const [selectedBench, setSelectedBench] = useState<string | null>(null)   // tap-to-place
   const [subTarget, setSubTarget] = useState<{ gameId: string; outId: string } | null>(null)
   const [announce, setAnnounce] = useState(false)        // text-to-speech call-outs
@@ -215,12 +216,6 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     { table: 'session_games' },
   ], () => { if (session) loadState(session.id) }, [leagueId])
 
-  // 1s tick drives the court timers and wait timers.
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(t)
-  }, [])
-
   const isScheduled = !!session && !!session.starts_at && new Date(session.starts_at).getTime() > Date.now()
 
   // Day-wide schedule for the create calendar: every court's confirmed bookings
@@ -277,12 +272,6 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     ? Array.from({ length: session.court_count }, (_, i) => i + 1).filter(c => !occupiedCourts.has(c))
     : []
   const playingCount = players.filter(p => p.status === 'playing').length
-
-  const mmss = (fromIso: string) => {
-    const s = Math.max(0, Math.floor((now - new Date(fromIso).getTime()) / 1000))
-    const m = Math.floor(s / 60)
-    return `${m}:${String(s % 60).padStart(2, '0')}`
-  }
   const OVERTIME_MIN = 15
 
   // ── actions ───────────────────────────────────────────────────────────────
@@ -411,7 +400,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     if (!session) return
     const maxGroups = Math.max(0, session.court_count - stagedGroups.length)
     if (maxGroups <= 0) { toast({ title: 'On Deck is full', description: 'Send a group to a court to free up an On Deck slot.' }); return }
-    const roster: RosterPlayer[] = bench.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: now - new Date(p.queued_since).getTime() }))
+    const roster: RosterPlayer[] = bench.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: Date.now() - new Date(p.queued_since).getTime() }))
     const groups = buildFairGroups(roster, session.format, maxGroups, partnered)
     if (groups.length === 0) { toast({ title: `Need ${perGame} on the bench`, variant: 'destructive' }); return }
     setBusy(true)
@@ -430,7 +419,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     if (!session) return
     const n = Math.floor(bench.length / perGame)
     if (n === 0) { toast({ title: `Need ${perGame} on the bench`, variant: 'destructive' }); return }
-    const roster: RosterPlayer[] = bench.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: now - new Date(p.queued_since).getTime() }))
+    const roster: RosterPlayer[] = bench.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: Date.now() - new Date(p.queued_since).getTime() }))
     const groups = buildFairGroups(roster, session.format, n, partnered)
     setBusy(true)
     for (const grp of groups) {
@@ -452,7 +441,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     const groupCount = Math.floor(ready.length / perGame)
     if (groupCount === 0) { toast({ title: `Need ${perGame} ready players`, variant: 'destructive' }); return }
     const seedBalanced = (n: number) => {
-      const roster: RosterPlayer[] = ready.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: now - new Date(p.queued_since).getTime() }))
+      const roster: RosterPlayer[] = ready.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: Date.now() - new Date(p.queued_since).getTime() }))
       return buildFairGroups(roster, session.format, n, partnered)
     }
     let groups
@@ -618,7 +607,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
 
   const nameOf = (id: string) => playerMap.get(id)?.display_name ?? '?'
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading…</div>
+  if (loading) return <OpenPlaySkeleton />
 
   // ── History ─────────────────────────────────────────────────────────────────
   if (showHistory) return <LeagueOpenPlayHistory leagueId={leagueId} createdBy={solo ? userId : null} onBack={() => setShowHistory(false)} />
@@ -925,9 +914,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         <div className="grid sm:grid-cols-2 gap-2.5 mb-6">
           {Array.from({ length: session.court_count }, (_, i) => i + 1).map(courtNo => {
             const game = liveGames.find(g => g.court_number === courtNo)
-            const over = game ? (now - new Date(game.started_at).getTime()) / 60000 > OVERTIME_MIN : false
             return (
-              <div key={courtNo} className={`bg-slate-800 border border-slate-700/60 rounded-xl p-3 border-l-[3px] ${over ? 'border-l-red-500' : game ? 'border-l-green-500' : 'border-l-slate-600'}`}>
+              <div key={courtNo} className={`bg-slate-800 border border-slate-700/60 rounded-xl p-3 border-l-[3px] ${game ? 'border-l-green-500' : 'border-l-slate-600'}`}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-white font-bold italic text-sm">
                     COURT {courtNo}
@@ -935,9 +923,9 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                     {isKing && courtNo === session.court_count && session.court_count > 1 && <span className="ml-1.5 text-[9px] not-italic font-medium text-slate-400 align-middle">bottom</span>}
                   </span>
                   {game ? (
-                    over
-                      ? <span className="text-[9px] uppercase tracking-wide font-bold text-white bg-red-500 rounded px-1.5 py-0.5">Overtime {mmss(game.started_at)}</span>
-                      : <span className="text-[11px] text-green-400 font-medium tabular-nums">{mmss(game.started_at)}</span>
+                    <LiveTimer from={game.started_at} overtimeMin={OVERTIME_MIN}
+                      className="text-[11px] text-green-400 font-medium tabular-nums"
+                      overtimeClassName="text-[9px] uppercase tracking-wide font-bold text-white bg-red-500 rounded px-1.5 py-0.5" />
                   ) : <span className="text-[10px] uppercase tracking-wide text-slate-600">Open</span>}
                 </div>
                 {game ? (
@@ -1137,7 +1125,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                     {!p.user_id && <span className="text-[10px] text-slate-500 ml-1">guest</span>}
                   </span>
                 </button>
-                <span className="text-[11px] text-slate-500 tabular-nums shrink-0">waited {mmss(p.queued_since)} · {p.games}g</span>
+                <span className="text-[11px] text-slate-500 tabular-nums shrink-0">waited <LiveTimer from={p.queued_since} /> · {p.games}g</span>
                 {isOrganizer && (
                   <>
                     <button onClick={() => setStatus(p.id, 'resting')} className="text-slate-500 hover:text-amber-400 shrink-0" title="Rest"><Pause className="w-3.5 h-3.5" /></button>
