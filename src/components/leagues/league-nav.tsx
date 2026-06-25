@@ -191,7 +191,7 @@ export function LeagueNav(props: NavProps) {
       )}
 
       {/* Content */}
-      <motion.div key={active} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: 'easeOut' }}>
+      <motion.div key={active} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.15, ease: 'easeOut' }}>
         {active === 'overview' && (
           <LeagueOverview leagueId={leagueId} currentUserId={currentUserId} isAdmin={isAdmin} onNavigate={go} />
         )}

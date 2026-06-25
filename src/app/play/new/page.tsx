@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { setActiveHost } from '@/lib/active-host'
 import { ResumeSessionBanner } from '@/components/resume-session-banner'
-import { PlayHeader } from '@/components/play-header'
+import { PlayHeader, PlayBack } from '@/components/play-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -59,6 +59,7 @@ export default function NewSoloSessionPage() {
       <ResumeSessionBanner />
 
       <main className="max-w-md mx-auto px-4 py-10">
+        <PlayBack />
         <div className="flex items-center gap-2 mb-1">
           <Swords className="w-5 h-5 text-green-600" />
           <h1 className="text-2xl font-bold text-gray-900">Start an Open Play session</h1>

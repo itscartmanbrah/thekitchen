@@ -329,10 +329,9 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
           return (
             <motion.div
               key={m.id}
-              layout
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ layout: { duration: 0.4, type: 'spring', bounce: 0.2 }, duration: 0.3, delay: Math.min(idx * 0.03, 0.3) }}
+              transition={{ duration: 0.2, delay: Math.min(idx * 0.02, 0.2) }}
               className={`flex items-center gap-3 rounded-xl border bg-white px-4 py-3 ${isMe ? 'border-green-400 bg-green-50/60' : 'border-gray-200'}`}
             >
               <div className="w-7 text-center shrink-0">

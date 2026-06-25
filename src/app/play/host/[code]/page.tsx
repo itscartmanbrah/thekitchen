@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { setActiveHost } from '@/lib/active-host'
-import { PlayHeader } from '@/components/play-header'
+import { PlayHeader, PlayBack } from '@/components/play-header'
 import { LeagueOpenPlay } from '@/components/leagues/league-open-play'
 
 export default function SoloHostByCodePage({ params }: { params: { code: string } }) {
@@ -37,6 +37,7 @@ export default function SoloHostByCodePage({ params }: { params: { code: string 
     <div className="min-h-screen bg-gray-50">
       <PlayHeader right={<Link href="/play/new" className="text-sm text-gray-500 hover:text-green-600">New session</Link>} />
       <main className="max-w-3xl mx-auto px-4 py-6">
+        <PlayBack />
         {state === 'loading' && <div className="text-center py-16 text-gray-400 text-sm">Opening your session…</div>}
         {state === 'error' && (
           <div className="text-center py-16">
