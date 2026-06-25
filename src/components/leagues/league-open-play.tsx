@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
-import { buildFairGroups, buildMexicanoRound, buildKingRound, type RosterPlayer, type CourtResult } from '@/lib/open-play'
+import { buildFairGroups, buildMexicanoRound, type RosterPlayer } from '@/lib/open-play'
 import { LeagueOpenPlayHistory } from '@/components/leagues/league-open-play-history'
 import { OpenPlayQR } from '@/components/open-play-qr'
 import { LiveTimer } from '@/components/live-timer'
@@ -84,8 +84,6 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const [games, setGames] = useState<Game[]>([])           // staged + in_progress
   const [partnered, setPartnered] = useState<Map<string, Set<string>>>(new Map())
   const [points, setPoints] = useState<Map<string, number>>(new Map())   // session points (Americano-style)
-  const [lastRound, setLastRound] = useState<Map<number, CourtResult>>(new Map())   // King ladder: rank → result
-  const [lastRoundCount, setLastRoundCount] = useState(0)
   const [nextRoundNo, setNextRoundNo] = useState(1)
   const [scoreGame, setScoreGame] = useState<Game | null>(null)          // score-entry dialog
   const [s1, setS1] = useState(''); const [s2, setS2] = useState('')
@@ -181,20 +179,10 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     setPartnered(pmap)
     setPoints(pts)
 
-    // King ladder: the most recently completed round, keyed by group rank.
+    // Next round number (for staging round groups).
     const liveRoundNos = ((g as Game[]) ?? []).map(x => x.round_no ?? 0)
     const doneRoundNos = doneGames.map(x => x.round_no ?? 0)
-    const maxRound = Math.max(0, ...liveRoundNos, ...doneRoundNos)
-    setNextRoundNo(maxRound + 1)
-    const lr = new Map<number, CourtResult>()
-    const lastDone = doneGames.filter(x => (x.round_no ?? 0) === maxRound && x.rank != null && x.winner_team != null)
-    for (const game of lastDone) {
-      lr.set(game.rank as number, game.winner_team === 1
-        ? { winners: game.team1_ids, losers: game.team2_ids }
-        : { winners: game.team2_ids, losers: game.team1_ids })
-    }
-    setLastRound(lr)
-    setLastRoundCount(lr.size)
+    setNextRoundNo(Math.max(0, ...liveRoundNos, ...doneRoundNos) + 1)
   }
 
   useEffect(() => {
@@ -440,7 +428,6 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     if (liveGames.length > 0) { toast({ title: 'Enter the scores first', description: `Record the score for the game${liveGames.length > 1 ? 's' : ''} on court, then generate the next round.` }); return }
     if (stagedGroups.length > 0) { toast({ title: 'Clear On Deck first', description: 'Send the staged games to a court (or disband them) before generating a new round.' }); return }
     const ready = bench
-    const availableIds = new Set(ready.map(p => p.id))
     const groupCount = Math.floor(ready.length / perGame)
     if (groupCount === 0) { toast({ title: `Need ${perGame} ready players`, variant: 'destructive' }); return }
     const seedBalanced = (n: number) => {
@@ -458,15 +445,14 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
       const ranked = playing.sort((a, b) => (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || b.wins - a.wins)
       groups = buildMexicanoRound(ranked, session.format, groupCount)
     } else if (session.match_mode === 'king') {
-      // players who sat out last round, fewest games first → rotate them in
-      const lastIds = new Set(Array.from(lastRound.values()).flatMap(r => [...r.winners, ...r.losers]))
-      const extras = ready.filter(p => !lastIds.has(p.id)).sort(byFairness).map(p => p.id)
-      groups = buildKingRound(lastRound, lastRoundCount || groupCount, partnered, extras)
-      const fellBack = groups.length === 0 || groups.some(g => [...g.team1, ...g.team2].some(id => !availableIds.has(id)))
-      if (fellBack) {
-        if (lastRound.size > 0) toast({ title: 'Starting a fresh round', description: 'The ladder reset because the line-up changed since last round.' })
-        groups = seedBalanced(groupCount)   // first round, or roster changed
-      }
+      // Fair at any headcount: the MOST-played sit out (so court time stays even),
+      // and whoever plays is ranked by win record so winners play winners.
+      const sitCount = Math.max(0, ready.length - groupCount * perGame)
+      const mostPlayedFirst = [...ready].sort((a, b) => b.games - a.games || new Date(b.queued_since).getTime() - new Date(a.queued_since).getTime())
+      const sitters = new Set(mostPlayedFirst.slice(0, sitCount).map(p => p.id))
+      const ranked = ready.filter(p => !sitters.has(p.id))
+        .sort((a, b) => b.wins - a.wins || (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || a.losses - b.losses)
+      groups = buildMexicanoRound(ranked, session.format, groupCount)
     } else {
       groups = seedBalanced(groupCount)   // americano: rotate partners
     }
