@@ -145,16 +145,18 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
       supabase.from('session_games').select('*').eq('session_id', sessionId).in('status', ['staged', 'in_progress']),
       supabase.from('session_games').select('team1_ids, team2_ids, team1_score, team2_score, winner_team, rank, round_no, completed_at').eq('session_id', sessionId).eq('status', 'completed').order('completed_at'),
     ])
-    // attach avatar_url for members
+    // Render immediately; avatars load in the background (initials show first).
     const rows = (sp as SP[]) ?? []
-    const memberIds = rows.filter(r => r.user_id).map(r => r.user_id as string)
-    if (memberIds.length) {
-      const { data: profs } = await supabase.from('profiles').select('id, avatar_url').in('id', memberIds)
-      const map = new Map(((profs ?? []) as any[]).map(p => [p.id, p.avatar_url]))
-      rows.forEach(r => { if (r.user_id) r.avatar_url = map.get(r.user_id) ?? null })
-    }
     setPlayers(rows)
     setGames((g as Game[]) ?? [])
+
+    const memberIds = rows.filter(r => r.user_id).map(r => r.user_id as string)
+    if (memberIds.length) {
+      supabase.from('profiles').select('id, avatar_url').in('id', memberIds).then(({ data: profs }) => {
+        const map = new Map(((profs ?? []) as any[]).map(p => [p.id, p.avatar_url]))
+        setPlayers(prev => prev.map(r => (r.user_id ? { ...r, avatar_url: map.get(r.user_id) ?? null } : r)))
+      })
+    }
 
     // partner history (Auto Fill repeat-avoidance) + session points (standings)
     const pmap = new Map<string, Set<string>>()
