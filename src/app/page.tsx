@@ -3,6 +3,7 @@ import { AppLogo } from '@/components/app-logo'
 import { InstallAppButton } from '@/components/install-app-button'
 import { LandingHero } from '@/components/landing-hero'
 import { LandingOpenPlay } from '@/components/landing-openplay'
+import { ResumeSessionBanner } from '@/components/resume-session-banner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Users, Zap, BarChart3, Shield, Star } from 'lucide-react'
@@ -40,6 +41,8 @@ export default function LandingPage() {
           </div>
         </div>
       </nav>
+
+      <ResumeSessionBanner />
 
       {/* Open Play — the flagship, front and center */}
       <LandingOpenPlay />

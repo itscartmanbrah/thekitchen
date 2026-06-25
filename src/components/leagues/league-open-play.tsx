@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast'
 import { buildFairGroups, buildMexicanoRound, buildKingRound, type RosterPlayer, type CourtResult } from '@/lib/open-play'
 import { LeagueOpenPlayHistory } from '@/components/leagues/league-open-play-history'
 import { OpenPlayQR } from '@/components/open-play-qr'
+import { setActiveHost, clearActiveHost } from '@/lib/active-host'
 import {
   Play, Plus, UserPlus, Link2, Check, Pause, X, Swords,
   ArrowLeft, CalendarDays, Wand2, Lock, Unlock, Repeat, Trash2, Monitor,
@@ -30,6 +31,7 @@ interface SessionRow {
   rated: boolean
   status: 'scheduled' | 'active' | 'ended'
   share_code: string
+  manage_code: string
   allow_self_join: boolean
   starts_at: string | null
   ends_at: string | null
@@ -70,6 +72,9 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const [creating, setCreating] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [qrOpen, setQrOpen] = useState(false)
+  const [saveOpen, setSaveOpen] = useState(false)
+  const [saveEmail, setSaveEmail] = useState('')
+  const [savePw, setSavePw] = useState('')
   const [players, setPlayers] = useState<SP[]>([])
   const [games, setGames] = useState<Game[]>([])           // staged + in_progress
   const [partnered, setPartnered] = useState<Map<string, Set<string>>>(new Map())
@@ -127,6 +132,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     const pick = (preferId && list.find(s => s.id === preferId))
       || list.find(s => s.id === session?.id) || list[0] || null
     setSession(pick)
+    if (solo && pick) setActiveHost({ manageCode: pick.manage_code, shareCode: pick.share_code, name: pick.name })
     if (pick) await loadState(pick.id)
     else { setPlayers([]); setGames([]) }
     setLoading(false)
@@ -564,7 +570,18 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     if (!session) return
     const { error } = await supabase.rpc('end_play_session', { p_session_id: session.id })
     if (error) toast({ title: 'Could not end', description: error.message, variant: 'destructive' })
-    else { toast({ title: 'Session ended' }); setSession(null); fetchSessions() }
+    else { toast({ title: 'Session ended' }); if (solo) clearActiveHost(); setSession(null); fetchSessions() }
+  }
+
+  // C — convert the invisible anonymous account into a permanent one.
+  async function saveAccount() {
+    if (!saveEmail.trim() || savePw.length < 6) { toast({ title: 'Enter an email and a password (6+ chars)', variant: 'destructive' }); return }
+    setBusy(true)
+    const { error } = await supabase.auth.updateUser({ email: saveEmail.trim(), password: savePw })
+    setBusy(false)
+    if (error) { toast({ title: 'Could not save', description: error.message, variant: 'destructive' }); return }
+    setSaveOpen(false)
+    toast({ title: 'Saved! 🎉', description: 'You can now sign in with that email on any device to pick up where you left off.' })
   }
 
   function copyShare() {
@@ -820,8 +837,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
 
       {solo && (
         <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-sm text-green-800">Want to keep these players and track ratings over time?</p>
-          <Button size="sm" asChild><Link href="/signup">Create a free account</Link></Button>
+          <p className="text-sm text-green-800">Save this session so you never lose it — and pick up on any device.</p>
+          <Button size="sm" onClick={() => setSaveOpen(true)}>Save my session</Button>
         </div>
       )}
 
@@ -1167,6 +1184,23 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             <Button variant="outline" onClick={copyShare} className="w-full">
               <Link2 className="w-4 h-4 mr-1" />Copy link instead
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Save session (anonymous → account) dialog */}
+      <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader><DialogTitle>Save your session</DialogTitle></DialogHeader>
+          <p className="text-sm text-gray-500 -mt-1">Add an email &amp; password so you can sign in on any device and never lose this session.</p>
+          <div className="space-y-2 mt-1">
+            <Input type="email" placeholder="Email" value={saveEmail} onChange={e => setSaveEmail(e.target.value)} />
+            <Input type="password" placeholder="Password (6+ characters)" value={savePw} onChange={e => setSavePw(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') saveAccount() }} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaveOpen(false)}>Not now</Button>
+            <Button onClick={saveAccount} disabled={busy}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

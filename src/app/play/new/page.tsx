@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { setActiveHost } from '@/lib/active-host'
+import { ResumeSessionBanner } from '@/components/resume-session-banner'
 import { AppLogo } from '@/components/app-logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,11 +39,13 @@ export default function NewSoloSessionPage() {
         if (aErr) { setError('Couldn’t start a session. Anonymous sign-in may be disabled.'); setBusy(false); return }
         user = data.user
       }
-      const { data: id, error: cErr } = await supabase.rpc('create_solo_session', {
+      const { data, error: cErr } = await supabase.rpc('create_solo_session', {
         p_name: name.trim(), p_court_count: courts, p_format: format, p_match_mode: mode,
       })
-      if (cErr || !id) { setError(cErr?.message ?? 'Could not create the session.'); setBusy(false); return }
-      router.push('/play/host')
+      const res = data as { id: string; manage_code: string; share_code: string } | null
+      if (cErr || !res) { setError(cErr?.message ?? 'Could not create the session.'); setBusy(false); return }
+      setActiveHost({ manageCode: res.manage_code, shareCode: res.share_code, name: name.trim() })
+      router.push(`/play/host/${res.manage_code}`)
     } catch {
       setError('Something went wrong. Please try again.')
       setBusy(false)
@@ -56,6 +60,8 @@ export default function NewSoloSessionPage() {
           <Link href="/login" className="text-sm text-gray-500 hover:text-green-600">Sign in</Link>
         </div>
       </header>
+
+      <ResumeSessionBanner />
 
       <main className="max-w-md mx-auto px-4 py-10">
         <div className="flex items-center gap-2 mb-1">
