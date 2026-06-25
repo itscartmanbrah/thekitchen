@@ -19,6 +19,9 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
             <InstallAppButton />
+            <Button variant="ghost" asChild className="text-green-700 font-semibold hidden sm:inline-flex">
+              <Link href="/play/new">Open Play</Link>
+            </Button>
             <Button variant="ghost" asChild className="hidden sm:inline-flex">
               <Link href="/how-to-use">How to use</Link>
             </Button>
@@ -38,11 +41,11 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <LandingHero />
-
-      {/* Open Play — the flagship */}
+      {/* Open Play — the flagship, front and center */}
       <LandingOpenPlay />
+
+      {/* Hero — leagues & ELO */}
+      <LandingHero />
 
       {/* How it works */}
       <section className="max-w-6xl mx-auto px-4 py-20">
