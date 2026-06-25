@@ -67,6 +67,7 @@ interface Member { user_id: string; profiles: { display_name: string; avatar_col
 
 export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { leagueId: string | null; isOrganizer: boolean; solo?: boolean }) {
   const [userId, setUserId] = useState<string | null>(null)
+  const [isAnon, setIsAnon] = useState(false)
   const [sessions, setSessions] = useState<SessionRow[]>([])
   const [session, setSession] = useState<SessionRow | null>(null)
   const [creating, setCreating] = useState(false)
@@ -192,7 +193,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   }
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
+    supabase.auth.getUser().then(({ data }) => { setUserId(data.user?.id ?? null); setIsAnon(!!(data.user as any)?.is_anonymous) })
     fetchSessions()
     if (!solo) {
       supabase.from('courts').select('id, name').eq('league_id', leagueId as string).eq('active', true).order('created_at')
@@ -586,7 +587,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     // 1) try converting the current (anonymous) account to this new email
     const { error: updErr } = await supabase.auth.updateUser({ email, password: savePw })
     if (!updErr) {
-      setBusy(false); setSaveOpen(false)
+      setBusy(false); setSaveOpen(false); setIsAnon(false)
       toast({ title: 'Saved! 🎉', description: 'Sign in with that email on any device to pick up where you left off.' })
       return
     }
@@ -601,7 +602,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     const { error: adoptErr } = await supabase.rpc('adopt_solo_session', { p_manage_code: manageCode })
     setBusy(false)
     if (adoptErr) { toast({ title: 'Signed in, but couldn’t move the session', description: adoptErr.message, variant: 'destructive' }); return }
-    setSaveOpen(false)
+    setSaveOpen(false); setIsAnon(false)
     toast({ title: 'Saved to your account 🎉', description: 'Signed in — this session is now in your account.' })
     await fetchSessions()
   }
@@ -857,7 +858,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         </div>
       )}
 
-      {solo && (
+      {solo && isAnon && (
         <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
           <p className="text-sm text-green-800">Save this session so you never lose it — and pick up on any device.</p>
           <Button size="sm" onClick={() => setSaveOpen(true)}>Save my session</Button>

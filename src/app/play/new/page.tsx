@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { setActiveHost } from '@/lib/active-host'
 import { ResumeSessionBanner } from '@/components/resume-session-banner'
-import { AppLogo } from '@/components/app-logo'
+import { PlayHeader } from '@/components/play-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -54,12 +54,7 @@ export default function NewSoloSessionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white">
-        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2"><AppLogo className="w-7 h-7" /><span className="font-bold text-gray-900">The Kitchen</span></Link>
-          <Link href="/login" className="text-sm text-gray-500 hover:text-green-600">Sign in</Link>
-        </div>
-      </header>
+      <PlayHeader right={<Link href="/login" className="text-sm text-gray-500 hover:text-green-600">Sign in</Link>} />
 
       <ResumeSessionBanner />
 
