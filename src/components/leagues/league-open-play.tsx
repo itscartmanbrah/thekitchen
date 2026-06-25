@@ -23,8 +23,11 @@ import { setActiveHost, clearActiveHost } from '@/lib/active-host'
 import {
   Play, Plus, UserPlus, Link2, Check, Pause, X, Swords,
   ArrowLeft, CalendarDays, Wand2, Lock, Unlock, Repeat, Trash2, Monitor,
-  Volume2, VolumeX, Star, Search, History, QrCode,
+  Volume2, VolumeX, Star, Search, History, QrCode, MoreHorizontal, Power,
 } from 'lucide-react'
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 
 interface SessionRow {
   id: string
@@ -857,10 +860,10 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
-        <div>
-          <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-            {session.name}
+      <div className="flex items-start justify-between gap-2 mb-4">
+        <div className="min-w-0">
+          <h2 className="font-semibold text-gray-900 flex items-center gap-2 flex-wrap">
+            <span className="truncate">{session.name}</span>
             {session.rated && <span className="text-[10px] font-bold text-green-700 bg-green-100 rounded-full px-2 py-0.5">RATED</span>}
             {isScheduled && <span className="text-[10px] font-bold text-blue-700 bg-blue-100 rounded-full px-2 py-0.5">SCHEDULED</span>}
             <StyleBadge mode={session.match_mode} courtCount={session.court_count} />
@@ -872,7 +875,9 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             )}
           </p>
         </div>
-        <div className="flex gap-2">
+
+        {/* Desktop: full action row */}
+        <div className="hidden sm:flex gap-2 shrink-0">
           <Button size="sm" variant="outline" onClick={() => setShowHistory(true)}><History className="w-3.5 h-3.5 mr-1" />History</Button>
           <Button size="sm" variant="outline" asChild>
             <a href={`/play/${session.share_code}/board`} target="_blank" rel="noopener noreferrer"><Monitor className="w-3.5 h-3.5 mr-1" />Board</a>
@@ -883,6 +888,22 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
           </Button>
           {isOrganizer && <Button size="sm" variant="outline" onClick={openAdd}><UserPlus className="w-3.5 h-3.5 mr-1" />Add</Button>}
           {isOrganizer && <Button size="sm" variant="ghost" className="text-red-500" onClick={endSession}>End</Button>}
+        </div>
+
+        {/* Mobile: overflow menu (Add player lives in the Bench section below) */}
+        <div className="flex sm:hidden shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" className="px-2"><MoreHorizontal className="w-4 h-4" /></Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuItem onClick={copyShare}>{copied ? <Check className="w-4 h-4 mr-2" /> : <Link2 className="w-4 h-4 mr-2" />}{copied ? 'Link copied!' : 'Share invite link'}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setQrOpen(true)}><QrCode className="w-4 h-4 mr-2" />QR check-in</DropdownMenuItem>
+              <DropdownMenuItem asChild><a href={`/play/${session.share_code}/board`} target="_blank" rel="noopener noreferrer"><Monitor className="w-4 h-4 mr-2" />Open board view</a></DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowHistory(true)}><History className="w-4 h-4 mr-2" />Past sessions</DropdownMenuItem>
+              {isOrganizer && <><DropdownMenuSeparator /><DropdownMenuItem onClick={endSession} className="text-red-600 focus:text-red-600"><Power className="w-4 h-4 mr-2" />End session</DropdownMenuItem></>}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -895,17 +916,17 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
 
       {/* ── Scoreboard console (softened dark) ──────────────────────────────── */}
       <div className="bg-slate-900 rounded-2xl p-4 sm:p-5 mb-2 shadow-sm">
-        {/* Player totals */}
-        <div className="grid grid-cols-4 gap-2 mb-5">
+        {/* Player totals — 2×2 on phones, 4-across on larger screens */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
           {[
             { label: 'Checked in', val: players.filter(p => p.status !== 'left').length, accent: 'border-sky-500', color: 'text-white' },
             { label: 'Ready', val: bench.length, accent: 'border-green-500', color: 'text-green-400' },
             { label: 'Playing', val: playingCount, accent: 'border-violet-500', color: 'text-white' },
             { label: 'Resting', val: resting.length, accent: 'border-amber-500', color: 'text-white' },
           ].map(s => (
-            <div key={s.label} className={`bg-slate-800 rounded-xl px-3 py-2 border-t-2 ${s.accent}`}>
+            <div key={s.label} className={`bg-slate-800 rounded-xl px-3 py-2 border-t-2 ${s.accent} flex items-center justify-between sm:block`}>
               <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">{s.label}</div>
-              <div className={`text-xl font-bold ${s.color}`}>{s.val}</div>
+              <div className={`text-2xl sm:text-xl font-bold ${s.color}`}>{s.val}</div>
             </div>
           ))}
         </div>
