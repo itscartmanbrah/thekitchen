@@ -25,6 +25,13 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
   const [standings, setStandings] = useState<(SP & { pts: number })[]>([])
   const [gameCount, setGameCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  // Pre-rendered image (built once the card is on screen) so that on iOS the
+  // share sheet can open synchronously inside the tap — otherwise Safari drops
+  // the user-gesture during the async render and the share/save silently fails.
+  const [imgUrl, setImgUrl] = useState<string | null>(null)
+  const [imgFile, setImgFile] = useState<File | null>(null)
+
+  const fileName = `${(sess?.name ?? 'open-play').replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-recap.png`
 
   useEffect(() => {
     async function load() {
@@ -49,15 +56,39 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
     load()
   }, [sessionId])
 
+  // Render the card to a PNG once it's on screen, ready for an instant save/share.
+  useEffect(() => {
+    if (loading || !cardRef.current) return
+    let alive = true
+    const t = setTimeout(async () => {
+      try {
+        const url = await toPng(cardRef.current!, { pixelRatio: 2, backgroundColor: '#0f172a' })
+        if (!alive) return
+        setImgUrl(url)
+        const blob = await (await fetch(url)).blob()
+        if (alive) setImgFile(new File([blob], fileName, { type: 'image/png' }))
+      } catch { /* ignore — buttons fall back to on-demand render */ }
+    }, 400)
+    return () => { alive = false; clearTimeout(t) }
+  }, [loading, fileName])
+
+  const isMobile = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches
+
   async function saveImage() {
-    if (!cardRef.current) return
     try {
-      const url = await toPng(cardRef.current, { pixelRatio: 2, backgroundColor: '#0f172a' })
+      // Mobile (esp. iOS): the share sheet's "Save Image" is the only reliable
+      // way to get the PNG into the camera roll — <a download> is ignored there.
+      if (isMobile && imgFile && navigator.canShare?.({ files: [imgFile] })) {
+        await navigator.share({ files: [imgFile], title: 'The Kitchen — Open Play' })
+        return
+      }
+      const url = imgUrl ?? (cardRef.current ? await toPng(cardRef.current, { pixelRatio: 2, backgroundColor: '#0f172a' }) : null)
+      if (!url) return
       const a = document.createElement('a')
       a.href = url
-      a.download = `${(sess?.name ?? 'open-play').replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-recap.png`
+      a.download = fileName
       a.click()
-    } catch { /* ignore */ }
+    } catch { /* user dismissed the share sheet */ }
   }
 
   async function share() {
