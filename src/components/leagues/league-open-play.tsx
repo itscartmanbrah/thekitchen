@@ -1012,49 +1012,50 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         {/* On Deck — staging for every play style (editable) */}
         {isOrganizer && (
           <>
-            <div className="flex items-center justify-between mb-2.5 gap-2 flex-wrap">
+            <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] uppercase tracking-[0.18em] text-green-400 font-bold">On Deck</span>
-              <div className="flex gap-1.5 flex-wrap">
-                <button onClick={() => setAnnounce(a => !a)}
-                  className={`rounded-lg px-2 py-1.5 flex items-center ${announce ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}`}
-                  title={announce ? 'Voice call-outs on' : 'Voice call-outs off'}>
-                  {announce ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-                </button>
-                {isFormat ? (
-                  stagedGroups.length > 0 ? (
-                    <button onClick={startRound} disabled={busy || freeCourts.length === 0}
-                      className="text-[10px] uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 disabled:opacity-40 rounded-lg px-2.5 py-1.5 flex items-center gap-1">
-                      <Play className="w-3 h-3" />Start round
-                    </button>
-                  ) : (
-                    <>
-                      <button onClick={() => generateRound(true)} disabled={busy || liveGames.length > 0}
-                        className="text-[10px] uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 disabled:opacity-40 rounded-lg px-2.5 py-1.5 flex items-center gap-1">
-                        <Play className="w-3 h-3" />Generate &amp; start
-                      </button>
-                      <button onClick={() => generateRound(false)} disabled={busy || liveGames.length > 0}
-                        className="text-[10px] uppercase tracking-wide font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 rounded-lg px-2.5 py-1.5 flex items-center gap-1">
-                        <Wand2 className="w-3 h-3" />To On Deck
-                      </button>
-                    </>
-                  )
+              <button onClick={() => setAnnounce(a => !a)}
+                className={`rounded-lg p-2.5 flex items-center ${announce ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+                title={announce ? 'Voice call-outs on' : 'Voice call-outs off'}>
+                {announce ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              </button>
+            </div>
+            <div className="flex gap-2 mb-3">
+              {isFormat ? (
+                stagedGroups.length > 0 ? (
+                  <button onClick={startRound} disabled={busy || freeCourts.length === 0}
+                    className="flex-1 text-xs uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 disabled:opacity-40 rounded-xl py-3 flex items-center justify-center gap-1.5">
+                    <Play className="w-4 h-4" />Start round
+                  </button>
                 ) : (
                   <>
-                    <button onClick={autoFill} disabled={busy}
-                      className="text-[10px] uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 rounded-lg px-2.5 py-1.5 flex items-center gap-1">
-                      <Wand2 className="w-3 h-3" />Auto fill
+                    <button onClick={() => generateRound(true)} disabled={busy || liveGames.length > 0}
+                      className="flex-1 text-xs uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 disabled:opacity-40 rounded-xl py-3 flex items-center justify-center gap-1.5">
+                      <Play className="w-4 h-4" />Generate round
                     </button>
-                    <button onClick={pairAll} disabled={busy}
-                      className="text-[10px] uppercase tracking-wide font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg px-2.5 py-1.5 flex items-center gap-1">
-                      <Wand2 className="w-3 h-3" />Pair all
-                    </button>
-                    <button onClick={addEmptyGroup} disabled={busy}
-                      className="text-[10px] uppercase tracking-wide font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg px-2.5 py-1.5 flex items-center gap-1">
-                      <Plus className="w-3 h-3" />Group
+                    <button onClick={() => generateRound(false)} disabled={busy || liveGames.length > 0}
+                      className="text-xs uppercase tracking-wide font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 rounded-xl px-4 py-3 flex items-center gap-1.5"
+                      title="Stage to On Deck without sending to a court">
+                      <Wand2 className="w-4 h-4" />Stage
                     </button>
                   </>
-                )}
-              </div>
+                )
+              ) : (
+                <>
+                  <button onClick={autoFill} disabled={busy}
+                    className="flex-1 text-xs uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 rounded-xl py-3 flex items-center justify-center gap-1.5">
+                    <Wand2 className="w-4 h-4" />Auto fill
+                  </button>
+                  <button onClick={pairAll} disabled={busy}
+                    className="text-xs uppercase tracking-wide font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-xl px-4 py-3 flex items-center gap-1.5">
+                    Pair all
+                  </button>
+                  <button onClick={addEmptyGroup} disabled={busy} title="Add an empty group"
+                    className="text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-xl px-3.5 py-3 flex items-center">
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </>
+              )}
             </div>
             {selectedBench && (
               <p className="text-[11px] text-green-300 mb-2">Tap an empty slot to place <strong>{nameOf(selectedBench)}</strong> · <button onClick={() => setSelectedBench(null)} className="underline">cancel</button></p>
@@ -1078,33 +1079,33 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                           {label}
                           {isKing && g.rank === 1 && <span className="ml-1.5 text-[9px] font-bold text-amber-300 bg-amber-500/20 rounded px-1.5 py-0.5">KINGS</span>}
                         </span>
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => toggleLock(g)} className={g.locked ? 'text-green-400' : 'text-slate-500 hover:text-slate-300'} title={g.locked ? 'Unlock' : 'Lock'}>
-                            {g.locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => toggleLock(g)} className={`p-1.5 rounded-lg ${g.locked ? 'text-green-400' : 'text-slate-500 hover:text-slate-300'}`} title={g.locked ? 'Unlock' : 'Lock'}>
+                            {g.locked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
                           </button>
-                          <button onClick={() => disband(g)} className="text-slate-500 hover:text-red-400" title="Disband"><Trash2 className="w-3.5 h-3.5" /></button>
+                          <button onClick={() => disband(g)} className="p-1.5 rounded-lg text-slate-500 hover:text-red-400" title="Disband"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-1.5 mb-2">
+                      <div className="flex flex-wrap gap-1.5 mb-2.5">
                         {ids.map(id => (
                           <button key={id} onClick={() => removeFromGroup(g, id)}
-                            className="inline-flex items-center gap-1 text-[12px] text-slate-100 bg-slate-700 rounded px-2 py-1 hover:bg-red-500/20">
-                            {nameOf(id)}<X className="w-2.5 h-2.5 text-slate-400" />
+                            className="inline-flex items-center gap-1.5 text-[13px] text-slate-100 bg-slate-700 rounded-lg px-2.5 py-1.5 hover:bg-red-500/20">
+                            {nameOf(id)}<X className="w-3 h-3 text-slate-400" />
                           </button>
                         ))}
                         {Array.from({ length: perGame - ids.length }).map((_, k) => (
                           <button key={k} onClick={() => placeInGroup(g)} disabled={!selectedBench}
-                            className={`text-[12px] rounded px-3 py-1 border border-dashed ${selectedBench ? 'border-green-500 text-green-400 hover:bg-green-500/10' : 'border-slate-600 text-slate-600'}`}>+</button>
+                            className={`text-sm rounded-lg px-4 py-1.5 border border-dashed ${selectedBench ? 'border-green-500 text-green-400 hover:bg-green-500/10' : 'border-slate-600 text-slate-600'}`}>+</button>
                         ))}
                       </div>
                       {full && (
                         <div className="flex flex-wrap items-center gap-1.5">
                           <span className="text-[10px] uppercase tracking-wide text-slate-500">Send to</span>
                           {freeCourts.length === 0
-                            ? <span className="text-[10px] text-slate-500">waiting for a court</span>
+                            ? <span className="text-[11px] text-slate-500">waiting for a court</span>
                             : freeCourts.map(c => (
                               <button key={c} onClick={() => sendToCourt(g, c)} disabled={busy}
-                                className="text-[10px] uppercase font-bold text-white bg-green-600 hover:bg-green-500 rounded px-2 py-1">Court {c}</button>
+                                className="text-[11px] uppercase font-bold text-white bg-green-600 hover:bg-green-500 rounded-lg px-3 py-1.5">Court {c}</button>
                             ))}
                         </div>
                       )}
@@ -1120,8 +1121,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         <div className="flex items-center justify-between mb-2.5">
           <span className="text-[11px] uppercase tracking-[0.18em] text-green-400 font-bold">Bench {bench.length > 0 && <span className="text-slate-500">· {bench.length}</span>}</span>
           {isOrganizer && (
-            <button onClick={openAdd} className="text-[10px] uppercase tracking-wide font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg px-2.5 py-1.5 flex items-center gap-1">
-              <UserPlus className="w-3 h-3" />Add player
+            <button onClick={openAdd} className="text-[11px] uppercase tracking-wide font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-lg px-3 py-2 flex items-center gap-1.5">
+              <UserPlus className="w-3.5 h-3.5" />Add player
             </button>
           )}
         </div>
@@ -1139,19 +1140,21 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
           {bench.filter(p => p.display_name.toLowerCase().includes(benchFilter.toLowerCase())).map(p => {
             const sel = selectedBench === p.id
             return (
-              <div key={p.id} className={`flex items-center gap-2.5 rounded-lg px-3 py-2 ${sel ? 'bg-green-500/15 ring-1 ring-green-500' : 'bg-slate-800'}`}>
-                <button onClick={() => isOrganizer && benchTap(p.id)} className="flex items-center gap-2.5 flex-1 min-w-0 text-left" disabled={!isOrganizer}>
+              <div key={p.id} className={`flex items-center gap-2 rounded-xl pl-3 pr-1.5 py-1.5 ${sel ? 'bg-green-500/15 ring-1 ring-green-500' : 'bg-slate-800'}`}>
+                <button onClick={() => isOrganizer && benchTap(p.id)} className="flex items-center gap-2.5 flex-1 min-w-0 text-left py-1" disabled={!isOrganizer}>
                   <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
-                  <span className="text-sm text-slate-100 truncate">
-                    {p.display_name}
-                    {!p.user_id && <span className="text-[10px] text-slate-500 ml-1">guest</span>}
+                  <span className="min-w-0">
+                    <span className="block text-sm text-slate-100 truncate">
+                      {p.display_name}
+                      {!p.user_id && <span className="text-[10px] text-slate-500 ml-1">guest</span>}
+                    </span>
+                    <span className="block text-[10px] text-slate-500 tabular-nums">waited <LiveTimer from={p.queued_since} /> · {p.games}g</span>
                   </span>
                 </button>
-                <span className="text-[11px] text-slate-500 tabular-nums shrink-0">waited <LiveTimer from={p.queued_since} /> · {p.games}g</span>
                 {isOrganizer && (
                   <>
-                    <button onClick={() => setStatus(p.id, 'resting')} className="text-slate-500 hover:text-amber-400 shrink-0" title="Rest"><Pause className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => setStatus(p.id, 'left')} className="text-slate-500 hover:text-red-400 shrink-0" title="Remove"><X className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setStatus(p.id, 'resting')} className="p-2 rounded-lg text-slate-500 hover:text-amber-400 hover:bg-slate-700/50 shrink-0" title="Rest"><Pause className="w-4 h-4" /></button>
+                    <button onClick={() => setStatus(p.id, 'left')} className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-slate-700/50 shrink-0" title="Remove"><X className="w-4 h-4" /></button>
                   </>
                 )}
               </div>
