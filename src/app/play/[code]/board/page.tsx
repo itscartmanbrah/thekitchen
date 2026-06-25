@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { QRCodeSVG } from 'qrcode.react'
 import { createClient } from '@/lib/supabase/client'
 import { AppLogo } from '@/components/app-logo'
 
@@ -47,6 +48,7 @@ export default function BoardViewPage({ params }: { params: { code: string } }) 
   const name = (id: string) => pMap.get(id)?.name ?? '?'
   const color = (id: string) => pMap.get(id)?.avatar_color ?? '#16a34a'
   const waiting = players.filter(p => p.status === 'queued').length
+  const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/play/${params.code}` : ''
 
   const mmss = (iso: string) => {
     const s = Math.max(0, Math.floor((now - new Date(iso).getTime()) / 1000))
@@ -130,8 +132,14 @@ export default function BoardViewPage({ params }: { params: { code: string } }) 
         )}
       </main>
 
-      <footer className="px-6 sm:px-10 py-4 text-center text-xs text-slate-600 border-t border-slate-800">
-        Powered by The Kitchen · updates live
+      <footer className="px-6 sm:px-10 py-4 flex items-center justify-between gap-4 border-t border-slate-800">
+        <span className="text-xs text-slate-600">Powered by The Kitchen · updates live</span>
+        {session.status === 'active' && (
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-bold uppercase tracking-wide text-green-400">Scan to join →</span>
+            <div className="bg-white p-2 rounded-lg"><QRCodeSVG value={joinUrl} size={84} level="M" /></div>
+          </div>
+        )}
       </footer>
     </div>
   )

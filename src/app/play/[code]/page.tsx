@@ -6,7 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import { AppLogo } from '@/components/app-logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Clock, Swords, UserPlus, Check } from 'lucide-react'
+import { OpenPlayQR } from '@/components/open-play-qr'
+import { Clock, Swords, UserPlus, Check, QrCode, X } from 'lucide-react'
 
 interface PubPlayer {
   id: string; name: string; avatar_color: string
@@ -33,6 +34,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
   const [joinName, setJoinName] = useState('')
   const [joining, setJoining] = useState(false)
   const [joinError, setJoinError] = useState('')
+  const [showQr, setShowQr] = useState(false)
 
   const fetchData = useCallback(async () => {
     const { data: res } = await supabase.rpc('get_open_play_public', { p_share_code: params.code })
@@ -96,9 +98,24 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
             <AppLogo className="w-7 h-7" />
             <span className="font-bold text-gray-900">The Kitchen</span>
           </Link>
-          <span className="text-xs text-gray-400">Live · updates every few seconds</span>
+          <button onClick={() => setShowQr(true)} className="flex items-center gap-1.5 text-sm text-green-600 font-medium hover:text-green-700">
+            <QrCode className="w-4 h-4" />Invite
+          </button>
         </div>
       </header>
+
+      {showQr && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowQr(false)}>
+          <div className="bg-white rounded-2xl p-5 max-w-xs w-full" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="font-semibold text-gray-900">Scan to join</h2>
+              <button onClick={() => setShowQr(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+            </div>
+            <p className="text-sm text-gray-500 mb-3">Have a friend scan this to check into the session.</p>
+            <OpenPlayQR shareCode={params.code} />
+          </div>
+        </div>
+      )}
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         <div className="mb-5">

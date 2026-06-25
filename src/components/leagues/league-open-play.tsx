@@ -14,10 +14,11 @@ import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
 import { buildFairGroups, buildMexicanoRound, buildKingRound, type RosterPlayer, type CourtResult } from '@/lib/open-play'
 import { LeagueOpenPlayHistory } from '@/components/leagues/league-open-play-history'
+import { OpenPlayQR } from '@/components/open-play-qr'
 import {
   Play, Plus, UserPlus, Link2, Check, Pause, X, Swords,
   ArrowLeft, CalendarDays, Wand2, Lock, Unlock, Repeat, Trash2, Monitor,
-  Volume2, VolumeX, Star, Search, History,
+  Volume2, VolumeX, Star, Search, History, QrCode,
 } from 'lucide-react'
 
 interface SessionRow {
@@ -68,6 +69,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const [session, setSession] = useState<SessionRow | null>(null)
   const [creating, setCreating] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [qrOpen, setQrOpen] = useState(false)
   const [players, setPlayers] = useState<SP[]>([])
   const [games, setGames] = useState<Game[]>([])           // staged + in_progress
   const [partnered, setPartnered] = useState<Map<string, Set<string>>>(new Map())
@@ -843,6 +845,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
           <Button size="sm" variant="outline" asChild>
             <a href={`/play/${session.share_code}/board`} target="_blank" rel="noopener noreferrer"><Monitor className="w-3.5 h-3.5 mr-1" />Board</a>
           </Button>
+          <Button size="sm" variant="outline" onClick={() => setQrOpen(true)}><QrCode className="w-3.5 h-3.5 mr-1" />QR</Button>
           <Button size="sm" variant="outline" onClick={copyShare}>
             {copied ? <Check className="w-3.5 h-3.5 mr-1" /> : <Link2 className="w-3.5 h-3.5 mr-1" />}Share
           </Button>
@@ -1150,6 +1153,20 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
           <DialogFooter>
             <Button variant="outline" onClick={() => setScoreGame(null)}>Cancel</Button>
             <Button onClick={submitScore} disabled={busy}>Record</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* QR check-in dialog */}
+      <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+        <DialogContent className="sm:max-w-xs">
+          <DialogHeader><DialogTitle>Scan to check in</DialogTitle></DialogHeader>
+          <p className="text-sm text-gray-500 -mt-1 mb-1 text-center">Players scan this, type their name, and join the queue — no account or app needed.</p>
+          {session && <OpenPlayQR shareCode={session.share_code} />}
+          <DialogFooter>
+            <Button variant="outline" onClick={copyShare} className="w-full">
+              <Link2 className="w-4 h-4 mr-1" />Copy link instead
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
