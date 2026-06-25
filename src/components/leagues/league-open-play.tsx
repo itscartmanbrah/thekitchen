@@ -446,16 +446,20 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
       const roster: RosterPlayer[] = ready.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: Date.now() - new Date(p.queued_since).getTime() }))
       return buildFairGroups(roster, session.format, n, partnered)
     }
+    // Fair play time: whoever has played the fewest (then waited longest) gets on
+    // first, so with odd counts the players who sit out are the most-played.
+    const byFairness = (a: SP, b: SP) => a.games - b.games || new Date(a.queued_since).getTime() - new Date(b.queued_since).getTime()
+
     let groups
     if (session.match_mode === 'mexicano') {
-      const ranked = [...ready].sort((a, b) => (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || b.wins - a.wins)
+      // pick the round's players by fairness, THEN pair those by standings
+      const playing = [...ready].sort(byFairness).slice(0, groupCount * perGame)
+      const ranked = playing.sort((a, b) => (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || b.wins - a.wins)
       groups = buildMexicanoRound(ranked, session.format, groupCount)
     } else if (session.match_mode === 'king') {
-      // players who sat out last round, longest wait first → rotate them in
+      // players who sat out last round, fewest games first → rotate them in
       const lastIds = new Set(Array.from(lastRound.values()).flatMap(r => [...r.winners, ...r.losers]))
-      const extras = ready.filter(p => !lastIds.has(p.id))
-        .sort((a, b) => new Date(a.queued_since).getTime() - new Date(b.queued_since).getTime())
-        .map(p => p.id)
+      const extras = ready.filter(p => !lastIds.has(p.id)).sort(byFairness).map(p => p.id)
       groups = buildKingRound(lastRound, lastRoundCount || groupCount, partnered, extras)
       if (groups.length === 0 || groups.some(g => [...g.team1, ...g.team2].some(id => !availableIds.has(id)))) {
         groups = seedBalanced(groupCount)   // first round, or roster changed
