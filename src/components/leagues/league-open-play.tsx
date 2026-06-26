@@ -407,7 +407,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     if (error) { toast({ title: 'Could not add guest', description: error.message, variant: 'destructive' }); setGuestName(name) }
     else if (id) {
       pushPlayer(id as string, name, '#64748b', null, null)
-      const lvl = session?.match_mode === 'skill' ? guestLevel : null
+      const lvl = (session?.match_mode === 'skill' || session?.match_mode === 'skill_courts') ? guestLevel : null
       const gen = session?.match_mode === 'mixed' ? guestGender : null
       if (lvl != null || gen != null) {
         await supabase.rpc('set_session_player_meta', { p_player_id: id, p_skill_level: lvl, p_gender: gen })
