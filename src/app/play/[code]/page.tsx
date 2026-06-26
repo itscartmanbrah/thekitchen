@@ -17,7 +17,7 @@ interface PubGame {
   id: string; court: number; team1: string[]; team2: string[]; status: string; winner_team: number | null
 }
 interface Payload {
-  session: { id: string; name: string; format: string; court_count: number; status: string; rated: boolean; allow_self_join: boolean; league_name: string } | null
+  session: { id: string; name: string; format: string; court_count: number; status: string; rated: boolean; allow_self_join: boolean; league_name: string; match_mode: string } | null
   players: PubPlayer[]
   games: PubGame[]
 }
@@ -32,6 +32,8 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
   const [loading, setLoading] = useState(true)
   const [myId, setMyId] = useState<string | null>(null)
   const [joinName, setJoinName] = useState('')
+  const [joinGender, setJoinGender] = useState<'m' | 'f' | null>(null)
+  const [joinLevel, setJoinLevel] = useState<number | null>(null)
   const [joining, setJoining] = useState(false)
   const [joinError, setJoinError] = useState('')
   const [showQr, setShowQr] = useState(false)
@@ -49,14 +51,28 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
     return () => clearInterval(poll)
   }, [fetchData, params.code])
 
+  const mode = data?.session?.match_mode ?? ''
+  const needsGender = mode === 'mixed'
+  const needsLevel = mode === 'skill' || mode === 'skill_courts'
+
   async function join() {
     if (!joinName.trim()) return
+    if (needsGender && !joinGender) { setJoinError('Please choose Man or Woman for this mixed session.'); return }
+    if (needsLevel && !joinLevel) { setJoinError('Please pick your level (1–5) for this session.'); return }
     setJoining(true); setJoinError('')
-    const { data: id, error } = await supabase.rpc('join_open_play', { p_share_code: params.code, p_guest_name: joinName.trim() })
+    let { data: id, error } = await supabase.rpc('join_open_play', {
+      p_share_code: params.code, p_guest_name: joinName.trim(),
+      p_skill_level: needsLevel ? joinLevel : null,
+      p_gender: needsGender ? joinGender : null,
+    })
+    // Fallback for before migration 056 is applied (no 4-arg overload yet).
+    if (error && /function|does not exist|schema cache|argument/i.test(error.message)) {
+      ({ data: id, error } = await supabase.rpc('join_open_play', { p_share_code: params.code, p_guest_name: joinName.trim() }))
+    }
     if (error) { setJoinError(error.message); setJoining(false); return }
     localStorage.setItem(`play_${params.code}`, id as string)
     setMyId(id as string)
-    setJoinName('')
+    setJoinName(''); setJoinGender(null); setJoinLevel(null)
     await fetchData()
     setJoining(false)
   }
@@ -157,16 +173,38 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
               <p className="text-sm font-medium text-gray-800 mb-2 flex items-center gap-1.5">
                 <UserPlus className="w-4 h-4 text-green-600" />Join the queue
               </p>
-              <div className="flex gap-2">
-                <Input placeholder="Your name" value={joinName} maxLength={40}
-                  onChange={e => { setJoinName(e.target.value); setJoinError('') }}
-                  onKeyDown={e => { if (e.key === 'Enter') join() }} />
-                <Button onClick={join} disabled={joining || !joinName.trim()}>
-                  {joining ? 'Joining…' : 'Check in'}
-                </Button>
-              </div>
+              <Input placeholder="Your name" value={joinName} maxLength={40}
+                onChange={e => { setJoinName(e.target.value); setJoinError('') }}
+                onKeyDown={e => { if (e.key === 'Enter') join() }} />
+              {needsGender && (
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs text-gray-500">I am a</span>
+                  {(['m', 'f'] as const).map(g => (
+                    <button key={g} type="button" onClick={() => { setJoinGender(g); setJoinError('') }}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold border ${joinGender === g ? 'border-green-500 bg-green-600 text-white' : 'border-gray-200 text-gray-600'}`}>
+                      {g === 'm' ? 'Man' : 'Woman'}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {needsLevel && (
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs text-gray-500">My level</span>
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button key={n} type="button" onClick={() => { setJoinLevel(n); setJoinError('') }}
+                      className={`w-8 h-8 rounded-lg text-sm font-semibold border ${joinLevel === n ? 'border-green-500 bg-green-600 text-white' : 'border-gray-200 text-gray-600'}`}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <Button className="w-full mt-2" onClick={join} disabled={joining || !joinName.trim()}>
+                {joining ? 'Joining…' : 'Check in'}
+              </Button>
               {joinError && <p className="text-xs text-red-600 mt-1.5">{joinError}</p>}
-              <p className="text-xs text-gray-400 mt-1.5">No account needed — just add your name.</p>
+              <p className="text-xs text-gray-400 mt-1.5">
+                {needsLevel ? 'Pick your level so we keep games competitive.' : needsGender ? 'Mixed doubles — every game is 2 men + 2 women.' : 'No account needed — just add your name.'}
+              </p>
             </div>
           )
         })()}
