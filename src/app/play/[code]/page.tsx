@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { claimOpenPlayGuests } from '@/lib/claim-guests'
 import { AppLogo } from '@/components/app-logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -58,6 +59,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
       // A logged-in player is matched by their account, so they're recognised
       // even on a different phone/browser where localStorage is empty.
       if (isMember && u) {
+        await claimOpenPlayGuests()   // link any prior guest check-ins from this device (incl. OAuth)
         const { data: pid } = await supabase.rpc('my_open_play_player', { p_share_code: params.code })
         if (pid) { setMyId(pid as string); localStorage.setItem(`play_${params.code}`, pid as string) }
         const { data: prof } = await supabase.from('profiles').select('display_name, first_name, last_name, gender').eq('id', u.id).single()

@@ -12,9 +12,18 @@ export function GoogleSignInButton({ label = 'Continue with Google' }: { label?:
 
   async function signIn() {
     setLoading(true)
+    // Carry any ?redirect=/play/<code>&join=1 through the OAuth round-trip so
+    // Google sign-in lands back on the session and auto-joins, like email does.
+    const sp = new URLSearchParams(window.location.search)
+    const rd = sp.get('redirect')
+    let next = '/dashboard'
+    if (rd && rd.startsWith('/') && !rd.startsWith('//')) {
+      next = sp.get('join') === '1' ? `${rd}${rd.includes('?') ? '&' : '?'}join=1` : rd
+    }
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo },
     })
     if (error) {
       toast({ title: 'Google sign-in failed', description: error.message, variant: 'destructive' })
