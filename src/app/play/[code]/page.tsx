@@ -41,6 +41,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
   const [joinError, setJoinError] = useState('')
   const [showQr, setShowQr] = useState(false)
   const [signedIn, setSignedIn] = useState(false)
+  const [profile, setProfile] = useState<{ name: string; gender: 'm' | 'f' | null } | null>(null)
 
   const fetchData = useCallback(async () => {
     const { data: res } = await supabase.rpc('get_open_play_public', { p_share_code: params.code })
@@ -56,9 +57,15 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
       setSignedIn(isMember)
       // A logged-in player is matched by their account, so they're recognised
       // even on a different phone/browser where localStorage is empty.
-      if (isMember) {
+      if (isMember && u) {
         const { data: pid } = await supabase.rpc('my_open_play_player', { p_share_code: params.code })
         if (pid) { setMyId(pid as string); localStorage.setItem(`play_${params.code}`, pid as string) }
+        const { data: prof } = await supabase.from('profiles').select('display_name, first_name, last_name, gender').eq('id', u.id).single()
+        if (prof) {
+          const p = prof as any
+          const name = (`${p.first_name ?? ''} ${p.last_name ?? ''}`).trim() || p.display_name || 'Player'
+          setProfile({ name, gender: p.gender === 'male' ? 'm' : p.gender === 'female' ? 'f' : null })
+        }
       }
     })
     fetchData()
@@ -88,6 +95,24 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
     localStorage.setItem(`play_${params.code}`, id as string)
     setMyId(id as string)
     setJoinName(''); setJoinGender(null); setJoinLevel(null)
+    await fetchData()
+    setJoining(false)
+  }
+
+  // Signed-in users join in one tap — name/avatar/gender come from their profile.
+  async function joinMember() {
+    if (needsGender && !profile?.gender && !joinGender) { setJoinError('Please choose Man or Woman for this mixed session.'); return }
+    if (needsLevel && !joinLevel) { setJoinError('Please pick your level (1–5) for this session.'); return }
+    setJoining(true); setJoinError('')
+    const { data: id, error } = await supabase.rpc('join_open_play_member', {
+      p_share_code: params.code,
+      p_skill_level: needsLevel ? joinLevel : null,
+      p_gender: needsGender ? joinGender : null,
+    })
+    if (error) { setJoinError(error.message); setJoining(false); return }
+    localStorage.setItem(`play_${params.code}`, id as string)
+    setMyId(id as string)
+    setJoinGender(null); setJoinLevel(null)
     await fetchData()
     setJoining(false)
   }
@@ -212,6 +237,42 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
             )
           }
           if (!session.allow_self_join) return null
+          // Signed in → one-tap join using their account (no name to type).
+          if (signedIn) {
+            const askGender = needsGender && !profile?.gender
+            return (
+              <div className="mb-6 rounded-xl border bg-white px-4 py-3">
+                <p className="text-sm font-medium text-gray-800 mb-1 flex items-center gap-1.5">
+                  <UserPlus className="w-4 h-4 text-green-600" />Join the queue
+                </p>
+                <p className="text-xs text-gray-500 mb-2">Signed in as <strong>{profile?.name ?? 'you'}</strong></p>
+                {askGender && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs text-gray-500">I am a</span>
+                    {(['m', 'f'] as const).map(g => (
+                      <button key={g} type="button" onClick={() => { setJoinGender(g); setJoinError('') }}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold border ${joinGender === g ? 'border-green-500 bg-green-600 text-white' : 'border-gray-200 text-gray-600'}`}>
+                        {g === 'm' ? 'Man' : 'Woman'}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {needsLevel && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs text-gray-500">My level</span>
+                    {[1, 2, 3, 4, 5].map(n => (
+                      <button key={n} type="button" onClick={() => { setJoinLevel(n); setJoinError('') }}
+                        className={`w-8 h-8 rounded-lg text-sm font-semibold border ${joinLevel === n ? 'border-green-500 bg-green-600 text-white' : 'border-gray-200 text-gray-600'}`}>{n}</button>
+                    ))}
+                  </div>
+                )}
+                <Button className="w-full" onClick={joinMember} disabled={joining}>
+                  {joining ? 'Checking in…' : 'Check in'}
+                </Button>
+                {joinError && <p className="text-xs text-red-600 mt-1.5">{joinError}</p>}
+              </div>
+            )
+          }
           return (
             <div className="mb-6 rounded-xl border bg-white px-4 py-3">
               <p className="text-sm font-medium text-gray-800 mb-2 flex items-center gap-1.5">
