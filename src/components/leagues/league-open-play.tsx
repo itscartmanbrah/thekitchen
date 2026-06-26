@@ -23,7 +23,7 @@ import { setActiveHost, clearActiveHost } from '@/lib/active-host'
 import {
   Play, Plus, UserPlus, Link2, Check, Pause, X, Swords,
   ArrowLeft, CalendarDays, Wand2, Lock, Unlock, Repeat, Trash2, Monitor,
-  Volume2, VolumeX, Star, Search, History, QrCode, MoreHorizontal, Power,
+  Volume2, VolumeX, Star, Search, History, QrCode, MoreHorizontal, Power, LogOut,
 } from 'lucide-react'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
@@ -1324,10 +1324,17 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                     className={`w-7 h-7 rounded-lg text-[13px] font-bold shrink-0 ${p.gender ? 'bg-green-600 text-white' : 'bg-amber-500/80 text-white'}`}>{p.gender === 'm' ? 'M' : p.gender === 'f' ? 'F' : '?'}</button>
                 )}
                 {isOrganizer && (
-                  <>
-                    <button onClick={() => setStatus(p.id, 'resting')} className="p-2 rounded-lg text-slate-500 hover:text-amber-400 hover:bg-slate-700/50 shrink-0" title="Rest"><Pause className="w-4 h-4" /></button>
-                    <button onClick={() => setStatus(p.id, 'left')} className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-slate-700/50 shrink-0" title="Remove"><X className="w-4 h-4" /></button>
-                  </>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="text-[10px] uppercase tracking-wide font-bold text-slate-300 bg-slate-700/60 hover:bg-slate-700 rounded-lg px-2.5 py-2 flex items-center gap-1 shrink-0" title="Rest or check out">
+                        <LogOut className="w-3.5 h-3.5" />Check out
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52">
+                      <DropdownMenuItem onClick={() => setStatus(p.id, 'resting')}><Pause className="w-4 h-4 mr-2" />Rest — back in a few games</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setStatus(p.id, 'left')} className="text-red-600 focus:text-red-600"><LogOut className="w-4 h-4 mr-2" />Leave the session</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </div>
             )

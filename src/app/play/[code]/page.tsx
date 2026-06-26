@@ -7,7 +7,10 @@ import { AppLogo } from '@/components/app-logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { OpenPlayQR } from '@/components/open-play-qr'
-import { Clock, Swords, UserPlus, Check, QrCode, X } from 'lucide-react'
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Clock, Swords, UserPlus, Check, QrCode, X, LogOut, Pause, ChevronDown } from 'lucide-react'
 
 interface PubPlayer {
   id: string; name: string; avatar_color: string
@@ -86,6 +89,22 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
     await fetchData()
   }
 
+  async function rest() {
+    if (!myId) return
+    setJoinError('')
+    const { error } = await supabase.rpc('rest_open_play', { p_player_id: myId })
+    if (error) { setJoinError(error.message); return }
+    await fetchData()
+  }
+
+  async function backIn() {
+    if (!myId) return
+    setJoinError('')
+    const { error } = await supabase.rpc('backin_open_play', { p_player_id: myId })
+    if (error) { setJoinError(error.message); return }
+    await fetchData()
+  }
+
   if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading…</div>
   if (!data?.session) {
     return (
@@ -150,21 +169,34 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
           const me = myId ? players.find(p => p.id === myId) : null
           if (me) {
             const pos = queued.findIndex(p => p.id === me.id)
+            const resting = me.status === 'resting'
             return (
-              <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 flex items-center justify-between gap-3">
+              <>
+              {joinError && <p className="text-xs text-red-600 mb-2">{joinError}</p>}
+              <div className={`mb-6 rounded-xl border px-4 py-3 flex items-center justify-between gap-3 ${resting ? 'border-amber-200 bg-amber-50' : 'border-green-200 bg-green-50'}`}>
                 <div className="flex items-center gap-2 min-w-0">
-                  <Check className="w-4 h-4 text-green-600 shrink-0" />
-                  <span className="text-sm text-green-800 truncate">
-                    You&apos;re checked in as <strong>{me.name}</strong>
-                    {me.status === 'playing'
-                      ? ' — you&apos;re on a court now!'
-                      : pos >= 0 ? ` — #${pos + 1} in the queue` : ''}
+                  {resting ? <Pause className="w-4 h-4 text-amber-600 shrink-0" /> : <Check className="w-4 h-4 text-green-600 shrink-0" />}
+                  <span className={`text-sm truncate ${resting ? 'text-amber-800' : 'text-green-800'}`}>
+                    {resting
+                      ? <>Resting — <strong>{me.name}</strong>, you&apos;ll sit out until you&apos;re back.</>
+                      : <>Checked in as <strong>{me.name}</strong>{me.status === 'playing' ? ' — on a court now!' : pos >= 0 ? ` — #${pos + 1} in the queue` : ''}</>}
                   </span>
                 </div>
-                <Button size="sm" variant="outline" className="shrink-0" onClick={leave} disabled={me.status === 'playing'}>
-                  Leave
-                </Button>
+                {resting ? (
+                  <Button size="sm" className="shrink-0" onClick={backIn}>I&apos;m back</Button>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="outline" className="shrink-0">Check out<ChevronDown className="w-3.5 h-3.5 ml-1" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52">
+                      <DropdownMenuItem onClick={rest} disabled={me.status === 'playing'}><Pause className="w-4 h-4 mr-2" />Rest — back in a few games</DropdownMenuItem>
+                      <DropdownMenuItem onClick={leave} disabled={me.status === 'playing'} className="text-red-600 focus:text-red-600"><LogOut className="w-4 h-4 mr-2" />Leave the session</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
+              </>
             )
           }
           if (!session.allow_self_join) return null
