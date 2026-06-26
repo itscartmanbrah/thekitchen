@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useRealtime } from '@/lib/use-realtime'
@@ -40,6 +40,7 @@ interface SessionRow {
   share_code: string
   manage_code: string
   allow_self_join: boolean
+  auto_stage: boolean
   starts_at: string | null
   ends_at: string | null
   court_ids: string[] | null
@@ -94,7 +95,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [selectedBench, setSelectedBench] = useState<string | null>(null)   // tap-to-place
+  // tap-to-place / tap-to-swap: a picked player is either on the bench or in a staged slot
+  const [pick, setPick] = useState<{ kind: 'bench'; pid: string } | { kind: 'slot'; gameId: string; pid: string } | null>(null)
   const [subTarget, setSubTarget] = useState<{ gameId: string; outId: string } | null>(null)
   const [announce, setAnnounce] = useState(false)        // text-to-speech call-outs
   const [benchFilter, setBenchFilter] = useState('')     // bench name search
@@ -268,6 +270,20 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const playingCount = players.filter(p => p.status === 'playing').length
   const OVERTIME_MIN = 15
 
+  // "Keep courts busy": whenever a court is open and there are enough players
+  // waiting, auto-stage the next matchup On Deck so it's ready to send with one
+  // tap — no waiting for the whole round to finish. Organizers review/swap first.
+  const autoStageBusy = useRef(false)
+  useEffect(() => {
+    if (!session || !isOrganizer || !session.auto_stage || busy || isScheduled) return
+    if (autoStageBusy.current) return
+    if (freeCourts.length > stagedGroups.length && bench.length >= perGame) {
+      autoStageBusy.current = true
+      fillOpenCourts().finally(() => { autoStageBusy.current = false })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [players, games, session?.auto_stage])
+
   // ── actions ───────────────────────────────────────────────────────────────
   async function startSession() {
     if (!setupName.trim()) { toast({ title: 'Name the session', variant: 'destructive' }); return }
@@ -408,6 +424,36 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
 
   const addEmptyGroup = () => session && rpc('stage_session_group', { p_session_id: session.id, p_team1: [], p_team2: [] })
 
+  // Stage just enough groups to cover the currently-open courts (used by the
+  // "keep courts busy" auto-stager, and as a manual one-tap). Format-aware:
+  // Mexicano pairs by points, King by win record, the rest by fairness.
+  async function fillOpenCourts() {
+    if (!session) return
+    const need = Math.min(freeCourts.length - stagedGroups.length, Math.floor(bench.length / perGame))
+    if (need <= 0) return
+    const roster: RosterPlayer[] = bench.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: Date.now() - new Date(p.queued_since).getTime() }))
+    let groups
+    if (session.match_mode === 'mexicano') {
+      const ranked = [...bench].sort((a, b) => (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || b.wins - a.wins)
+      groups = buildMexicanoRound(ranked, session.format, need)
+    } else if (session.match_mode === 'king') {
+      const ranked = [...bench].sort((a, b) => b.wins - a.wins || (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || a.losses - b.losses)
+      groups = buildMexicanoRound(ranked, session.format, need)   // winners with winners
+    } else {
+      groups = buildFairGroups(roster, session.format, need, partnered)
+    }
+    if (groups.length === 0) return
+    setBusy(true)
+    for (let i = 0; i < groups.length; i++) {
+      const { error } = await supabase.rpc('stage_session_group', {
+        p_session_id: session.id, p_team1: groups[i].team1, p_team2: groups[i].team2, p_rank: i + 1, p_round: nextRoundNo,
+      })
+      if (error) break
+    }
+    await loadState(session.id)
+    setBusy(false)
+  }
+
   // Pair the whole bench into balanced On Deck groups (Drop-in convenience).
   async function pairAll() {
     if (!session) return
@@ -499,18 +545,72 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     setBusy(false)
   }
 
-  // Tap a bench player, then tap an empty slot to place them.
+  // Tap a player (bench or staged) to pick it up, then tap another player to
+  // swap, or an empty slot to place/move it.
   function teamsWith(g: Game, addId: string): [string[], string[]] {
     const cap = perGame / 2
     const t1 = [...g.team1_ids], t2 = [...g.team2_ids]
     if (t1.length < cap) t1.push(addId); else t2.push(addId)
     return [t1, t2]
   }
+  const gameById = (id: string) => games.find(g => g.id === id)
+  const pickName = () => pick ? nameOf(pick.pid) : ''
+
+  // Tap a player chip (bench or in a staged group).
+  function tapPlayer(target: { kind: 'bench'; pid: string } | { kind: 'slot'; gameId: string; pid: string }) {
+    if (!isOrganizer) return
+    if (!pick) { setPick(target); return }
+    const same = pick.pid === target.pid && pick.kind === target.kind &&
+      (pick.kind === 'bench' || (target.kind === 'slot' && pick.kind === 'slot' && pick.gameId === target.gameId))
+    if (same) { setPick(null); return }
+    const a = pick, b = target
+    setPick(null)
+    swapPicks(a, b)
+  }
+
+  async function swapPicks(
+    a: { kind: 'bench'; pid: string } | { kind: 'slot'; gameId: string; pid: string },
+    b: { kind: 'bench'; pid: string } | { kind: 'slot'; gameId: string; pid: string },
+  ) {
+    if (a.kind === 'bench' && b.kind === 'bench') return   // both already on the bench
+    if (a.kind === 'slot' && b.kind === 'slot') {
+      if (a.gameId === b.gameId) {
+        const g = gameById(a.gameId); if (!g) return
+        const sw = (arr: string[]) => arr.map(x => x === a.pid ? b.pid : x === b.pid ? a.pid : x)
+        await rpc('set_session_group', { p_game_id: g.id, p_team1: sw(g.team1_ids), p_team2: sw(g.team2_ids) })
+      } else {
+        await rpc('swap_staged_players', { p_game_a: a.gameId, p_a: a.pid, p_game_b: b.gameId, p_b: b.pid })
+      }
+      return
+    }
+    // one bench + one staged → bench player takes the staged seat, staged player benched
+    const benchId = a.kind === 'bench' ? a.pid : b.pid
+    const slot = (a.kind === 'slot' ? a : b) as { kind: 'slot'; gameId: string; pid: string }
+    const g = gameById(slot.gameId); if (!g) return
+    await rpc('set_session_group', {
+      p_game_id: g.id,
+      p_team1: g.team1_ids.map(x => x === slot.pid ? benchId : x),
+      p_team2: g.team2_ids.map(x => x === slot.pid ? benchId : x),
+    })
+  }
+
+  // Tap an empty slot in a staged group with a player picked up.
   async function placeInGroup(g: Game) {
-    if (!selectedBench || (g.team1_ids.length + g.team2_ids.length) >= perGame) return
-    const [t1, t2] = teamsWith(g, selectedBench)
-    setSelectedBench(null)
-    await rpc('set_session_group', { p_game_id: g.id, p_team1: t1, p_team2: t2 })
+    if (!pick || (g.team1_ids.length + g.team2_ids.length) >= perGame) return
+    const p = pick
+    setPick(null)
+    if (p.kind === 'bench') {
+      const [t1, t2] = teamsWith(g, p.pid)
+      await rpc('set_session_group', { p_game_id: g.id, p_team1: t1, p_team2: t2 })
+    } else {
+      if (p.gameId === g.id) return
+      const src = gameById(p.gameId); if (!src) return
+      // remove from the source group (player → queue), then add to this one
+      await supabase.rpc('set_session_group', { p_game_id: src.id, p_team1: src.team1_ids.filter(x => x !== p.pid), p_team2: src.team2_ids.filter(x => x !== p.pid) })
+      const [t1, t2] = teamsWith(g, p.pid)
+      await supabase.rpc('set_session_group', { p_game_id: g.id, p_team1: t1, p_team2: t2 })
+      if (session) await loadState(session.id)
+    }
   }
   function removeFromGroup(g: Game, pid: string) {
     rpc('set_session_group', { p_game_id: g.id, p_team1: g.team1_ids.filter(x => x !== pid), p_team2: g.team2_ids.filter(x => x !== pid) })
@@ -531,13 +631,14 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   }
 
   // Substitute: tap Sub on a player, then tap a bench player to swap in.
+  // Otherwise a bench tap feeds the pick/swap model.
   async function benchTap(pid: string) {
     if (subTarget) {
       const ok = await rpc('sub_session_player', { p_game_id: subTarget.gameId, p_out: subTarget.outId, p_in: pid })
       if (ok) setSubTarget(null)
       return
     }
-    setSelectedBench(prev => prev === pid ? null : pid)
+    tapPlayer({ kind: 'bench', pid })
   }
 
   function openScore(game: Game) { setScoreGame(game); setS1(''); setS2('') }
@@ -560,6 +661,13 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     const { error } = await supabase.rpc('set_session_self_join', { p_session_id: session.id, p_allow: !session.allow_self_join })
     if (error) toast({ title: 'Could not update', description: error.message, variant: 'destructive' })
     else setSession({ ...session, allow_self_join: !session.allow_self_join })
+  }
+
+  async function toggleAutoStage() {
+    if (!session) return
+    const { error } = await supabase.rpc('set_session_auto_stage', { p_session_id: session.id, p_auto: !session.auto_stage })
+    if (error) toast({ title: 'Could not update', description: error.message, variant: 'destructive' })
+    else setSession({ ...session, auto_stage: !session.auto_stage })
   }
 
   async function endSession() {
@@ -908,10 +1016,16 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
       </div>
 
       {isOrganizer && (
-        <label className="flex items-center gap-2 mb-4 text-xs text-gray-600 cursor-pointer">
-          <input type="checkbox" checked={session.allow_self_join} onChange={toggleSelfJoin} />
-          <span>Let players check themselves in from the share link (no account needed)</span>
-        </label>
+        <div className="space-y-1.5 mb-4">
+          <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+            <input type="checkbox" checked={session.allow_self_join} onChange={toggleSelfJoin} />
+            <span>Let players check themselves in from the share link (no account needed)</span>
+          </label>
+          <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+            <input type="checkbox" checked={session.auto_stage} onChange={toggleAutoStage} />
+            <span><strong>Keep courts busy</strong> — auto-stage the next game On Deck when a court frees (tap to send). Off = strict round-by-round.</span>
+          </label>
+        </div>
       )}
 
       {/* ── Scoreboard console (softened dark) ──────────────────────────────── */}
@@ -1025,20 +1139,14 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 stagedGroups.length > 0 ? (
                   <button onClick={startRound} disabled={busy || freeCourts.length === 0}
                     className="flex-1 text-xs uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 disabled:opacity-40 rounded-xl py-3 flex items-center justify-center gap-1.5">
-                    <Play className="w-4 h-4" />Start round
+                    <Play className="w-4 h-4" />Send to {freeCourts.length === 1 ? 'court' : 'open courts'}
                   </button>
                 ) : (
-                  <>
-                    <button onClick={() => generateRound(true)} disabled={busy || liveGames.length > 0}
-                      className="flex-1 text-xs uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 disabled:opacity-40 rounded-xl py-3 flex items-center justify-center gap-1.5">
-                      <Play className="w-4 h-4" />Generate round
-                    </button>
-                    <button onClick={() => generateRound(false)} disabled={busy || liveGames.length > 0}
-                      className="text-xs uppercase tracking-wide font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 rounded-xl px-4 py-3 flex items-center gap-1.5"
-                      title="Stage to On Deck without sending to a court">
-                      <Wand2 className="w-4 h-4" />Stage
-                    </button>
-                  </>
+                  <button onClick={() => generateRound(false)} disabled={busy || liveGames.length > 0}
+                    className="flex-1 text-xs uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 disabled:opacity-40 rounded-xl py-3 flex items-center justify-center gap-1.5"
+                    title="Build this round On Deck — review and swap before sending to courts">
+                    <Wand2 className="w-4 h-4" />Generate round
+                  </button>
                 )
               ) : (
                 <>
@@ -1057,13 +1165,13 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 </>
               )}
             </div>
-            {selectedBench && (
-              <p className="text-[11px] text-green-300 mb-2">Tap an empty slot to place <strong>{nameOf(selectedBench)}</strong> · <button onClick={() => setSelectedBench(null)} className="underline">cancel</button></p>
+            {pick && (
+              <p className="text-[11px] text-green-300 mb-2">Picked <strong>{pickName()}</strong> — tap another player to swap, or an empty slot to place · <button onClick={() => setPick(null)} className="underline">cancel</button></p>
             )}
             {stagedGroups.length === 0 ? (
               <p className="text-[12px] text-slate-500 mb-6">
                 {isFormat
-                  ? <>No round staged. Hit <strong className="text-slate-300">Generate</strong> — it builds this round&apos;s games from everyone on the bench and queues them onto your courts (works on a single court too).</>
+                  ? <>No round staged yet. Hit <strong className="text-slate-300">Generate round</strong> — it builds this round&apos;s games On Deck so you can review and swap, then send to courts. {session.auto_stage && <>With <strong className="text-slate-300">Keep courts busy</strong> on, the next game also appears here automatically whenever a court frees.</>}</>
                   : <>No groups staged. Hit <strong className="text-slate-300">Auto fill</strong> (fills free courts) or <strong className="text-slate-300">Pair all</strong> (pairs the whole bench), then tweak before sending.</>}
               </p>
             ) : (
@@ -1087,15 +1195,24 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-1.5 mb-2.5">
-                        {ids.map(id => (
-                          <button key={id} onClick={() => removeFromGroup(g, id)}
-                            className="inline-flex items-center gap-1.5 text-[13px] text-slate-100 bg-slate-700 rounded-lg px-2.5 py-1.5 hover:bg-red-500/20">
-                            {nameOf(id)}<X className="w-3 h-3 text-slate-400" />
-                          </button>
-                        ))}
+                        {ids.map(id => {
+                          const picked = pick?.kind === 'slot' && pick.gameId === g.id && pick.pid === id
+                          return (
+                            <span key={id} className={`inline-flex items-center text-[13px] rounded-lg overflow-hidden ${picked ? 'ring-1 ring-green-500' : ''}`}>
+                              <button onClick={() => tapPlayer({ kind: 'slot', gameId: g.id, pid: id })}
+                                className={`px-2.5 py-1.5 ${picked ? 'bg-green-500/20 text-green-200' : 'bg-slate-700 text-slate-100 hover:bg-slate-600'}`}>
+                                {nameOf(id)}
+                              </button>
+                              <button onClick={() => removeFromGroup(g, id)} title="Remove"
+                                className={`px-1.5 py-1.5 ${picked ? 'bg-green-500/20' : 'bg-slate-700'} text-slate-400 hover:text-red-400 hover:bg-red-500/20`}>
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          )
+                        })}
                         {Array.from({ length: perGame - ids.length }).map((_, k) => (
-                          <button key={k} onClick={() => placeInGroup(g)} disabled={!selectedBench}
-                            className={`text-sm rounded-lg px-4 py-1.5 border border-dashed ${selectedBench ? 'border-green-500 text-green-400 hover:bg-green-500/10' : 'border-slate-600 text-slate-600'}`}>+</button>
+                          <button key={k} onClick={() => placeInGroup(g)} disabled={!pick}
+                            className={`text-sm rounded-lg px-4 py-1.5 border border-dashed ${pick ? 'border-green-500 text-green-400 hover:bg-green-500/10' : 'border-slate-600 text-slate-600'}`}>+</button>
                         ))}
                       </div>
                       {full && (
@@ -1138,7 +1255,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         )}
         <div className="space-y-1.5">
           {bench.filter(p => p.display_name.toLowerCase().includes(benchFilter.toLowerCase())).map(p => {
-            const sel = selectedBench === p.id
+            const sel = pick?.kind === 'bench' && pick.pid === p.id
             return (
               <div key={p.id} className={`flex items-center gap-2 rounded-xl pl-3 pr-1.5 py-1.5 ${sel ? 'bg-green-500/15 ring-1 ring-green-500' : 'bg-slate-800'}`}>
                 <button onClick={() => isOrganizer && benchTap(p.id)} className="flex items-center gap-2.5 flex-1 min-w-0 text-left py-1" disabled={!isOrganizer}>
