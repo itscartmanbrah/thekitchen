@@ -36,9 +36,16 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && authRoutes.includes(pathname)) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+    // Already signed in on a login/signup link — honour ?redirect (e.g. a
+    // /play/<code> join link with &join=1) instead of dumping them on the
+    // dashboard, so "Sign in & join" still enrols them in the session.
+    const rd = request.nextUrl.searchParams.get('redirect')
+    const join = request.nextUrl.searchParams.get('join')
+    let dest = '/dashboard'
+    if (rd && rd.startsWith('/') && !rd.startsWith('//')) {
+      dest = join === '1' ? `${rd}${rd.includes('?') ? '&' : '?'}join=1` : rd
+    }
+    return NextResponse.redirect(new URL(dest, request.url))
   }
 
   return supabaseResponse
