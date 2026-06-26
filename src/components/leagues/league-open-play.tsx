@@ -1126,13 +1126,24 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 {[...stagedGroups].sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0)).map((g, gi) => {
                   const ids = [...g.team1_ids, ...g.team2_ids]
                   const full = ids.length >= perGame
-                  const label = isKing && g.rank != null ? `Rank ${g.rank}` : isFormat && g.rank != null ? `Game ${g.rank}` : `Group ${gi + 1}`
+                  const label = isFormat ? `Game ${gi + 1}` : `Group ${gi + 1}`
+                  const teamCap = perGame / 2
+                  const renderChip = (id: string) => {
+                    const picked = pick?.kind === 'slot' && pick.gameId === g.id && pick.pid === id
+                    return (
+                      <span key={id} className={`inline-flex items-center gap-0.5 rounded-full pl-3 pr-1 py-1 ${picked ? 'bg-green-500/25 ring-1 ring-green-400' : 'bg-slate-700'}`}>
+                        <button onClick={() => tapPlayer({ kind: 'slot', gameId: g.id, pid: id })} className="text-[13px] text-slate-100 leading-none">{nameOf(id)}</button>
+                        <button onClick={() => removeFromGroup(g, id)} title="Remove from group"
+                          className="w-5 h-5 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-red-500/70 shrink-0"><X className="w-3 h-3" /></button>
+                      </span>
+                    )
+                  }
                   return (
-                    <div key={g.id} className="bg-slate-800 border border-slate-700/60 rounded-xl p-3">
-                      <div className="flex items-center justify-between mb-2">
+                    <div key={g.id} className={`bg-slate-800 border rounded-xl p-3 ${pick ? 'border-green-500/40' : 'border-slate-700/60'}`}>
+                      <div className="flex items-center justify-between mb-2.5">
                         <span className="text-[12px] text-slate-400 font-medium">
                           {label}
-                          {isKing && g.rank === 1 && <span className="ml-1.5 text-[9px] font-bold text-amber-300 bg-amber-500/20 rounded px-1.5 py-0.5">KINGS</span>}
+                          {isKing && gi === 0 && <span className="ml-1.5 text-[9px] font-bold text-amber-300 bg-amber-500/20 rounded px-1.5 py-0.5">KINGS</span>}
                         </span>
                         <div className="flex items-center gap-1">
                           <button onClick={() => toggleLock(g)} className={`p-1.5 rounded-lg ${g.locked ? 'text-green-400' : 'text-slate-500 hover:text-slate-300'}`} title={g.locked ? 'Unlock' : 'Lock'}>
@@ -1141,35 +1152,29 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                           <button onClick={() => disband(g)} className="p-1.5 rounded-lg text-slate-500 hover:text-red-400" title="Disband"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-1.5 mb-2.5">
-                        {ids.map(id => {
-                          const picked = pick?.kind === 'slot' && pick.gameId === g.id && pick.pid === id
-                          return (
-                            <span key={id} className={`inline-flex items-center text-[13px] rounded-lg overflow-hidden ${picked ? 'ring-1 ring-green-500' : ''}`}>
-                              <button onClick={() => tapPlayer({ kind: 'slot', gameId: g.id, pid: id })}
-                                className={`px-2.5 py-1.5 ${picked ? 'bg-green-500/20 text-green-200' : 'bg-slate-700 text-slate-100 hover:bg-slate-600'}`}>
-                                {nameOf(id)}
+                      {/* Team A vs Team B */}
+                      {([g.team1_ids, g.team2_ids] as const).map((teamIds, ti) => (
+                        <div key={ti}>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {teamIds.map(renderChip)}
+                            {Array.from({ length: Math.max(0, teamCap - teamIds.length) }).map((_, k) => (
+                              <button key={k} onClick={() => placeInGroup(g)} disabled={!pick}
+                                className={`rounded-full px-3 py-1.5 text-[12px] border border-dashed ${pick ? 'border-green-400 text-green-300 hover:bg-green-500/10' : 'border-slate-600 text-slate-500'}`}>
+                                {pick ? 'place here' : 'empty'}
                               </button>
-                              <button onClick={() => removeFromGroup(g, id)} title="Remove"
-                                className={`px-1.5 py-1.5 ${picked ? 'bg-green-500/20' : 'bg-slate-700'} text-slate-400 hover:text-red-400 hover:bg-red-500/20`}>
-                                <X className="w-3 h-3" />
-                              </button>
-                            </span>
-                          )
-                        })}
-                        {Array.from({ length: perGame - ids.length }).map((_, k) => (
-                          <button key={k} onClick={() => placeInGroup(g)} disabled={!pick}
-                            className={`text-sm rounded-lg px-4 py-1.5 border border-dashed ${pick ? 'border-green-500 text-green-400 hover:bg-green-500/10' : 'border-slate-600 text-slate-600'}`}>+</button>
-                        ))}
-                      </div>
+                            ))}
+                          </div>
+                          {ti === 0 && <div className="text-[10px] font-bold text-slate-500 my-1.5 pl-1">vs</div>}
+                        </div>
+                      ))}
                       {full && (
-                        <div className="flex flex-wrap items-center gap-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-slate-700/60">
                           <span className="text-[10px] uppercase tracking-wide text-slate-500">Send to</span>
                           {freeCourts.length === 0
-                            ? <span className="text-[11px] text-slate-500">waiting for a court</span>
+                            ? <span className="text-[11px] text-slate-500">waiting for a court…</span>
                             : freeCourts.map(c => (
                               <button key={c} onClick={() => sendToCourt(g, c)} disabled={busy}
-                                className="text-[11px] uppercase font-bold text-white bg-green-600 hover:bg-green-500 rounded-lg px-3 py-1.5">Court {c}</button>
+                                className="text-[11px] uppercase font-bold text-white bg-green-600 hover:bg-green-500 rounded-lg px-3.5 py-1.5">Court {c}</button>
                             ))}
                         </div>
                       )}
