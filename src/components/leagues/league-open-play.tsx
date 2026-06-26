@@ -431,15 +431,19 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     if (!session) return
     const need = Math.min(freeCourts.length - stagedGroups.length, Math.floor(bench.length / perGame))
     if (need <= 0) return
-    const roster: RosterPlayer[] = bench.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: Date.now() - new Date(p.queued_since).getTime() }))
+    // Who plays: fewest games (then longest wait) first, so the most-played sit
+    // out when there aren't enough courts — keeps court time even.
+    const playing = [...bench].sort((a, b) => a.games - b.games || new Date(a.queued_since).getTime() - new Date(b.queued_since).getTime())
+      .slice(0, need * perGame)
     let groups
     if (session.match_mode === 'mexicano') {
-      const ranked = [...bench].sort((a, b) => (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || b.wins - a.wins)
+      const ranked = [...playing].sort((a, b) => (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || b.wins - a.wins)
       groups = buildMexicanoRound(ranked, session.format, need)
     } else if (session.match_mode === 'king') {
-      const ranked = [...bench].sort((a, b) => b.wins - a.wins || (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || a.losses - b.losses)
+      const ranked = [...playing].sort((a, b) => b.wins - a.wins || (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || a.losses - b.losses)
       groups = buildMexicanoRound(ranked, session.format, need)   // winners with winners
     } else {
+      const roster: RosterPlayer[] = playing.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: Date.now() - new Date(p.queued_since).getTime() }))
       groups = buildFairGroups(roster, session.format, need, partnered)
     }
     if (groups.length === 0) return
@@ -465,63 +469,6 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     for (const grp of groups) {
       const { error } = await supabase.rpc('stage_session_group', { p_session_id: session.id, p_team1: grp.team1, p_team2: grp.team2 })
       if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); break }
-    }
-    await loadState(session.id)
-    setBusy(false)
-  }
-
-  // King / Americano / Mexicano: build a full round of ranked groups (players ÷
-  // per-game), independent of court count. They stage in On Deck; `start` also
-  // sends as many as the free courts allow.
-  async function generateRound(start: boolean) {
-    if (!session) return
-    if (liveGames.length > 0) { toast({ title: 'Enter the scores first', description: `Record the score for the game${liveGames.length > 1 ? 's' : ''} on court, then generate the next round.` }); return }
-    if (stagedGroups.length > 0) { toast({ title: 'Clear On Deck first', description: 'Send the staged games to a court (or disband them) before generating a new round.' }); return }
-    const ready = bench
-    const groupCount = Math.floor(ready.length / perGame)
-    if (groupCount === 0) { toast({ title: `Need ${perGame} ready players`, variant: 'destructive' }); return }
-    const seedBalanced = (n: number) => {
-      const roster: RosterPlayer[] = ready.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: Date.now() - new Date(p.queued_since).getTime() }))
-      return buildFairGroups(roster, session.format, n, partnered)
-    }
-    // Fair play time: whoever has played the fewest (then waited longest) gets on
-    // first, so with odd counts the players who sit out are the most-played.
-    const byFairness = (a: SP, b: SP) => a.games - b.games || new Date(a.queued_since).getTime() - new Date(b.queued_since).getTime()
-
-    let groups
-    if (session.match_mode === 'mexicano') {
-      // pick the round's players by fairness, THEN pair those by standings
-      const playing = [...ready].sort(byFairness).slice(0, groupCount * perGame)
-      const ranked = playing.sort((a, b) => (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || b.wins - a.wins)
-      groups = buildMexicanoRound(ranked, session.format, groupCount)
-    } else if (session.match_mode === 'king') {
-      // Fair at any headcount: the MOST-played sit out (so court time stays even),
-      // and whoever plays is ranked by win record so winners play winners.
-      const sitCount = Math.max(0, ready.length - groupCount * perGame)
-      const mostPlayedFirst = [...ready].sort((a, b) => b.games - a.games || new Date(b.queued_since).getTime() - new Date(a.queued_since).getTime())
-      const sitters = new Set(mostPlayedFirst.slice(0, sitCount).map(p => p.id))
-      const ranked = ready.filter(p => !sitters.has(p.id))
-        .sort((a, b) => b.wins - a.wins || (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || a.losses - b.losses)
-      groups = buildMexicanoRound(ranked, session.format, groupCount)
-    } else {
-      groups = seedBalanced(groupCount)   // americano: rotate partners
-    }
-    if (groups.length === 0) { toast({ title: `Need ${perGame} ready players`, variant: 'destructive' }); return }
-
-    setBusy(true)
-    const stagedIds: string[] = []
-    for (let i = 0; i < groups.length; i++) {
-      const { data: gid, error } = await supabase.rpc('stage_session_group', {
-        p_session_id: session.id, p_team1: groups[i].team1, p_team2: groups[i].team2, p_rank: i + 1, p_round: nextRoundNo,
-      })
-      if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); break }
-      if (gid) stagedIds.push(gid as string)
-    }
-    if (start) {
-      const courts = [...freeCourts]
-      for (let i = 0; i < stagedIds.length && i < courts.length; i++) {
-        await supabase.rpc('assign_session_group', { p_game_id: stagedIds[i], p_court: courts[i] })
-      }
     }
     await loadState(session.id)
     setBusy(false)
@@ -1142,10 +1089,10 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                     <Play className="w-4 h-4" />Send to {freeCourts.length === 1 ? 'court' : 'open courts'}
                   </button>
                 ) : (
-                  <button onClick={() => generateRound(false)} disabled={busy || liveGames.length > 0}
+                  <button onClick={fillOpenCourts} disabled={busy || freeCourts.length === 0 || bench.length < perGame}
                     className="flex-1 text-xs uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 disabled:opacity-40 rounded-xl py-3 flex items-center justify-center gap-1.5"
-                    title="Build this round On Deck — review and swap before sending to courts">
-                    <Wand2 className="w-4 h-4" />Generate round
+                    title="Build games On Deck for the open courts — review and swap before sending">
+                    <Wand2 className="w-4 h-4" />{liveGames.length > 0 ? `Fill open court${freeCourts.length > 1 ? 's' : ''}` : 'Generate round'}
                   </button>
                 )
               ) : (
