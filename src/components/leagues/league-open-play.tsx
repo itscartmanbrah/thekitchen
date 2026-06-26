@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
-import { buildFairGroups, buildMexicanoRound, type RosterPlayer } from '@/lib/open-play'
+import { buildFairGroups, buildMexicanoRound, buildKingKeepTeams, type RosterPlayer } from '@/lib/open-play'
 import { LeagueOpenPlayHistory } from '@/components/leagues/league-open-play-history'
 import { OpenPlayQR } from '@/components/open-play-qr'
 import { LiveTimer } from '@/components/live-timer'
@@ -41,6 +41,7 @@ interface SessionRow {
   manage_code: string
   allow_self_join: boolean
   auto_stage: boolean
+  partner_rotation: string
   starts_at: string | null
   ends_at: string | null
   court_ids: string[] | null
@@ -88,6 +89,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const [players, setPlayers] = useState<SP[]>([])
   const [games, setGames] = useState<Game[]>([])           // staged + in_progress
   const [partnered, setPartnered] = useState<Map<string, Set<string>>>(new Map())
+  const [lastPartner, setLastPartner] = useState<Map<string, string>>(new Map())
   const [points, setPoints] = useState<Map<string, number>>(new Map())   // session points (Americano-style)
   const [nextRoundNo, setNextRoundNo] = useState(1)
   const [scoreGame, setScoreGame] = useState<Game | null>(null)          // score-entry dialog
@@ -175,14 +177,17 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     const addPts = (id: string, n: number) => pts.set(id, (pts.get(id) ?? 0) + n)
     type DoneGame = { team1_ids: string[]; team2_ids: string[]; team1_score: number | null; team2_score: number | null; winner_team: number | null; rank: number | null; round_no: number | null }
     const doneGames = (done ?? []) as DoneGame[]   // ordered by completed_at asc
+    const lastP = new Map<string, string>()        // each player → most-recent partner
     for (const game of doneGames) {
       for (const t of [game.team1_ids, game.team2_ids]) {
         for (let i = 0; i < t.length; i++) for (let j = i + 1; j < t.length; j++) addPair(t[i], t[j])
+        if (t.length === 2) { lastP.set(t[0], t[1]); lastP.set(t[1], t[0]) }   // later games overwrite
       }
       game.team1_ids.forEach(id => addPts(id, game.team1_score ?? 0))
       game.team2_ids.forEach(id => addPts(id, game.team2_score ?? 0))
     }
     setPartnered(pmap)
+    setLastPartner(lastP)
     setPoints(pts)
 
     // Next round number (for staging round groups).
@@ -440,8 +445,12 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
       const ranked = [...playing].sort((a, b) => (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || b.wins - a.wins)
       groups = buildMexicanoRound(ranked, session.format, need)
     } else if (session.match_mode === 'king') {
-      const ranked = [...playing].sort((a, b) => b.wins - a.wins || (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || a.losses - b.losses)
-      groups = buildMexicanoRound(ranked, session.format, need)   // winners with winners
+      if (session.partner_rotation === 'keep') {
+        groups = buildKingKeepTeams(playing.map(p => ({ id: p.id, wins: p.wins })), lastPartner, session.format)
+      } else {
+        const ranked = [...playing].sort((a, b) => b.wins - a.wins || (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || a.losses - b.losses)
+        groups = buildMexicanoRound(ranked, session.format, need)   // winners with winners
+      }
     } else {
       const roster: RosterPlayer[] = playing.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: Date.now() - new Date(p.queued_since).getTime() }))
       groups = buildFairGroups(roster, session.format, need, partnered)
@@ -615,6 +624,13 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     const { error } = await supabase.rpc('set_session_auto_stage', { p_session_id: session.id, p_auto: !session.auto_stage })
     if (error) toast({ title: 'Could not update', description: error.message, variant: 'destructive' })
     else setSession({ ...session, auto_stage: !session.auto_stage })
+  }
+
+  async function setPartnerRotation(mode: 'split' | 'keep') {
+    if (!session || session.partner_rotation === mode) return
+    const { error } = await supabase.rpc('set_session_partner_rotation', { p_session_id: session.id, p_mode: mode })
+    if (error) toast({ title: 'Could not update', description: error.message, variant: 'destructive' })
+    else setSession({ ...session, partner_rotation: mode })
   }
 
   async function endSession() {
@@ -972,6 +988,15 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             <input type="checkbox" checked={session.auto_stage} onChange={toggleAutoStage} />
             <span><strong>Keep courts busy</strong> — auto-stage the next game On Deck when a court frees (tap to send). Off = strict round-by-round.</span>
           </label>
+          {isKing && session.format === 'doubles' && (
+            <div className="flex items-center gap-2 text-xs text-gray-600">
+              <span className="font-medium">Partners:</span>
+              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+                <button onClick={() => setPartnerRotation('split')} className={`px-2.5 py-1 ${session.partner_rotation !== 'keep' ? 'bg-green-600 text-white font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}>Split &amp; remix</button>
+                <button onClick={() => setPartnerRotation('keep')} className={`px-2.5 py-1 border-l border-gray-200 ${session.partner_rotation === 'keep' ? 'bg-green-600 text-white font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}>Keep teams together</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

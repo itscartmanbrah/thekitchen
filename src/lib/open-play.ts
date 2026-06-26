@@ -133,6 +133,40 @@ export function buildKingRound(
   return groups
 }
 
+// King "keep teams together": keep each player with their most-recent partner
+// (when both are playing this round), rank pairs by wins so the strongest pairs
+// meet on the top court, then match adjacent pairs. `playing` is already the
+// fair selection of who's on this round.
+export function buildKingKeepTeams(
+  playing: { id: string; wins: number }[],
+  lastPartner: Map<string, string>,
+  format: 'singles' | 'doubles',
+): Pairing[] {
+  if (format === 'singles') {
+    const groups: Pairing[] = []
+    for (let i = 0; i + 2 <= playing.length; i += 2) groups.push({ team1: [playing[i].id], team2: [playing[i + 1].id] })
+    return groups
+  }
+  const here = new Set(playing.map(p => p.id))
+  const paired = new Set<string>()
+  const pairs: string[][] = []
+  for (const p of playing) {
+    if (paired.has(p.id)) continue
+    const lp = lastPartner.get(p.id)
+    const mate = (lp && here.has(lp) && !paired.has(lp))
+      ? lp
+      : playing.find(q => q.id !== p.id && !paired.has(q.id))?.id
+    if (!mate) break
+    paired.add(p.id); paired.add(mate)
+    pairs.push([p.id, mate])
+  }
+  const winsOf = (id: string) => playing.find(p => p.id === id)?.wins ?? 0
+  pairs.sort((a, b) => (winsOf(b[0]) + winsOf(b[1])) - (winsOf(a[0]) + winsOf(a[1])))
+  const groups: Pairing[] = []
+  for (let i = 0; i + 2 <= pairs.length; i += 2) groups.push({ team1: pairs[i], team2: pairs[i + 1] })
+  return groups
+}
+
 // Mexicano round: players already sorted best→worst by standings. On each court
 // the top 4 of the remaining play 1&4 vs 2&3, so the closest-ranked players meet.
 export function buildMexicanoRound(
