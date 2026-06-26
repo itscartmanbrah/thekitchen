@@ -36,7 +36,8 @@ export default function LoginPage() {
     await claimOpenPlayGuests()   // link any Open Play games they joined as a guest
     // Keep the button in its loading state while the dashboard renders —
     // resetting it here makes the page look frozen during navigation.
-    router.push('/dashboard')
+    const rd = new URLSearchParams(window.location.search).get('redirect')
+    router.push(rd && rd.startsWith('/') && !rd.startsWith('//') ? rd : '/dashboard')
     router.refresh()
   }
 

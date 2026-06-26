@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { AppLogo } from '@/components/app-logo'
@@ -76,6 +76,23 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
   const mode = data?.session?.match_mode ?? ''
   const needsGender = mode === 'mixed'
   const needsLevel = mode === 'skill' || mode === 'skill_courts'
+
+  // Returning from "Sign in & join" (?join=1) → join automatically, unless the
+  // mode still needs a level/gender we don't have, in which case they pick it.
+  const autoJoined = useRef(false)
+  useEffect(() => {
+    if (autoJoined.current || !signedIn || myId || !data?.session) return
+    if (new URLSearchParams(window.location.search).get('join') !== '1') return
+    if (data.session.status !== 'active' || !data.session.allow_self_join) return
+    if (needsLevel) return
+    if (needsGender && !profile?.gender) return
+    autoJoined.current = true
+    joinMember().finally(() => {
+      const u = new URL(window.location.href); u.searchParams.delete('join')
+      window.history.replaceState(null, '', u.pathname + u.search)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signedIn, myId, data, profile, needsGender, needsLevel])
 
   async function join() {
     if (!joinName.trim()) return
@@ -273,16 +290,31 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
               </div>
             )
           }
-          return (
-            <div className="mb-6 rounded-xl border bg-white px-4 py-3">
-              <p className="text-sm font-medium text-gray-800 mb-2 flex items-center gap-1.5">
+          {
+            const ret = encodeURIComponent(`/play/${params.code}`)
+            return (
+            <div className="mb-6 rounded-xl border bg-white px-4 py-4 space-y-3">
+              <p className="text-sm font-medium text-gray-800 flex items-center gap-1.5">
                 <UserPlus className="w-4 h-4 text-green-600" />Join the queue
               </p>
+
+              {/* Account path (recommended) */}
+              <div className="space-y-2">
+                <Button asChild className="w-full"><Link href={`/login?redirect=${ret}&join=1`}>Sign in &amp; join</Link></Button>
+                <Button asChild variant="outline" className="w-full"><Link href={`/signup?redirect=${ret}&join=1`}>Create a free account</Link></Button>
+                <p className="text-[11px] text-gray-400 text-center">With an account, your play history &amp; Open Play stats are tracked across every session.</p>
+              </div>
+
+              <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                <div className="h-px bg-gray-200 flex-1" />or play as a guest<div className="h-px bg-gray-200 flex-1" />
+              </div>
+
+              {/* Guest path */}
               <Input placeholder="Your name" value={joinName} maxLength={40}
                 onChange={e => { setJoinName(e.target.value); setJoinError('') }}
                 onKeyDown={e => { if (e.key === 'Enter') join() }} />
               {needsGender && (
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500">I am a</span>
                   {(['m', 'f'] as const).map(g => (
                     <button key={g} type="button" onClick={() => { setJoinGender(g); setJoinError('') }}
@@ -293,7 +325,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                 </div>
               )}
               {needsLevel && (
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500">My level</span>
                   {[1, 2, 3, 4, 5].map(n => (
                     <button key={n} type="button" onClick={() => { setJoinLevel(n); setJoinError('') }}
@@ -303,15 +335,13 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                   ))}
                 </div>
               )}
-              <Button className="w-full mt-2" onClick={join} disabled={joining || !joinName.trim()}>
-                {joining ? 'Joining…' : 'Check in'}
+              <Button variant="outline" className="w-full" onClick={join} disabled={joining || !joinName.trim()}>
+                {joining ? 'Joining…' : 'Continue as guest'}
               </Button>
-              {joinError && <p className="text-xs text-red-600 mt-1.5">{joinError}</p>}
-              <p className="text-xs text-gray-400 mt-1.5">
-                {needsLevel ? 'Pick your level so we keep games competitive.' : needsGender ? 'Mixed doubles — every game is 2 men + 2 women.' : 'No account needed — just add your name.'}
-              </p>
+              {joinError && <p className="text-xs text-red-600">{joinError}</p>}
             </div>
-          )
+            )
+          }
         })()}
 
         {/* Convert joined guests into accounts */}

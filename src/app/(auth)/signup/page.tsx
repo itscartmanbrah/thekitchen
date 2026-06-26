@@ -131,7 +131,8 @@ export default function SignupPage() {
 
       await claimOpenPlayGuests()   // link any Open Play games they joined as a guest
       // Stay in the loading state while the dashboard renders
-      router.push('/dashboard')
+      const rd = new URLSearchParams(window.location.search).get('redirect')
+      router.push(rd && rd.startsWith('/') && !rd.startsWith('//') ? rd : '/dashboard')
       router.refresh()
       return
     }
