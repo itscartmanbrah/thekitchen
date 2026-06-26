@@ -202,19 +202,26 @@ export function buildSkillGroups(
   window: number,
 ): Pairing[] {
   const perGame = format === 'doubles' ? 4 : 2
-  const sorted = [...bench].sort((a, b) => a.level - b.level || a.games - b.games)
-  const used = new Array(sorted.length).fill(false)
+  // Seed from the player who has waited longest (fewest games), then build a
+  // level-tight group around them — so court time stays fair across levels
+  // instead of the lowest cluster always going on first.
+  const pool = [...bench].sort((a, b) => a.games - b.games || a.level - b.level)
+  const used = new Set<string>()
   const groups: Pairing[] = []
-  for (let s = 0; s < sorted.length && groups.length < maxGroups; s++) {
-    if (used[s]) continue
-    const grp = [s]
-    for (let j = s + 1; j < sorted.length && grp.length < perGame; j++) {
-      if (used[j]) continue
-      if (sorted[j].level - sorted[s].level <= window) grp.push(j); else break
+  for (const seed of pool) {
+    if (groups.length >= maxGroups) break
+    if (used.has(seed.id)) continue
+    const cands = pool.filter(p => !used.has(p.id) && p.id !== seed.id && Math.abs(p.level - seed.level) <= window)
+      .sort((a, b) => Math.abs(a.level - seed.level) - Math.abs(b.level - seed.level) || a.games - b.games)
+    const grp = [seed]
+    for (const c of cands) {
+      if (grp.length >= perGame) break
+      const lv = [...grp.map(x => x.level), c.level]
+      if (Math.max(...lv) - Math.min(...lv) <= window) grp.push(c)
     }
     if (grp.length === perGame) {
-      grp.forEach(k => (used[k] = true))
-      const id = grp.map(k => sorted[k].id)
+      grp.forEach(x => used.add(x.id))
+      const id = grp.map(x => x.id)
       groups.push(format === 'doubles'
         ? { team1: [id[0], id[3]], team2: [id[1], id[2]] }
         : { team1: [id[0]], team2: [id[1]] })

@@ -439,8 +439,12 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     if (session.match_mode === 'mixed') {
       return buildMixedGroups(pool.map(p => ({ id: p.id, gender: p.gender ?? null, games: p.games })), count)
     }
+    // Only seat as many as we can actually fill courts for, picking the fewest-
+    // games players first — otherwise the points/win ranking below would keep
+    // re-selecting the leaders and the long-waiters would never get on.
+    const seats = Math.min(count, Math.floor(pool.length / perGame)) * perGame
     const playing = [...pool].sort((a, b) => a.games - b.games || new Date(a.queued_since).getTime() - new Date(b.queued_since).getTime())
-      .slice(0, count * perGame)
+      .slice(0, seats)
     if (session.match_mode === 'mexicano') {
       const ranked = [...playing].sort((a, b) => (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || b.wins - a.wins)
       return buildMexicanoRound(ranked, fmt, count)
