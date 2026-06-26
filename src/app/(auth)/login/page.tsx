@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { AppLogo } from '@/components/app-logo'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { claimOpenPlayGuests } from '@/lib/claim-guests'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -32,6 +33,7 @@ export default function LoginPage() {
       setLoading(false)
       return
     }
+    await claimOpenPlayGuests()   // link any Open Play games they joined as a guest
     // Keep the button in its loading state while the dashboard renders —
     // resetting it here makes the page look frozen during navigation.
     router.push('/dashboard')

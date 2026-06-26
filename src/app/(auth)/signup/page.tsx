@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { AppLogo } from '@/components/app-logo'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { claimOpenPlayGuests } from '@/lib/claim-guests'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -128,6 +129,7 @@ export default function SignupPage() {
         avatar_color: avatarColor,
       } as any)
 
+      await claimOpenPlayGuests()   // link any Open Play games they joined as a guest
       // Stay in the loading state while the dashboard renders
       router.push('/dashboard')
       router.refresh()
