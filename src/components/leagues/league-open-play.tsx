@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
-import { buildFairGroups, buildMexicanoRound, buildKingKeepTeams, type RosterPlayer } from '@/lib/open-play'
+import { buildFairGroups, buildMexicanoRound, buildKingKeepTeams, buildSkillGroups, buildMixedGroups, type RosterPlayer } from '@/lib/open-play'
 import { LeagueOpenPlayHistory } from '@/components/leagues/league-open-play-history'
 import { OpenPlayQR } from '@/components/open-play-qr'
 import { LiveTimer } from '@/components/live-timer'
@@ -60,6 +60,8 @@ interface SP {
   wins: number
   losses: number
   games: number
+  skill_level?: number | null
+  gender?: string | null
 }
 interface Game {
   id: string
@@ -108,7 +110,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const [courts, setCourts] = useState<Court[]>([])
   const [selectedCourts, setSelectedCourts] = useState<string[]>([])
   const [format, setFormat] = useState<'singles' | 'doubles'>('doubles')
-  const [mode, setMode] = useState<'balanced' | 'americano' | 'mexicano' | 'king'>('balanced')
+  const [mode, setMode] = useState<'balanced' | 'americano' | 'mexicano' | 'king' | 'skill' | 'mixed'>('balanced')
   const [rated, setRated] = useState(false)
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
@@ -120,6 +122,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const [addOpen, setAddOpen] = useState(false)
   const [members, setMembers] = useState<Member[]>([])
   const [guestName, setGuestName] = useState('')
+  const [guestLevel, setGuestLevel] = useState(3)             // skill mode: new guest's level
+  const [guestGender, setGuestGender] = useState<'m' | 'f' | null>(null)   // mixed mode: new guest's gender
   const [regulars, setRegulars] = useState<{ id: string; name: string; skill: number }[]>([])
 
   const { toast } = useToast()
@@ -396,7 +400,15 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
       p_session_id: session!.id, p_user_id: null, p_guest_name: name, p_skill: null,
     })
     if (error) { toast({ title: 'Could not add guest', description: error.message, variant: 'destructive' }); setGuestName(name) }
-    else if (id) pushPlayer(id as string, name, '#64748b', null, null)
+    else if (id) {
+      pushPlayer(id as string, name, '#64748b', null, null)
+      const lvl = session?.match_mode === 'skill' ? guestLevel : null
+      const gen = session?.match_mode === 'mixed' ? guestGender : null
+      if (lvl != null || gen != null) {
+        await supabase.rpc('set_session_player_meta', { p_player_id: id, p_skill_level: lvl, p_gender: gen })
+        if (session) loadState(session.id)
+      }
+    }
   }
 
   async function rpc(fn: string, args: Record<string, unknown>, successReload = true) {
@@ -408,79 +420,82 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     return !error
   }
 
-  // Auto Fill builds balanced on-deck groups. It stages up to one group per
-  // court (so when every court is busy you still line up the next round and can
-  // see who's next), capped by how many full groups the bench can fill.
-  async function autoFill() {
-    if (!session) return
-    const maxGroups = Math.max(0, session.court_count - stagedGroups.length)
-    if (maxGroups <= 0) { toast({ title: 'On Deck is full', description: 'Send a group to a court to free up an On Deck slot.' }); return }
-    const roster: RosterPlayer[] = bench.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: Date.now() - new Date(p.queued_since).getTime() }))
-    const groups = buildFairGroups(roster, session.format, maxGroups, partnered)
-    if (groups.length === 0) { toast({ title: `Need ${perGame} on the bench`, variant: 'destructive' }); return }
-    setBusy(true)
-    for (const grp of groups) {
-      const { error } = await supabase.rpc('stage_session_group', { p_session_id: session.id, p_team1: grp.team1, p_team2: grp.team2 })
-      if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); break }
+  // One place that turns a pool of available players into `count` on-deck games,
+  // honouring the session's matching style. Mexicano/King/Drop-in select the
+  // fewest-games players first (so the most-played sit out); Skill-separated and
+  // Mixed Doubles select by attribute, so they get the whole pool.
+  function buildGroups(pool: SP[], count: number) {
+    if (!session || count <= 0) return []
+    const fmt = session.format
+    if (session.match_mode === 'skill') {
+      return buildSkillGroups(pool.map(p => ({ id: p.id, level: p.skill_level ?? 3, games: p.games })), fmt, count, 2)
     }
-    await loadState(session.id)
-    setBusy(false)
-  }
-
-  const addEmptyGroup = () => session && rpc('stage_session_group', { p_session_id: session.id, p_team1: [], p_team2: [] })
-
-  // Stage just enough groups to cover the currently-open courts (used by the
-  // "keep courts busy" auto-stager, and as a manual one-tap). Format-aware:
-  // Mexicano pairs by points, King by win record, the rest by fairness.
-  async function fillOpenCourts() {
-    if (!session) return
-    const need = Math.min(freeCourts.length - stagedGroups.length, Math.floor(bench.length / perGame))
-    if (need <= 0) return
-    // Who plays: fewest games (then longest wait) first, so the most-played sit
-    // out when there aren't enough courts — keeps court time even.
-    const playing = [...bench].sort((a, b) => a.games - b.games || new Date(a.queued_since).getTime() - new Date(b.queued_since).getTime())
-      .slice(0, need * perGame)
-    let groups
+    if (session.match_mode === 'mixed') {
+      return buildMixedGroups(pool.map(p => ({ id: p.id, gender: p.gender ?? null, games: p.games })), count)
+    }
+    const playing = [...pool].sort((a, b) => a.games - b.games || new Date(a.queued_since).getTime() - new Date(b.queued_since).getTime())
+      .slice(0, count * perGame)
     if (session.match_mode === 'mexicano') {
       const ranked = [...playing].sort((a, b) => (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || b.wins - a.wins)
-      groups = buildMexicanoRound(ranked, session.format, need)
-    } else if (session.match_mode === 'king') {
-      if (session.partner_rotation === 'keep') {
-        groups = buildKingKeepTeams(playing.map(p => ({ id: p.id, wins: p.wins })), lastPartner, session.format)
-      } else {
-        const ranked = [...playing].sort((a, b) => b.wins - a.wins || (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || a.losses - b.losses)
-        groups = buildMexicanoRound(ranked, session.format, need)   // winners with winners
-      }
-    } else {
-      const roster: RosterPlayer[] = playing.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: Date.now() - new Date(p.queued_since).getTime() }))
-      groups = buildFairGroups(roster, session.format, need, partnered)
+      return buildMexicanoRound(ranked, fmt, count)
     }
-    if (groups.length === 0) return
+    if (session.match_mode === 'king') {
+      if (session.partner_rotation === 'keep') return buildKingKeepTeams(playing.map(p => ({ id: p.id, wins: p.wins })), lastPartner, fmt)
+      const ranked = [...playing].sort((a, b) => b.wins - a.wins || (points.get(b.id) ?? 0) - (points.get(a.id) ?? 0) || a.losses - b.losses)
+      return buildMexicanoRound(ranked, fmt, count)
+    }
+    const roster: RosterPlayer[] = playing.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: Date.now() - new Date(p.queued_since).getTime() }))
+    return buildFairGroups(roster, fmt, count, partnered)
+  }
+
+  async function stageGroups(groups: { team1: string[]; team2: string[] }[]) {
+    if (!session || groups.length === 0) return
     setBusy(true)
     for (let i = 0; i < groups.length; i++) {
       const { error } = await supabase.rpc('stage_session_group', {
         p_session_id: session.id, p_team1: groups[i].team1, p_team2: groups[i].team2, p_rank: i + 1, p_round: nextRoundNo,
       })
-      if (error) break
+      if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); break }
     }
     await loadState(session.id)
     setBusy(false)
   }
 
-  // Pair the whole bench into balanced On Deck groups (Drop-in convenience).
+  // Auto Fill builds on-deck groups, up to one per court, so you can line up the
+  // next round even while courts are busy.
+  async function autoFill() {
+    if (!session) return
+    const maxGroups = Math.max(0, session.court_count - stagedGroups.length)
+    if (maxGroups <= 0) { toast({ title: 'On Deck is full', description: 'Send a group to a court to free up an On Deck slot.' }); return }
+    const groups = buildGroups(bench, maxGroups)
+    if (groups.length === 0) { toast({ title: matchModeNeedHint(), variant: 'destructive' }); return }
+    await stageGroups(groups)
+  }
+
+  const addEmptyGroup = () => session && rpc('stage_session_group', { p_session_id: session.id, p_team1: [], p_team2: [] })
+
+  // Stage just enough groups to cover the currently-open courts (the "keep courts
+  // busy" auto-stager + a manual one-tap).
+  async function fillOpenCourts() {
+    if (!session) return
+    const need = freeCourts.length - stagedGroups.length
+    const groups = buildGroups(bench, Math.max(0, need))
+    if (groups.length === 0) return
+    await stageGroups(groups)
+  }
+
+  function matchModeNeedHint() {
+    if (session?.match_mode === 'mixed') return 'Need 2 men and 2 women on the bench (tag genders below)'
+    if (session?.match_mode === 'skill') return `Need ${perGame} players of a similar level on the bench`
+    return `Need ${perGame} on the bench`
+  }
+
+  // Pair the whole bench into On Deck groups at once (Drop-in convenience).
   async function pairAll() {
     if (!session) return
-    const n = Math.floor(bench.length / perGame)
-    if (n === 0) { toast({ title: `Need ${perGame} on the bench`, variant: 'destructive' }); return }
-    const roster: RosterPlayer[] = bench.map(p => ({ id: p.id, skill: p.skill, games: p.games, waitMs: Date.now() - new Date(p.queued_since).getTime() }))
-    const groups = buildFairGroups(roster, session.format, n, partnered)
-    setBusy(true)
-    for (const grp of groups) {
-      const { error } = await supabase.rpc('stage_session_group', { p_session_id: session.id, p_team1: grp.team1, p_team2: grp.team2 })
-      if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); break }
-    }
-    await loadState(session.id)
-    setBusy(false)
+    const groups = buildGroups(bench, Math.floor(bench.length / perGame))
+    if (groups.length === 0) { toast({ title: matchModeNeedHint(), variant: 'destructive' }); return }
+    await stageGroups(groups)
   }
 
   // Send all staged groups to free courts, in rank order.
@@ -632,6 +647,15 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     if (error) toast({ title: 'Could not update', description: error.message, variant: 'destructive' })
     else setSession({ ...session, partner_rotation: mode })
   }
+
+  // Tag a player's skill level / gender (used for Skill-separated & Mixed Doubles).
+  async function setMeta(playerId: string, skillLevel: number | null, gender: string | null) {
+    const { error } = await supabase.rpc('set_session_player_meta', { p_player_id: playerId, p_skill_level: skillLevel, p_gender: gender })
+    if (error) toast({ title: 'Could not update', description: error.message, variant: 'destructive' })
+    else if (session) loadState(session.id)
+  }
+  const cycleLevel = (p: SP) => setMeta(p.id, ((p.skill_level ?? 3) % 5) + 1, null)
+  const cycleGender = (p: SP) => setMeta(p.id, null, p.gender === 'm' ? 'f' : 'm')
 
   async function endSession() {
     if (!session) return
@@ -823,6 +847,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 { k: 'king', label: 'King of the Court', desc: 'Winners up, losers down' },
                 { k: 'americano', label: 'Americano', desc: 'Rotate partners' },
                 { k: 'mexicano', label: 'Mexicano', desc: 'Pair by standings' },
+                { k: 'skill', label: 'Skill-separated', desc: 'Keep levels close' },
+                { k: 'mixed', label: 'Mixed Doubles', desc: '2 men + 2 women' },
               ] as const).map(m => (
                 <button key={m.k} type="button" onClick={() => setMode(m.k)}
                   className={`text-left px-3 py-2 rounded-lg border ${mode === m.k ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 text-gray-600'}`}>
@@ -1245,6 +1271,14 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                     <span className="block text-[10px] text-slate-500 tabular-nums">waited <LiveTimer from={p.queued_since} /> · {p.games}g</span>
                   </span>
                 </button>
+                {isOrganizer && session.match_mode === 'skill' && (
+                  <button onClick={() => cycleLevel(p)} title="Tap to change level"
+                    className="w-7 h-7 rounded-lg text-[13px] font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 shrink-0">{p.skill_level ?? 3}</button>
+                )}
+                {isOrganizer && session.match_mode === 'mixed' && (
+                  <button onClick={() => cycleGender(p)} title="Tap to set M/F"
+                    className={`w-7 h-7 rounded-lg text-[13px] font-bold shrink-0 ${p.gender ? 'bg-green-600 text-white' : 'bg-amber-500/80 text-white'}`}>{p.gender === 'm' ? 'M' : p.gender === 'f' ? 'F' : '?'}</button>
+                )}
                 {isOrganizer && (
                   <>
                     <button onClick={() => setStatus(p.id, 'resting')} className="p-2 rounded-lg text-slate-500 hover:text-amber-400 hover:bg-slate-700/50 shrink-0" title="Rest"><Pause className="w-4 h-4" /></button>
@@ -1354,6 +1388,24 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 </Button>
                 <Button onClick={addGuest} disabled={!guestName.trim()}>Add</Button>
               </div>
+              {session.match_mode === 'skill' && (
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-xs text-gray-500">Level</span>
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button key={n} type="button" onClick={() => setGuestLevel(n)}
+                      className={`w-7 h-7 rounded-lg text-sm font-semibold ${guestLevel === n ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{n}</button>
+                  ))}
+                </div>
+              )}
+              {session.match_mode === 'mixed' && (
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-xs text-gray-500">Gender</span>
+                  {(['m', 'f'] as const).map(g => (
+                    <button key={g} type="button" onClick={() => setGuestGender(g)}
+                      className={`px-3 h-7 rounded-lg text-sm font-semibold ${guestGender === g ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{g === 'm' ? 'Man' : 'Woman'}</button>
+                  ))}
+                </div>
+              )}
               <p className="text-xs text-gray-400">Tap the star to save a frequent player for next time.</p>
             </div>
 

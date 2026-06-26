@@ -12,7 +12,7 @@ interface DoneGame { team1_ids: string[]; team2_ids: string[]; team1_score: numb
 interface Sess { name: string; match_mode: string; format: string; started_at: string | null }
 
 const modeLabel: Record<string, string> = {
-  balanced: 'Drop-in', skill: 'Drop-in', mixed: 'Drop-in', ladder: 'King of the Court',
+  balanced: 'Drop-in', skill: 'Skill-separated', mixed: 'Mixed Doubles', ladder: 'King of the Court',
   king: 'King of the Court', americano: 'Americano', mexicano: 'Mexicano',
 }
 const initials = (n: string) => n.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)

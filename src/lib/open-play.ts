@@ -185,6 +185,53 @@ export function buildMexicanoRound(
   return groups
 }
 
+// Skill-separated: group players whose skill levels are within `window` of each
+// other (default 2), preferring the fewest-games first. Players who can't fit a
+// tight group wait rather than be forced into a wide-gap match.
+export function buildSkillGroups(
+  bench: { id: string; level: number; games: number }[],
+  format: 'singles' | 'doubles',
+  maxGroups: number,
+  window: number,
+): Pairing[] {
+  const perGame = format === 'doubles' ? 4 : 2
+  const sorted = [...bench].sort((a, b) => a.level - b.level || a.games - b.games)
+  const used = new Array(sorted.length).fill(false)
+  const groups: Pairing[] = []
+  for (let s = 0; s < sorted.length && groups.length < maxGroups; s++) {
+    if (used[s]) continue
+    const grp = [s]
+    for (let j = s + 1; j < sorted.length && grp.length < perGame; j++) {
+      if (used[j]) continue
+      if (sorted[j].level - sorted[s].level <= window) grp.push(j); else break
+    }
+    if (grp.length === perGame) {
+      grp.forEach(k => (used[k] = true))
+      const id = grp.map(k => sorted[k].id)
+      groups.push(format === 'doubles'
+        ? { team1: [id[0], id[3]], team2: [id[1], id[2]] }
+        : { team1: [id[0]], team2: [id[1]] })
+    }
+  }
+  return groups
+}
+
+// Mixed doubles: every game is two men vs… needs 2 men + 2 women, paired as one
+// man + one woman per team. Players without a gender set wait.
+export function buildMixedGroups(
+  bench: { id: string; gender: string | null; games: number }[],
+  maxGroups: number,
+): Pairing[] {
+  const men = bench.filter(p => p.gender === 'm').sort((a, b) => a.games - b.games)
+  const women = bench.filter(p => p.gender === 'f').sort((a, b) => a.games - b.games)
+  const groups: Pairing[] = []
+  while (groups.length < maxGroups && men.length >= 2 && women.length >= 2) {
+    const m1 = men.shift()!, m2 = men.shift()!, w1 = women.shift()!, w2 = women.shift()!
+    groups.push({ team1: [m1.id, w1.id], team2: [m2.id, w2.id] })
+  }
+  return groups
+}
+
 // Build up to `maxGroups` balanced groups from the bench, prioritising players
 // who've played fewest games (then waited longest), and avoiding repeat partners.
 export function buildFairGroups(

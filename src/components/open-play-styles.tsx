@@ -44,9 +44,27 @@ export const PLAY_STYLE_INFO: Record<string, StyleInfo> = {
       'Starts mixed and gets tighter — the leaders end up battling each other.',
     ],
   },
+  skill: {
+    label: 'Skill-separated',
+    tagline: 'Competitive games — levels stay close',
+    how: [
+      'Give each player a level (1–5) when they check in.',
+      'Games only pair players within ~2 levels of each other — no lopsided blowouts.',
+      'If a close match can’t be formed yet, those players wait rather than get a wide-gap game.',
+    ],
+  },
+  mixed: {
+    label: 'Mixed Doubles',
+    tagline: 'Every game is 2 men + 2 women',
+    how: [
+      'Tag each player as M or F when they check in.',
+      'Each game puts two men and two women on court, one of each per team.',
+      'Great for mixed social nights and mixed events.',
+    ],
+  },
 }
 
-const ALIAS: Record<string, string> = { skill: 'balanced', mixed: 'balanced', ladder: 'king' }
+const ALIAS: Record<string, string> = { ladder: 'king' }
 export function styleInfo(mode: string): StyleInfo {
   return PLAY_STYLE_INFO[ALIAS[mode] ?? mode] ?? PLAY_STYLE_INFO.balanced
 }
