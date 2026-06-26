@@ -185,6 +185,13 @@ export function buildMexicanoRound(
   return groups
 }
 
+// Skill Courts: which court (1 = top/strongest) a given 1–5 level belongs to,
+// splitting the level range evenly across the courts.
+export function courtForLevel(level: number, courtCount: number): number {
+  const c = Math.ceil((6 - level) * courtCount / 5)
+  return Math.min(courtCount, Math.max(1, c))
+}
+
 // Skill-separated: group players whose skill levels are within `window` of each
 // other (default 2), preferring the fewest-games first. Players who can't fit a
 // tight group wait rather than be forced into a wide-gap match.

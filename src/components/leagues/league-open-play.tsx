@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { useToast } from '@/hooks/use-toast'
-import { buildFairGroups, buildMexicanoRound, buildKingKeepTeams, buildSkillGroups, buildMixedGroups, type RosterPlayer } from '@/lib/open-play'
+import { buildFairGroups, buildMexicanoRound, buildKingKeepTeams, buildSkillGroups, buildMixedGroups, courtForLevel, type RosterPlayer } from '@/lib/open-play'
 import { LeagueOpenPlayHistory } from '@/components/leagues/league-open-play-history'
 import { OpenPlayQR } from '@/components/open-play-qr'
 import { LiveTimer } from '@/components/live-timer'
@@ -110,7 +110,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const [courts, setCourts] = useState<Court[]>([])
   const [selectedCourts, setSelectedCourts] = useState<string[]>([])
   const [format, setFormat] = useState<'singles' | 'doubles'>('doubles')
-  const [mode, setMode] = useState<'balanced' | 'americano' | 'mexicano' | 'king' | 'skill' | 'mixed'>('balanced')
+  const [mode, setMode] = useState<'balanced' | 'americano' | 'mexicano' | 'king' | 'skill' | 'mixed' | 'skill_courts'>('balanced')
   const [rated, setRated] = useState(false)
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
@@ -286,7 +286,12 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   useEffect(() => {
     if (!session || !isOrganizer || !session.auto_stage || busy || isScheduled) return
     if (autoStageBusy.current) return
-    if (freeCourts.length > stagedGroups.length && bench.length >= perGame) {
+    if (session.match_mode === 'skill_courts') {
+      if (freeCourts.length > 0 && bench.length >= perGame) {
+        autoStageBusy.current = true
+        fillSkillCourts(true).finally(() => { autoStageBusy.current = false })
+      }
+    } else if (freeCourts.length > stagedGroups.length && bench.length >= perGame) {
       autoStageBusy.current = true
       fillOpenCourts().finally(() => { autoStageBusy.current = false })
     }
@@ -427,6 +432,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   function buildGroups(pool: SP[], count: number) {
     if (!session || count <= 0) return []
     const fmt = session.format
+    if (session.match_mode === 'skill_courts') return []   // court-bound; handled by fillSkillCourts
     if (session.match_mode === 'skill') {
       return buildSkillGroups(pool.map(p => ({ id: p.id, level: p.skill_level ?? 3, games: p.games })), fmt, count, 2)
     }
@@ -465,6 +471,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   // next round even while courts are busy.
   async function autoFill() {
     if (!session) return
+    if (session.match_mode === 'skill_courts') { await fillSkillCourts(); return }
     const maxGroups = Math.max(0, session.court_count - stagedGroups.length)
     if (maxGroups <= 0) { toast({ title: 'On Deck is full', description: 'Send a group to a court to free up an On Deck slot.' }); return }
     const groups = buildGroups(bench, maxGroups)
@@ -487,7 +494,36 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   function matchModeNeedHint() {
     if (session?.match_mode === 'mixed') return 'Need 2 men and 2 women on the bench (tag genders below)'
     if (session?.match_mode === 'skill') return `Need ${perGame} players of a similar level on the bench`
+    if (session?.match_mode === 'skill_courts') return 'No court has enough players in its skill tier yet'
     return `Need ${perGame} on the bench`
+  }
+
+  // Skill Courts: each free court pulls its next game from its own skill tier
+  // (court 1 = strongest) and goes straight on — courts stay tier-locked.
+  async function fillSkillCourts(auto = false) {
+    if (!session) return
+    const cc = session.court_count
+    const used = new Set<string>()
+    const assigns: { team1: string[]; team2: string[]; court: number }[] = []
+    for (const c of freeCourts) {
+      const pool = bench.filter(p => !used.has(p.id) && courtForLevel(p.skill_level ?? 3, cc) === c)
+        .sort((a, b) => a.games - b.games || new Date(a.queued_since).getTime() - new Date(b.queued_since).getTime())
+      if (pool.length < perGame) continue
+      const id = pool.slice(0, perGame).map(p => p.id)
+      id.forEach(x => used.add(x))
+      assigns.push(session.format === 'doubles'
+        ? { team1: [id[0], id[3]], team2: [id[1], id[2]], court: c }
+        : { team1: [id[0]], team2: [id[1]], court: c })
+    }
+    if (assigns.length === 0) { if (!auto) toast({ title: matchModeNeedHint(), variant: 'destructive' }); return }
+    setBusy(true)
+    for (const a of assigns) {
+      const { data: gid, error } = await supabase.rpc('stage_session_group', { p_session_id: session.id, p_team1: a.team1, p_team2: a.team2 })
+      if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); break }
+      if (gid) await supabase.rpc('assign_session_group', { p_game_id: gid as string, p_court: a.court })
+    }
+    await loadState(session.id)
+    setBusy(false)
   }
 
   // Pair the whole bench into On Deck groups at once (Drop-in convenience).
@@ -849,6 +885,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 { k: 'mexicano', label: 'Mexicano', desc: 'Pair by standings' },
                 { k: 'skill', label: 'Skill-separated', desc: 'Keep levels close' },
                 { k: 'mixed', label: 'Mixed Doubles', desc: '2 men + 2 women' },
+                { k: 'skill_courts', label: 'Skill Courts', desc: 'Each court a level tier' },
               ] as const).map(m => (
                 <button key={m.k} type="button" onClick={() => setMode(m.k)}
                   className={`text-left px-3 py-2 rounded-lg border ${mode === m.k ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 text-gray-600'}`}>
@@ -1271,7 +1308,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                     <span className="block text-[10px] text-slate-500 tabular-nums">waited <LiveTimer from={p.queued_since} /> · {p.games}g</span>
                   </span>
                 </button>
-                {isOrganizer && session.match_mode === 'skill' && (
+                {isOrganizer && (session.match_mode === 'skill' || session.match_mode === 'skill_courts') && (
                   <button onClick={() => cycleLevel(p)} title="Tap to change level"
                     className="w-7 h-7 rounded-lg text-[13px] font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 shrink-0">{p.skill_level ?? 3}</button>
                 )}
@@ -1388,7 +1425,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 </Button>
                 <Button onClick={addGuest} disabled={!guestName.trim()}>Add</Button>
               </div>
-              {session.match_mode === 'skill' && (
+              {(session.match_mode === 'skill' || session.match_mode === 'skill_courts') && (
                 <div className="flex items-center gap-2 pt-1">
                   <span className="text-xs text-gray-500">Level</span>
                   {[1, 2, 3, 4, 5].map(n => (

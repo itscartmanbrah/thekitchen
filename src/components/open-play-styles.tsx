@@ -62,6 +62,15 @@ export const PLAY_STYLE_INFO: Record<string, StyleInfo> = {
       'Great for mixed social nights and mixed events.',
     ],
   },
+  skill_courts: {
+    label: 'Skill Courts',
+    tagline: 'Each court is its own level tier',
+    how: [
+      'Give each player a level (1–5) when they check in.',
+      'Court 1 is the strongest tier, the last court the most casual — each court has its own queue.',
+      'When a court frees, it pulls the next game from its own tier, so players stay on courts that match their level.',
+    ],
+  },
 }
 
 const ALIAS: Record<string, string> = { ladder: 'king' }

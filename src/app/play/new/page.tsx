@@ -20,6 +20,7 @@ const playStyles = [
   { k: 'mexicano', label: 'Mexicano', desc: 'Pair by standings' },
   { k: 'skill', label: 'Skill-separated', desc: 'Keep levels close' },
   { k: 'mixed', label: 'Mixed Doubles', desc: '2 men + 2 women' },
+  { k: 'skill_courts', label: 'Skill Courts', desc: 'Each court a level tier' },
 ] as const
 
 export default function NewSoloSessionPage() {
@@ -28,7 +29,7 @@ export default function NewSoloSessionPage() {
   const [name, setName] = useState('')
   const [courts, setCourts] = useState(2)
   const [format, setFormat] = useState<'doubles' | 'singles'>('doubles')
-  const [mode, setMode] = useState<'balanced' | 'king' | 'americano' | 'mexicano' | 'skill' | 'mixed'>('balanced')
+  const [mode, setMode] = useState<'balanced' | 'king' | 'americano' | 'mexicano' | 'skill' | 'mixed' | 'skill_courts'>('balanced')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
