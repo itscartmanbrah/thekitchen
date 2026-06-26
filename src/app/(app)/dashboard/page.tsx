@@ -31,6 +31,10 @@ export default async function DashboardPage() {
     .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
     .order('started_at', { ascending: false })
 
+  // Active Open Play sessions this user has JOINED as a player (league or solo).
+  const { data: joinedRaw } = await supabase.rpc('get_my_active_open_play')
+  const joinedSessions = (joinedRaw as any[]) ?? []
+
   const soloModeLabel: Record<string, string> = {
     balanced: 'Drop-in', skill: 'Drop-in', mixed: 'Drop-in', ladder: 'King of the Court',
     king: 'King of the Court', americano: 'Americano', mexicano: 'Mexicano',
@@ -142,6 +146,30 @@ export default async function DashboardPage() {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+
+        {joinedSessions.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2">Sessions you&apos;ve joined</h3>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {joinedSessions.map(s => (
+                <Link key={s.session_id} href={`/play/${s.share_code}`} className="group">
+                  <div className="rounded-xl border bg-white p-4 hover:border-green-300 hover:shadow-md transition-all h-full flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-gray-900 truncate">{s.name}</span>
+                        <span className="text-[10px] font-bold uppercase text-violet-700 bg-violet-100 rounded-full px-2 py-0.5">{soloModeLabel[s.match_mode] ?? s.match_mode}</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {s.league_name ?? 'Standalone'} · {s.my_status === 'playing' ? 'on a court now' : s.my_status === 'resting' ? 'resting' : 'in the queue'}
+                      </p>
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-green-700 text-sm font-medium shrink-0"><Play className="w-3.5 h-3.5" />View</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>

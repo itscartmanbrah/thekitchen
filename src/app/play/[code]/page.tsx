@@ -50,7 +50,17 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
 
   useEffect(() => {
     setMyId(localStorage.getItem(`play_${params.code}`))
-    supabase.auth.getUser().then(({ data }) => setSignedIn(!!data.user && !(data.user as any).is_anonymous))
+    supabase.auth.getUser().then(async ({ data }) => {
+      const u = data.user
+      const isMember = !!u && !(u as any).is_anonymous
+      setSignedIn(isMember)
+      // A logged-in player is matched by their account, so they're recognised
+      // even on a different phone/browser where localStorage is empty.
+      if (isMember) {
+        const { data: pid } = await supabase.rpc('my_open_play_player', { p_share_code: params.code })
+        if (pid) { setMyId(pid as string); localStorage.setItem(`play_${params.code}`, pid as string) }
+      }
+    })
     fetchData()
     const poll = setInterval(fetchData, 5000) // live-ish without login
     return () => clearInterval(poll)
