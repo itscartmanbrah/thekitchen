@@ -10,7 +10,7 @@ import { OpenPlayQR } from '@/components/open-play-qr'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Clock, Swords, UserPlus, Check, QrCode, X, LogOut, Pause, ChevronDown } from 'lucide-react'
+import { Clock, Swords, UserPlus, Check, QrCode, X, LogOut, Pause, ChevronDown, Trophy } from 'lucide-react'
 
 interface PubPlayer {
   id: string; name: string; avatar_color: string
@@ -40,6 +40,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
   const [joining, setJoining] = useState(false)
   const [joinError, setJoinError] = useState('')
   const [showQr, setShowQr] = useState(false)
+  const [signedIn, setSignedIn] = useState(false)
 
   const fetchData = useCallback(async () => {
     const { data: res } = await supabase.rpc('get_open_play_public', { p_share_code: params.code })
@@ -49,10 +50,11 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
 
   useEffect(() => {
     setMyId(localStorage.getItem(`play_${params.code}`))
+    supabase.auth.getUser().then(({ data }) => setSignedIn(!!data.user && !(data.user as any).is_anonymous))
     fetchData()
     const poll = setInterval(fetchData, 5000) // live-ish without login
     return () => clearInterval(poll)
-  }, [fetchData, params.code])
+  }, [fetchData, params.code, supabase])
 
   const mode = data?.session?.match_mode ?? ''
   const needsGender = mode === 'mixed'
@@ -240,6 +242,22 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
             </div>
           )
         })()}
+
+        {/* Convert joined guests into accounts */}
+        {myId && !signedIn && (
+          <div className="mb-6 rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-white px-4 py-4">
+            <p className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+              <Trophy className="w-4 h-4 text-green-600" />Make it count
+            </p>
+            <p className="text-xs text-gray-500 mt-1 mb-3">
+              Create a free account to track your rating &amp; match history, join leagues, and run your own Open Play sessions.
+            </p>
+            <div className="flex gap-2">
+              <Button asChild className="flex-1"><Link href="/signup">Create free account</Link></Button>
+              <Button asChild variant="outline" className="flex-1"><Link href="/login">Sign in</Link></Button>
+            </div>
+          </div>
+        )}
 
         {/* Courts */}
         <p className="text-xs font-semibold text-gray-500 mb-2">On the courts now</p>
