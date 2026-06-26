@@ -270,6 +270,9 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const liveGames = games.filter(g => g.status === 'in_progress').sort((a, b) => (a.court_number ?? 0) - (b.court_number ?? 0))
   const stagedGroups = games.filter(g => g.status === 'staged')
   const perGame = session?.format === 'doubles' ? 4 : 2
+  // Empty (placeholder) On Deck groups shouldn't count as "covering" a court for
+  // auto-stage — otherwise a manually-added empty group blocks Keep-courts-busy.
+  const stagedFilledCount = stagedGroups.filter(g => g.team1_ids.length + g.team2_ids.length > 0).length
   const isFormat = session?.match_mode === 'americano' || session?.match_mode === 'mexicano' || session?.match_mode === 'king'
   const isKing = session?.match_mode === 'king'
   const occupiedCourts = new Set(liveGames.map(g => g.court_number))
@@ -291,7 +294,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         autoStageBusy.current = true
         fillSkillCourts(true).finally(() => { autoStageBusy.current = false })
       }
-    } else if (freeCourts.length > stagedGroups.length && bench.length >= perGame) {
+    } else if (freeCourts.length > stagedFilledCount && bench.length >= perGame) {
       autoStageBusy.current = true
       fillOpenCourts().finally(() => { autoStageBusy.current = false })
     }
@@ -489,7 +492,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   // busy" auto-stager + a manual one-tap).
   async function fillOpenCourts() {
     if (!session) return
-    const need = freeCourts.length - stagedGroups.length
+    const need = freeCourts.length - stagedFilledCount
     const groups = buildGroups(bench, Math.max(0, need))
     if (groups.length === 0) return
     await stageGroups(groups)
@@ -1424,9 +1427,11 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
               <div className="flex gap-2">
                 <Input placeholder="Guest name" value={guestName} onChange={e => setGuestName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') addGuest() }} />
-                <Button variant="outline" size="icon" onClick={saveRegular} disabled={!guestName.trim()} title="Save as a regular">
-                  <Star className="w-4 h-4" />
-                </Button>
+                {!solo && (
+                  <Button variant="outline" size="icon" onClick={saveRegular} disabled={!guestName.trim()} title="Save as a regular">
+                    <Star className="w-4 h-4" />
+                  </Button>
+                )}
                 <Button onClick={addGuest} disabled={!guestName.trim()}>Add</Button>
               </div>
               {(session.match_mode === 'skill' || session.match_mode === 'skill_courts') && (
@@ -1447,7 +1452,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                   ))}
                 </div>
               )}
-              <p className="text-xs text-gray-400">Tap the star to save a frequent player for next time.</p>
+              {!solo && <p className="text-xs text-gray-400">Tap the star to save a frequent player for next time.</p>}
             </div>
 
             {regulars.length > 0 && (
