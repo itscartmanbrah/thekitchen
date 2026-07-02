@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Users, Info, HelpCircle, Smartphone, ListOrdered } from 'lucide-react'
+import { StyleGuideList } from '@/components/open-play-styles'
+import { Users, Info, HelpCircle, Smartphone, ListOrdered, Swords } from 'lucide-react'
 
 function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -56,6 +57,18 @@ export default function OpenPlayGuidePage() {
           <div className="bg-primary/10 border border-primary/25 rounded-lg px-4 py-3 text-xs text-blue-600 dark:text-blue-300">
             In a <strong>Rated</strong> session, games between league members update their ELO — so open play actually moves your ranking. Casual sessions and any game involving a guest are just for fun.
           </div>
+        </div>
+      </Section>
+
+      <Section title="The 7 play styles" icon={<Swords className="w-4 h-4 text-blue-500" />}>
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            You pick a style when creating the session — it decides how the next games are formed.
+            <strong className="text-foreground"> King of the Court</strong> ranks players by <strong className="text-foreground">wins</strong> (points break ties),
+            while <strong className="text-foreground">Mexicano</strong> and <strong className="text-foreground">Americano</strong> rank by <strong className="text-foreground">total points scored</strong>.
+            During a session, tap the style badge next to the session name any time to see this explanation again.
+          </p>
+          <StyleGuideList />
         </div>
       </Section>
 

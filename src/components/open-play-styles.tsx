@@ -97,6 +97,25 @@ export function StyleExplainer({ mode, courtCount }: { mode: string; courtCount?
   )
 }
 
+// All styles at a glance — used on the "How Open Play works" guide page.
+export function StyleGuideList() {
+  return (
+    <div className="grid sm:grid-cols-2 gap-3">
+      {Object.entries(PLAY_STYLE_INFO).map(([k, i]) => (
+        <div key={k} className="rounded-xl border bg-card p-4">
+          <p className="font-semibold text-foreground text-sm">{i.label}</p>
+          <p className="text-xs text-muted-foreground mb-2">{i.tagline}</p>
+          <ul className="space-y-1">
+            {i.how.map((h, idx) => (
+              <li key={idx} className="flex gap-1.5 text-xs text-muted-foreground"><span className="text-primary shrink-0">•</span><span>{h}</span></li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // Clickable badge that shows what the CURRENT style is, with a tap-for-details
 // dialog (used in the running session header). Works for every mode.
 export function StyleBadge({ mode, courtCount }: { mode: string; courtCount?: number }) {
