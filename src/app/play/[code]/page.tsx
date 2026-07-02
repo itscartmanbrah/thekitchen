@@ -215,7 +215,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
         <div className="mb-5">
           <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
             {session.name}
-            {session.rated && <span className="text-[10px] font-bold text-green-300 bg-green-500/15 rounded-full px-2 py-0.5">RATED</span>}
+            {session.rated && <span className="text-[10px] font-bold text-green-700 dark:text-green-300 bg-green-500/15 rounded-full px-2 py-0.5">RATED</span>}
           </h1>
           <p className="text-sm text-muted-foreground">
             {session.league_name} · <span className="capitalize">{session.format}</span>
@@ -230,11 +230,11 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
             const wpos = waitlist.findIndex(p => p.id === me.id)
             return (
               <>
-              {joinError && <p className="text-xs text-red-400 mb-2">{joinError}</p>}
+              {joinError && <p className="text-xs text-red-600 dark:text-red-400 mb-2">{joinError}</p>}
               <div className="mb-6 rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 min-w-0">
                   <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span className="text-sm text-amber-300">
+                  <span className="text-sm text-amber-700 dark:text-amber-300">
                     Session is full — <strong>{me.name}</strong>, you&apos;re <strong>#{wpos + 1}</strong> on the waitlist. You&apos;ll be checked in automatically when a spot frees.
                   </span>
                 </div>
@@ -248,11 +248,11 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
             const resting = me.status === 'resting'
             return (
               <>
-              {joinError && <p className="text-xs text-red-400 mb-2">{joinError}</p>}
+              {joinError && <p className="text-xs text-red-600 dark:text-red-400 mb-2">{joinError}</p>}
               <div className={`mb-6 rounded-xl border px-4 py-3 flex items-center justify-between gap-3 ${resting ? 'border-amber-500/25 bg-amber-500/10' : 'border-green-500/25 bg-green-500/10'}`}>
                 <div className="flex items-center gap-2 min-w-0">
                   {resting ? <Pause className="w-4 h-4 text-amber-400 shrink-0" /> : <Check className="w-4 h-4 text-primary shrink-0" />}
-                  <span className={`text-sm truncate ${resting ? 'text-amber-300' : 'text-green-300'}`}>
+                  <span className={`text-sm truncate ${resting ? 'text-amber-700 dark:text-amber-300' : 'text-green-700 dark:text-green-300'}`}>
                     {resting
                       ? <>Resting — <strong>{me.name}</strong>, you&apos;ll sit out until you&apos;re back.</>
                       : <>Checked in as <strong>{me.name}</strong>{me.status === 'playing' ? ' — on a court now!' : pos >= 0 ? ` — #${pos + 1} in the queue` : ''}</>}
@@ -267,7 +267,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
                       <DropdownMenuItem onClick={rest} disabled={me.status === 'playing'}><Pause className="w-4 h-4 mr-2" />Rest — back in a few games</DropdownMenuItem>
-                      <DropdownMenuItem onClick={leave} disabled={me.status === 'playing'} className="text-red-400 focus:text-red-400"><LogOut className="w-4 h-4 mr-2" />Leave the session</DropdownMenuItem>
+                      <DropdownMenuItem onClick={leave} disabled={me.status === 'playing'} className="text-red-600 dark:text-red-400 focus:text-red-400"><LogOut className="w-4 h-4 mr-2" />Leave the session</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
@@ -305,11 +305,11 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                     ))}
                   </div>
                 )}
-                {isFull && <p className="text-xs text-amber-300 mb-2">Session is full ({activeCount}/{session.max_players}) — you&apos;ll join the waitlist and get in automatically when a spot frees.</p>}
+                {isFull && <p className="text-xs text-amber-700 dark:text-amber-300 mb-2">Session is full ({activeCount}/{session.max_players}) — you&apos;ll join the waitlist and get in automatically when a spot frees.</p>}
                 <Button className="w-full" onClick={joinMember} disabled={joining}>
                   {joining ? 'Checking in…' : isFull ? 'Join the waitlist' : 'Check in'}
                 </Button>
-                {joinError && <p className="text-xs text-red-400 mt-1.5">{joinError}</p>}
+                {joinError && <p className="text-xs text-red-600 dark:text-red-400 mt-1.5">{joinError}</p>}
               </div>
             )
           }
@@ -358,11 +358,11 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                   ))}
                 </div>
               )}
-              {isFull && <p className="text-xs text-amber-300">Session is full ({activeCount}/{session.max_players}) — you&apos;ll join the waitlist and get in automatically when a spot frees.</p>}
+              {isFull && <p className="text-xs text-amber-700 dark:text-amber-300">Session is full ({activeCount}/{session.max_players}) — you&apos;ll join the waitlist and get in automatically when a spot frees.</p>}
               <Button variant="outline" className="w-full" onClick={join} disabled={joining || !joinName.trim()}>
                 {joining ? 'Joining…' : isFull ? 'Join the waitlist as guest' : 'Continue as guest'}
               </Button>
-              {joinError && <p className="text-xs text-red-400">{joinError}</p>}
+              {joinError && <p className="text-xs text-red-600 dark:text-red-400">{joinError}</p>}
             </div>
             )
           }

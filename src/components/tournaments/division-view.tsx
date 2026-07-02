@@ -251,7 +251,7 @@ export function DivisionView({
         {winner && (
           <div className="mt-2 inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-1.5">
             <span className="text-lg">🏆</span>
-            <span className="text-sm font-semibold text-amber-300">{winner.name} wins!</span>
+            <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">{winner.name} wins!</span>
           </div>
         )}
       </div>
@@ -320,7 +320,7 @@ export function DivisionView({
                     <PlayerAvatar name={s.entry.name} color={s.entry.avatar_color} imageUrl={s.entry.avatar_url} size="sm" />
                     <span className="text-sm font-medium text-foreground flex-1 truncate">{s.entry.name}</span>
                     <span className="text-xs text-muted-foreground">{s.wins}W–{s.losses}L</span>
-                    <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-green-400' : s.diff < 0 ? 'text-red-400' : 'text-muted-foreground/80'}`}>
+                    <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-green-400' : s.diff < 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground/80'}`}>
                       {s.diff > 0 ? '+' : ''}{s.diff}
                     </span>
                   </div>

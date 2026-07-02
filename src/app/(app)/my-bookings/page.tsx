@@ -185,7 +185,7 @@ export default function MyBookingsPage() {
                           <Clock className="w-3.5 h-3.5 text-muted-foreground/80" />
                           {fmtTime(s.start)}–{fmtTime(s.end)}
                         </div>
-                        <span className="text-[11px] font-semibold text-green-300 bg-green-500/10 rounded-full px-2 py-0.5 shrink-0">
+                        <span className="text-[11px] font-semibold text-green-700 dark:text-green-300 bg-green-500/10 rounded-full px-2 py-0.5 shrink-0">
                           {hours} hr{hours > 1 ? 's' : ''}
                         </span>
                         <div className="flex-1 min-w-0">
@@ -197,7 +197,7 @@ export default function MyBookingsPage() {
                         {scope === 'upcoming' && (
                           <Button
                             size="sm" variant="ghost"
-                            className="text-red-400 hover:text-red-400 hover:bg-red-500/10 h-7 px-2 text-xs shrink-0"
+                            className="text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/10 h-7 px-2 text-xs shrink-0"
                             onClick={() => onCancelClick(s)}
                           >
                             Cancel
@@ -212,10 +212,10 @@ export default function MyBookingsPage() {
                               key={b.id}
                               onClick={() => onHourClick(s, b)}
                               title="Cancel this hour"
-                              className="group text-[11px] font-medium text-muted-foreground bg-card border rounded-md px-2 py-1 hover:border-red-300 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                              className="group text-[11px] font-medium text-muted-foreground bg-card border rounded-md px-2 py-1 hover:border-red-300 hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                             >
                               {fmtHourChip(b.starts_at)}
-                              <span className="text-red-400 ml-1 opacity-0 group-hover:opacity-100">✕</span>
+                              <span className="text-red-600 dark:text-red-400 ml-1 opacity-0 group-hover:opacity-100">✕</span>
                             </button>
                           ))}
                         </div>
@@ -261,7 +261,7 @@ export default function MyBookingsPage() {
               {contactTarget.contact_phone ? (
                 <a
                   href={`tel:${contactTarget.contact_phone.replace(/[^\d+]/g, '')}`}
-                  className="inline-flex items-center gap-1.5 font-medium text-green-300 underline"
+                  className="inline-flex items-center gap-1.5 font-medium text-green-700 dark:text-green-300 underline"
                 >
                   <Phone className="w-4 h-4" />
                   {contactTarget.contact_phone}

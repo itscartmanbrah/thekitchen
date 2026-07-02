@@ -171,7 +171,7 @@ export function ChallengeDialog({
                   onClick={() => setFormat(opt.value)}
                   className={`flex-1 text-sm py-2 rounded-lg border transition-colors ${
                     format === opt.value
-                      ? 'border-green-500 bg-green-500/10 text-green-300 font-medium'
+                      ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium'
                       : 'border-border text-muted-foreground hover:border-border'
                   }`}
                 >
@@ -184,7 +184,7 @@ export function ChallengeDialog({
           {/* Officiator picker */}
           <div className="space-y-1.5">
             <Label>
-              Officiator <span className="text-red-400">*</span>
+              Officiator <span className="text-red-600 dark:text-red-400">*</span>
             </Label>
             {eligible.length === 0 ? (
               <p className="text-sm text-amber-400 bg-amber-500/10 rounded-lg px-3 py-2">
@@ -236,7 +236,7 @@ export function ChallengeDialog({
               className="w-full text-sm border rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-300 bg-card"
             />
             {hasConflict && (
-              <p className="text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2">
+              <p className="text-xs text-red-600 dark:text-red-400 bg-red-500/10 rounded-lg px-3 py-2">
                 {conflict.challenger && conflict.challenged
                   ? 'You and your opponent both'
                   : conflict.challenger ? 'You' : `${challengedName}`}

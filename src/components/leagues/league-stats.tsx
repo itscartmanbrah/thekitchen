@@ -205,7 +205,7 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
       )}
 
       {stats.biggestUpset && (
-        <StatCard icon={<Target className="w-4 h-4 text-red-400" />} label="Biggest upset">
+        <StatCard icon={<Target className="w-4 h-4 text-red-600 dark:text-red-400" />} label="Biggest upset">
           <div className="flex items-center gap-2">
             <Link href={`/players/${stats.biggestUpset.winnerId}`}>
               <PlayerAvatar name={stats.biggestUpset.winner} color={stats.biggestUpset.winnerColor} imageUrl={stats.biggestUpset.winnerAvatarUrl} size="sm" />

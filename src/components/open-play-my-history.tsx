@@ -66,7 +66,7 @@ export function OpenPlayMyHistory() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-foreground truncate">{s.name}</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wide text-violet-300 bg-violet-500/15 rounded px-1.5 py-0.5">{styleInfo(s.match_mode).label}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-violet-700 dark:text-violet-300 bg-violet-500/15 rounded px-1.5 py-0.5">{styleInfo(s.match_mode).label}</span>
                   </div>
                   <div className="text-xs text-muted-foreground/80">{fmtDate(s.started_at)} · {s.league_name ?? 'Standalone'}</div>
                 </div>

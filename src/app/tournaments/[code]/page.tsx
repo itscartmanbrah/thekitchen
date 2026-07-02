@@ -51,7 +51,7 @@ export default async function PublicTournamentPage({ params }: { params: { code:
           {!hasDivisions && winner && (
             <div className="mt-3 inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-1.5">
               <span className="text-lg">🏆</span>
-              <span className="text-sm font-semibold text-amber-300">{winner.display_name} wins!</span>
+              <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">{winner.display_name} wins!</span>
             </div>
           )}
         </div>

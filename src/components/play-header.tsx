@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { getInitials } from '@/lib/utils'
 import { AppLogo } from '@/components/app-logo'
+import { ModeToggle } from '@/components/mode-toggle'
 import { ArrowLeft } from 'lucide-react'
 
 interface MiniProfile { id: string; display_name: string; email: string | null; avatar_url: string | null; avatar_color: string | null }
@@ -52,6 +53,7 @@ export function PlayHeader({ right }: { right?: ReactNode }) {
           <span className="font-bold text-foreground truncate">The Kitchen</span>
         </Link>
         <div className="flex items-center gap-2 shrink-0">
+          <ModeToggle />
           {right}
           {!ready ? (
             <div className="w-8 h-8" />
@@ -78,7 +80,7 @@ export function PlayHeader({ right }: { right?: ReactNode }) {
                 <DropdownMenuItem asChild><Link href="/play/host">My Open Play</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="text-red-400">Sign out</DropdownMenuItem>
+                <DropdownMenuItem onClick={signOut} className="text-red-600 dark:text-red-400">Sign out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (

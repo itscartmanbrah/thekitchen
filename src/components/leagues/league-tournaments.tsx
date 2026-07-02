@@ -283,7 +283,7 @@ export function LeagueTournaments({
               <div className="mb-4 inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-1.5">
                 <span className="text-lg">🏆</span>
                 <PlayerAvatar name={legacyWinner.display_name} color={legacyWinner.avatar_color} imageUrl={legacyWinner.avatar_url} size="sm" />
-                <span className="text-sm font-semibold text-amber-300">{legacyWinner.display_name} wins!</span>
+                <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">{legacyWinner.display_name} wins!</span>
               </div>
             )}
             <TournamentBracket
@@ -316,8 +316,8 @@ export function LeagueTournaments({
                     {entryCounts[d.id] ?? 0}
                   </span>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                    d.status === 'registration' ? 'bg-blue-500/15 text-blue-300' :
-                    d.status === 'active' ? 'bg-green-500/15 text-green-300' : 'bg-amber-500/15 text-amber-300'
+                    d.status === 'registration' ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300' :
+                    d.status === 'active' ? 'bg-green-500/15 text-green-700 dark:text-green-300' : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
                   }`}>
                     {d.status === 'registration' ? 'Registration open' : d.status === 'active' ? 'In progress' : 'Completed'}
                   </span>
@@ -403,15 +403,15 @@ export function LeagueTournaments({
                   </p>
                 </div>
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                  t.status === 'active' ? 'bg-green-500/15 text-green-300' :
-                  t.status === 'completed' ? 'bg-amber-500/15 text-amber-300' : 'bg-muted text-muted-foreground'
+                  t.status === 'active' ? 'bg-green-500/15 text-green-700 dark:text-green-300' :
+                  t.status === 'completed' ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300' : 'bg-muted text-muted-foreground'
                 }`}>
                   {t.status === 'active' ? 'In progress' : t.status === 'completed' ? 'Completed' : 'Cancelled'}
                 </span>
                 {isAdmin && (
                   <button
                     onClick={e => { e.stopPropagation(); setDeleteTarget(t) }}
-                    className="text-muted-foreground/50 hover:text-red-400 transition-colors shrink-0 p-1"
+                    className="text-muted-foreground/50 hover:text-red-500 dark:hover:text-red-400 transition-colors shrink-0 p-1"
                     title="Delete tournament"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -427,7 +427,7 @@ export function LeagueTournaments({
       <Dialog open={!!deleteTarget} onOpenChange={v => { if (!v) setDeleteTarget(null) }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-300">
+            <DialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-300">
               <Trash2 className="w-4 h-4" />
               Delete &ldquo;{deleteTarget?.name}&rdquo;?
             </DialogTitle>
@@ -475,7 +475,7 @@ export function LeagueTournaments({
                       onClick={() => togglePreset(preset)}
                       className={`text-xs px-2.5 py-1.5 rounded-full border transition-colors ${
                         active
-                          ? 'border-green-500 bg-green-500/10 text-green-300 font-medium'
+                          ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium'
                           : 'border-border text-muted-foreground hover:border-border'
                       }`}
                     >
@@ -505,7 +505,7 @@ export function LeagueTournaments({
                       <option value="single_elim">Single elim</option>
                       <option value="round_robin">Round robin</option>
                     </select>
-                    <button onClick={() => togglePreset(d)} className="text-muted-foreground/80 hover:text-red-400">
+                    <button onClick={() => togglePreset(d)} className="text-muted-foreground/80 hover:text-red-500 dark:hover:text-red-400">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>

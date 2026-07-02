@@ -106,7 +106,7 @@ function PlayerSearch({
                 <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} imageUrl={m.profiles.avatar_url} size="sm" />
                 <span className="truncate">{m.profiles.display_name}</span>
                 {conflictedIds?.has(m.user_id) && (
-                  <span className="ml-auto text-[10px] text-red-400 font-medium shrink-0">Unavailable</span>
+                  <span className="ml-auto text-[10px] text-red-600 dark:text-red-400 font-medium shrink-0">Unavailable</span>
                 )}
               </button>
             </li>

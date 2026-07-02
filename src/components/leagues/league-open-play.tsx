@@ -835,7 +835,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
           <Link href="/open-play-guide" className="underline hover:text-green-400">How it works</Link>
         </p>
         {courts.length === 0 ? (
-          <div className="border rounded-xl p-4 bg-amber-500/10 border-amber-500/25 text-sm text-amber-300">
+          <div className="border rounded-xl p-4 bg-amber-500/10 border-amber-500/25 text-sm text-amber-700 dark:text-amber-300">
             Add a court first (on the <strong>Courts</strong> tab) — Open Play runs on your courts and blocks them from booking during the session.
           </div>
         ) : (
@@ -854,7 +854,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 return (
                   <button key={c.id} type="button"
                     onClick={() => setSelectedCourts(prev => on ? prev.filter(x => x !== c.id) : [...prev, c.id])}
-                    className={`text-sm px-3 py-1.5 rounded-lg border ${on ? 'border-green-500 bg-green-500/10 text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
+                    className={`text-sm px-3 py-1.5 rounded-lg border ${on ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
                     {c.name}
                   </button>
                 )
@@ -881,7 +881,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
           <p className="text-xs text-muted-foreground/80 -mt-2">Leave the date as today to start now. The session auto-finishes at the end time.</p>
 
           {overlapping.length > 0 && (
-            <p className="text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2">
+            <p className="text-xs text-red-600 dark:text-red-400 bg-red-500/10 rounded-lg px-3 py-2">
               Your selected window clashes with a confirmed booking (shown in red on the calendar). Move the open-play time, pick another court, or cancel the booking first.
             </p>
           )}
@@ -891,7 +891,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             <div className="flex gap-1">
               {(['doubles', 'singles'] as const).map(f => (
                 <button key={f} type="button" onClick={() => setFormat(f)}
-                  className={`flex-1 text-sm py-2 rounded-lg border capitalize ${format === f ? 'border-green-500 bg-green-500/10 text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
+                  className={`flex-1 text-sm py-2 rounded-lg border capitalize ${format === f ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
                   {f}
                 </button>
               ))}
@@ -911,7 +911,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 { k: 'skill_courts', label: 'Skill Courts', desc: 'Each court a level tier' },
               ] as const).map(m => (
                 <button key={m.k} type="button" onClick={() => setMode(m.k)}
-                  className={`text-left px-3 py-2 rounded-lg border ${mode === m.k ? 'border-green-500 bg-green-500/10 text-green-300' : 'border-border text-muted-foreground'}`}>
+                  className={`text-left px-3 py-2 rounded-lg border ${mode === m.k ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300' : 'border-border text-muted-foreground'}`}>
                   <span className="block text-sm font-medium">{m.label}</span>
                   <span className="block text-[10px] text-muted-foreground/80">{m.desc}</span>
                 </button>
@@ -1003,7 +1003,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             const sched = !!s.starts_at && new Date(s.starts_at).getTime() > Date.now()
             return (
               <button key={s.id} onClick={() => { setSession(s); loadState(s.id) }}
-                className={`text-xs px-2.5 py-1 rounded-full border ${active ? 'border-green-500 bg-green-500/10 text-green-300 font-medium' : 'border-border text-muted-foreground hover:bg-muted/50'}`}>
+                className={`text-xs px-2.5 py-1 rounded-full border ${active ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium' : 'border-border text-muted-foreground hover:bg-muted/50'}`}>
                 {s.name}{sched && ' · 📅'}
               </button>
             )
@@ -1019,7 +1019,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
 
       {solo && isAnon && (
         <div className="mb-4 rounded-xl border border-green-500/25 bg-green-500/10 px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-sm text-green-300">Save this session so you never lose it — and pick up on any device.</p>
+          <p className="text-sm text-green-700 dark:text-green-300">Save this session so you never lose it — and pick up on any device.</p>
           <Button size="sm" onClick={() => setSaveOpen(true)}>Save my session</Button>
         </div>
       )}
@@ -1028,8 +1028,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         <div className="min-w-0">
           <h2 className="font-semibold text-foreground flex items-center gap-2 flex-wrap">
             <span className="truncate">{session.name}</span>
-            {session.rated && <span className="text-[10px] font-bold text-green-300 bg-green-500/15 rounded-full px-2 py-0.5">RATED</span>}
-            {isScheduled && <span className="text-[10px] font-bold text-blue-300 bg-blue-500/15 rounded-full px-2 py-0.5">SCHEDULED</span>}
+            {session.rated && <span className="text-[10px] font-bold text-green-700 dark:text-green-300 bg-green-500/15 rounded-full px-2 py-0.5">RATED</span>}
+            {isScheduled && <span className="text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-500/15 rounded-full px-2 py-0.5">SCHEDULED</span>}
             <StyleBadge mode={session.match_mode} courtCount={session.court_count} />
           </h2>
           <p className="text-xs text-muted-foreground/80 capitalize">
@@ -1051,7 +1051,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             {copied ? <Check className="w-3.5 h-3.5 mr-1" /> : <Link2 className="w-3.5 h-3.5 mr-1" />}Share
           </Button>
           {isOrganizer && <Button size="sm" variant="outline" onClick={openAdd}><UserPlus className="w-3.5 h-3.5 mr-1" />Add</Button>}
-          {isOrganizer && <Button size="sm" variant="ghost" className="text-red-400" onClick={endSession}>End</Button>}
+          {isOrganizer && <Button size="sm" variant="ghost" className="text-red-600 dark:text-red-400" onClick={endSession}>End</Button>}
         </div>
 
         {/* Mobile: overflow menu (Add player lives in the Bench section below) */}
@@ -1065,7 +1065,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
               <DropdownMenuItem onClick={() => setQrOpen(true)}><QrCode className="w-4 h-4 mr-2" />QR check-in</DropdownMenuItem>
               <DropdownMenuItem asChild><a href={`/play/${session.share_code}/board`} target="_blank" rel="noopener noreferrer"><Monitor className="w-4 h-4 mr-2" />Open board view</a></DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowHistory(true)}><History className="w-4 h-4 mr-2" />Past sessions</DropdownMenuItem>
-              {isOrganizer && <><DropdownMenuSeparator /><DropdownMenuItem onClick={endSession} className="text-red-400 focus:text-red-400"><Power className="w-4 h-4 mr-2" />End session</DropdownMenuItem></>}
+              {isOrganizer && <><DropdownMenuSeparator /><DropdownMenuItem onClick={endSession} className="text-red-600 dark:text-red-400 focus:text-red-400"><Power className="w-4 h-4 mr-2" />End session</DropdownMenuItem></>}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -1128,7 +1128,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-white font-bold italic text-sm">
                     COURT {courtNo}
-                    {isKing && courtNo === 1 && <span className="ml-1.5 text-[9px] not-italic font-bold text-amber-300 bg-amber-500/20 rounded px-1.5 py-0.5 align-middle">KINGS</span>}
+                    {isKing && courtNo === 1 && <span className="ml-1.5 text-[9px] not-italic font-bold text-amber-700 dark:text-amber-300 bg-amber-500/20 rounded px-1.5 py-0.5 align-middle">KINGS</span>}
                     {isKing && courtNo === session.court_count && session.court_count > 1 && <span className="ml-1.5 text-[9px] not-italic font-medium text-zinc-400 align-middle">bottom</span>}
                   </span>
                   {game ? (
@@ -1239,7 +1239,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
               )}
             </div>
             {pick && (
-              <p className="text-[11px] text-green-300 mb-2">Picked <strong>{pickName()}</strong> — tap another player to swap, or an empty slot to place · <button onClick={() => setPick(null)} className="underline">cancel</button></p>
+              <p className="text-[11px] text-green-700 dark:text-green-300 mb-2">Picked <strong>{pickName()}</strong> — tap another player to swap, or an empty slot to place · <button onClick={() => setPick(null)} className="underline">cancel</button></p>
             )}
             {stagedGroups.length === 0 ? (
               <p className="text-[12px] text-zinc-500 mb-6">
@@ -1269,13 +1269,13 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                       <div className="flex items-center justify-between mb-2.5">
                         <span className="text-[12px] text-zinc-400 font-medium">
                           {label}
-                          {isKing && gi === 0 && <span className="ml-1.5 text-[9px] font-bold text-amber-300 bg-amber-500/20 rounded px-1.5 py-0.5">KINGS</span>}
+                          {isKing && gi === 0 && <span className="ml-1.5 text-[9px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/20 rounded px-1.5 py-0.5">KINGS</span>}
                         </span>
                         <div className="flex items-center gap-1">
                           <button onClick={() => toggleLock(g)} className={`p-1.5 rounded-lg ${g.locked ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'}`} title={g.locked ? 'Unlock' : 'Lock'}>
                             {g.locked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
                           </button>
-                          <button onClick={() => disband(g)} className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400" title="Disband"><Trash2 className="w-4 h-4" /></button>
+                          <button onClick={() => disband(g)} className="p-1.5 rounded-lg text-zinc-500 hover:text-red-500 dark:hover:text-red-400" title="Disband"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </div>
                       {/* Team A vs Team B */}
@@ -1285,7 +1285,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                             {teamIds.map(renderChip)}
                             {Array.from({ length: Math.max(0, teamCap - teamIds.length) }).map((_, k) => (
                               <button key={k} onClick={() => placeInGroup(g)} disabled={!pick}
-                                className={`rounded-full px-3 py-1.5 text-[12px] border border-dashed ${pick ? 'border-green-400 text-green-300 hover:bg-green-500/20' : 'border-zinc-600 text-zinc-500'}`}>
+                                className={`rounded-full px-3 py-1.5 text-[12px] border border-dashed ${pick ? 'border-green-400 text-green-700 dark:text-green-300 hover:bg-green-500/20' : 'border-zinc-600 text-zinc-500'}`}>
                                 {pick ? 'place here' : 'empty'}
                               </button>
                             ))}
@@ -1322,7 +1322,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
           )}
         </div>
         {subTarget && (
-          <p className="text-[11px] text-green-300 mb-2">Tap a bench player to swap in for <strong>{nameOf(subTarget.outId)}</strong> · <button onClick={() => setSubTarget(null)} className="underline">cancel</button></p>
+          <p className="text-[11px] text-green-700 dark:text-green-300 mb-2">Tap a bench player to swap in for <strong>{nameOf(subTarget.outId)}</strong> · <button onClick={() => setSubTarget(null)} className="underline">cancel</button></p>
         )}
         {bench.length > 6 && (
           <div className="relative mb-2">
@@ -1363,7 +1363,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
                       <DropdownMenuItem onClick={() => setStatus(p.id, 'resting')}><Pause className="w-4 h-4 mr-2" />Rest — back in a few games</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setStatus(p.id, 'left')} className="text-red-400 focus:text-red-400"><LogOut className="w-4 h-4 mr-2" />Leave the session</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setStatus(p.id, 'left')} className="text-red-600 dark:text-red-400 focus:text-red-400"><LogOut className="w-4 h-4 mr-2" />Leave the session</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
@@ -1402,7 +1402,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                   {isOrganizer && (
                     <>
                       <button onClick={() => setStatus(p.id, 'queued')} className="text-[11px] text-green-400 hover:underline shrink-0" title="Let them in now (overrides the cap)">Let in</button>
-                      <button onClick={() => setStatus(p.id, 'left')} className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 shrink-0" title="Remove from waitlist"><X className="w-4 h-4" /></button>
+                      <button onClick={() => setStatus(p.id, 'left')} className="p-1.5 rounded-lg text-zinc-500 hover:text-red-500 dark:hover:text-red-400 shrink-0" title="Remove from waitlist"><X className="w-4 h-4" /></button>
                     </>
                   )}
                 </div>
@@ -1520,7 +1520,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label>Regulars</Label>
-                  <button onClick={addAllRegulars} disabled={busy} className="text-xs font-medium text-green-300 hover:underline">Add all</button>
+                  <button onClick={addAllRegulars} disabled={busy} className="text-xs font-medium text-green-700 dark:text-green-300 hover:underline">Add all</button>
                 </div>
                 <div className="space-y-1 max-h-40 overflow-y-auto pr-1">
                   {regulars.map(r => {
@@ -1529,9 +1529,9 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                       <div key={r.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border">
                         <Star className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                         <span className="text-sm flex-1 truncate">{r.name}</span>
-                        <button onClick={() => removeRegular(r.id)} className="text-muted-foreground/50 hover:text-red-400" title="Forget"><X className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => removeRegular(r.id)} className="text-muted-foreground/50 hover:text-red-500 dark:hover:text-red-400" title="Forget"><X className="w-3.5 h-3.5" /></button>
                         <button onClick={() => addRegularToSession(r.name, r.skill)} disabled={inSession}
-                          className={`text-xs font-medium rounded px-2 py-1 ${inSession ? 'text-muted-foreground/50' : 'text-green-300 bg-green-500/10 hover:bg-green-500/15'}`}>
+                          className={`text-xs font-medium rounded px-2 py-1 ${inSession ? 'text-muted-foreground/50' : 'text-green-700 dark:text-green-300 bg-green-500/10 hover:bg-green-500/15'}`}>
                           {inSession ? 'In' : 'Add'}
                         </button>
                       </div>
@@ -1545,7 +1545,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label>League members</Label>
-                <button onClick={addAllMembers} disabled={busy} className="text-xs font-medium text-green-300 hover:underline">Add all</button>
+                <button onClick={addAllMembers} disabled={busy} className="text-xs font-medium text-green-700 dark:text-green-300 hover:underline">Add all</button>
               </div>
               <div className="space-y-1 max-h-60 overflow-y-auto pr-1">
                 {members.filter(m => !players.some(p => p.user_id === m.user_id && p.status !== 'left')).map(m => (

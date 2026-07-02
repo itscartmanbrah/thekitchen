@@ -156,7 +156,7 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
           {openPlay ? (
             <div>
               {openPlay.status === 'live' ? (
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-400">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400">
                   <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />LIVE NOW
                 </span>
               ) : (
@@ -204,7 +204,7 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
                 <span className="text-xs text-muted-foreground/80 w-14 shrink-0">{fmtLabels[m.format] ?? m.format}</span>
                 <span className="font-medium text-foreground">{m.t1}–{m.t2}</span>
                 {m.mine && (
-                  <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 ${m.mine === 'W' ? 'bg-green-500/15 text-green-300' : 'bg-red-500/15 text-red-400'}`}>
+                  <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 ${m.mine === 'W' ? 'bg-green-500/15 text-green-700 dark:text-green-300' : 'bg-red-500/15 text-red-600 dark:text-red-400'}`}>
                     {m.mine === 'W' ? 'WON' : 'LOST'}
                   </span>
                 )}
@@ -222,14 +222,14 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
             <button onClick={() => onNavigate('requests')}
               className="flex items-center gap-3 rounded-xl border border-amber-500/25 bg-amber-500/10 p-3 text-left hover:bg-amber-500/15 transition-colors">
               <Inbox className="w-5 h-5 text-amber-400 shrink-0" />
-              <div><p className="text-sm font-medium text-amber-200">{pendingReq} join request{pendingReq > 1 ? 's' : ''}</p><p className="text-xs text-amber-300">Tap to review</p></div>
+              <div><p className="text-sm font-medium text-amber-200">{pendingReq} join request{pendingReq > 1 ? 's' : ''}</p><p className="text-xs text-amber-700 dark:text-amber-300">Tap to review</p></div>
             </button>
           )}
           {pendingBookings > 0 && (
             <button onClick={() => onNavigate('bookings')}
               className="flex items-center gap-3 rounded-xl border border-blue-500/25 bg-blue-500/10 p-3 text-left hover:bg-blue-500/15 transition-colors">
               <CheckCircle2 className="w-5 h-5 text-blue-400 shrink-0" />
-              <div><p className="text-sm font-medium text-blue-900">{pendingBookings} booking request{pendingBookings > 1 ? 's' : ''}</p><p className="text-xs text-blue-300">Tap to approve</p></div>
+              <div><p className="text-sm font-medium text-blue-900">{pendingBookings} booking request{pendingBookings > 1 ? 's' : ''}</p><p className="text-xs text-blue-700 dark:text-blue-300">Tap to approve</p></div>
             </button>
           )}
         </motion.div>

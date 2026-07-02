@@ -95,7 +95,7 @@ export function LeagueInviteLinks({ leagueId }: { leagueId: string }) {
             <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => toggle(l.id, l.is_active)}>
               {l.is_active ? 'Disable' : 'Enable'}
             </Button>
-            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-red-400 hover:text-red-400" onClick={() => remove(l.id)}>
+            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-400" onClick={() => remove(l.id)}>
               <Trash2 className="w-3.5 h-3.5" />
             </Button>
           </div>

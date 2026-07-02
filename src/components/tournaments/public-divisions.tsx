@@ -85,7 +85,7 @@ export function PublicDivisions({ divisions }: { divisions: PubDivision[] }) {
             onClick={() => setActiveId(d.id)}
             className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
               d.id === active.id
-                ? 'border-green-500 bg-green-500/10 text-green-300 font-medium'
+                ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium'
                 : 'border-border text-muted-foreground hover:border-border bg-card'
             }`}
           >
@@ -98,7 +98,7 @@ export function PublicDivisions({ divisions }: { divisions: PubDivision[] }) {
       {winner && (
         <div className="mb-4 inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-1.5">
           <span className="text-lg">🏆</span>
-          <span className="text-sm font-semibold text-amber-300">{winner.name} wins {active.name}!</span>
+          <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">{winner.name} wins {active.name}!</span>
         </div>
       )}
 
@@ -129,7 +129,7 @@ export function PublicDivisions({ divisions }: { divisions: PubDivision[] }) {
                   <PlayerAvatar name={s.entry.name} color={s.entry.avatar_color} imageUrl={s.entry.avatar_url} size="sm" />
                   <span className="text-sm font-medium text-foreground flex-1 truncate">{s.entry.name}</span>
                   <span className="text-xs text-muted-foreground">{s.wins}W–{s.losses}L</span>
-                  <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-green-400' : s.diff < 0 ? 'text-red-400' : 'text-muted-foreground/80'}`}>
+                  <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-green-400' : s.diff < 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground/80'}`}>
                     {s.diff > 0 ? '+' : ''}{s.diff}
                   </span>
                 </div>

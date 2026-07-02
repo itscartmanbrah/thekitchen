@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { getInitials } from '@/lib/utils'
 import { AppLogo } from '@/components/app-logo'
+import { ModeToggle } from '@/components/mode-toggle'
 import { InstallAppButton } from '@/components/install-app-button'
 import { NotificationsBell } from '@/components/notifications-bell'
 import type { Profile } from '@/types/database'
@@ -33,6 +34,7 @@ export function Navbar({ profile }: { profile: Profile | null }) {
         </Link>
 
         <div className="flex items-center gap-2">
+          <ModeToggle />
           <InstallAppButton />
           {profile && <NotificationsBell userId={profile.id} />}
           {profile ? (
@@ -73,7 +75,7 @@ export function Navbar({ profile }: { profile: Profile | null }) {
                   <Link href="/help">Help &amp; guides</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-red-400">
+                <DropdownMenuItem onClick={handleSignOut} className="text-red-600 dark:text-red-400">
                   Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>

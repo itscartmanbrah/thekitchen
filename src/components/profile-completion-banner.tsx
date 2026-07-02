@@ -43,7 +43,7 @@ export function ProfileCompletionBanner() {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-amber-200">Finish setting up your profile</p>
-        <p className="text-xs text-amber-300">
+        <p className="text-xs text-amber-700 dark:text-amber-300">
           Add {list} so you can join Men&apos;s, Women&apos;s, Mixed, and age-based tournament divisions.
         </p>
       </div>

@@ -196,7 +196,7 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-semibold text-foreground">{activeSeason.name}</span>
-                  <span className="text-xs bg-green-500/15 text-green-300 font-medium px-2 py-0.5 rounded-full">Active</span>
+                  <span className="text-xs bg-green-500/15 text-green-700 dark:text-green-300 font-medium px-2 py-0.5 rounded-full">Active</span>
                 </div>
                 <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
@@ -212,7 +212,7 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
               <Button
                 size="sm"
                 variant="outline"
-                className="text-red-400 border-red-500/25 hover:bg-red-500/10 shrink-0"
+                className="text-red-600 dark:text-red-400 border-red-500/25 hover:bg-red-500/10 shrink-0"
                 onClick={() => setShowEnd(true)}
               >
                 End season

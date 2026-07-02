@@ -50,7 +50,7 @@ function Slot({
             {player.display_name}
           </span>
           {score !== null && (
-            <span className={`text-xs font-bold shrink-0 ${isWinner ? 'text-green-300' : 'text-muted-foreground/80'}`}>
+            <span className={`text-xs font-bold shrink-0 ${isWinner ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground/80'}`}>
               {score}
             </span>
           )}

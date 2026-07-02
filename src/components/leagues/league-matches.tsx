@@ -46,7 +46,7 @@ function EloDelta({ delta }: { delta: number }) {
     </span>
   )
   return (
-    <span className="text-xs text-red-400 font-medium flex items-center gap-0.5">
+    <span className="text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-0.5">
       <TrendingDown className="w-3 h-3" />{delta}
     </span>
   )
@@ -315,7 +315,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                       {canDelete && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-400 hover:bg-red-500/10 px-2">
+                            <Button size="sm" variant="ghost" className="text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/10 px-2">
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           </AlertDialogTrigger>

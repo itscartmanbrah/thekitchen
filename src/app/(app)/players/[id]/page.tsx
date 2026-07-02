@@ -255,7 +255,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
 
               {/* Their side */}
               <div className="flex-1 text-center">
-                <p className="text-3xl font-bold text-red-400">{h2h.theirWins}</p>
+                <p className="text-3xl font-bold text-red-600 dark:text-red-400">{h2h.theirWins}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{profile.display_name.split(' ')[0]}</p>
               </div>
             </div>
@@ -340,7 +340,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                     </div>
                     <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/25 rounded-lg px-2.5 py-1">
                       <span className="text-[10px] uppercase tracking-wide text-amber-400 font-medium">Career high</span>
-                      <span className="text-xs font-bold text-amber-300">{formatElo(m.career_high_elo ?? m.elo_rating)}</span>
+                      <span className="text-xs font-bold text-amber-700 dark:text-amber-300">{formatElo(m.career_high_elo ?? m.elo_rating)}</span>
                     </div>
                   </div>
 

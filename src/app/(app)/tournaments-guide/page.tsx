@@ -24,7 +24,7 @@ function Section({ title, icon, children }: {
 function Step({ number, title, children }: { number: number; title: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-4">
-      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-500/15 text-green-300 flex items-center justify-center text-xs font-bold mt-0.5">
+      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-500/15 text-green-700 dark:text-green-300 flex items-center justify-center text-xs font-bold mt-0.5">
         {number}
       </div>
       <div className="flex-1">
@@ -86,7 +86,7 @@ export default function TournamentsGuidePage() {
             ELO at the moment the tournament is created</strong>. The #1 seed is the highest-rated
             entrant, #2 the next, and so on.
           </p>
-          <div className="bg-amber-500/10 border border-amber-500/25 rounded-lg px-4 py-3 text-xs text-amber-300">
+          <div className="bg-amber-500/10 border border-amber-500/25 rounded-lg px-4 py-3 text-xs text-amber-700 dark:text-amber-300">
             Seeding rewards your league performance — climb the leaderboard and you earn an
             easier early draw in the next tournament.
           </div>
@@ -189,7 +189,7 @@ export default function TournamentsGuidePage() {
             you pick your partner when you register, and your team is seeded by your combined
             doubles rating.
           </p>
-          <div className="bg-blue-500/10 border border-blue-500/25 rounded-lg px-4 py-3 text-xs text-blue-300">
+          <div className="bg-blue-500/10 border border-blue-500/25 rounded-lg px-4 py-3 text-xs text-blue-700 dark:text-blue-300">
             Small divisions can run as <strong>round robin</strong> instead of a knockout bracket —
             everyone plays everyone, and the best record (then best point difference) wins.
           </div>

@@ -27,7 +27,7 @@ function Section({ title, icon, children }: {
 function Step({ number, title, children }: { number: number; title: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-4">
-      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-500/15 text-green-300 flex items-center justify-center text-xs font-bold mt-0.5">
+      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-500/15 text-green-700 dark:text-green-300 flex items-center justify-center text-xs font-bold mt-0.5">
         {number}
       </div>
       <div className="flex-1">
@@ -114,7 +114,7 @@ export default function EloPage() {
             On top of that, <strong className="text-foreground">winning by a bigger margin earns more points</strong> than
             scraping through. A 11–0 blowout moves more than an 11–9 squeaker.
           </p>
-          <div className="bg-green-500/10 border border-green-500/25 rounded-lg px-4 py-3 text-xs text-green-300">
+          <div className="bg-green-500/10 border border-green-500/25 rounded-lg px-4 py-3 text-xs text-green-700 dark:text-green-300">
             Rankings are <strong>per league</strong> — your points in one league have no effect on another league.
           </div>
         </div>
@@ -198,12 +198,12 @@ export default function EloPage() {
               <p><span className="text-muted-foreground/80">Step 3 —</span> Points change = 32 × 1.27 × (1.0 − 0.50) = <strong>≈ +20 pts</strong></p>
               <div className="mt-2 pt-2 border-t border-border grid grid-cols-2 gap-2">
                 <div className="bg-green-500/15 rounded px-3 py-2 text-center">
-                  <p className="text-green-300 font-semibold">Winner</p>
-                  <p className="text-green-300">1,000 → <strong>1,020</strong></p>
+                  <p className="text-green-700 dark:text-green-300 font-semibold">Winner</p>
+                  <p className="text-green-700 dark:text-green-300">1,000 → <strong>1,020</strong></p>
                 </div>
                 <div className="bg-red-500/10 rounded px-3 py-2 text-center">
-                  <p className="text-red-400 font-semibold">Loser</p>
-                  <p className="text-red-300">1,000 → <strong>980</strong></p>
+                  <p className="text-red-600 dark:text-red-400 font-semibold">Loser</p>
+                  <p className="text-red-700 dark:text-red-300">1,000 → <strong>980</strong></p>
                 </div>
               </div>
             </div>

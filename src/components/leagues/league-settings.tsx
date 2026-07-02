@@ -197,7 +197,7 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
       {isHeadAdmin && (
         <Card className="border-red-500/25">
           <CardHeader>
-            <CardTitle className="text-base text-red-400">Danger zone</CardTitle>
+            <CardTitle className="text-base text-red-600 dark:text-red-400">Danger zone</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">Permanently delete this league and all its data. This cannot be undone.</p>
@@ -212,7 +212,7 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
       <Dialog open={showDeleteDialog} onOpenChange={open => { setShowDeleteDialog(open); setDeletePassword(''); setDeleteError('') }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-red-400">Delete {league.name}?</DialogTitle>
+            <DialogTitle className="text-red-600 dark:text-red-400">Delete {league.name}?</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
@@ -228,7 +228,7 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
                 onChange={e => { setDeletePassword(e.target.value); setDeleteError('') }}
                 autoFocus
               />
-              {deleteError && <p className="text-sm text-red-400">{deleteError}</p>}
+              {deleteError && <p className="text-sm text-red-600 dark:text-red-400">{deleteError}</p>}
             </div>
           </div>
           <DialogFooter>

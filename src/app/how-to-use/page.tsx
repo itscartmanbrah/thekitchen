@@ -27,7 +27,7 @@ function Feature({
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
     <div className="flex gap-3">
-      <div className="w-6 h-6 rounded-full bg-green-500/15 text-green-300 flex items-center justify-center text-xs font-bold shrink-0">{n}</div>
+      <div className="w-6 h-6 rounded-full bg-green-500/15 text-green-700 dark:text-green-300 flex items-center justify-center text-xs font-bold shrink-0">{n}</div>
       <p className="text-sm text-muted-foreground leading-relaxed flex-1">{children}</p>
     </div>
   )

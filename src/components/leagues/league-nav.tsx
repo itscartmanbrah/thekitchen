@@ -157,7 +157,7 @@ export function LeagueNav(props: NavProps) {
                   <DropdownMenuItem key={s.key} onClick={() => go(s.key)} className="flex items-center justify-between">
                     {s.label}
                     {!!s.badge && s.badge > 0 && (
-                      <span className="bg-red-500/15 text-red-400 text-[10px] font-bold rounded-full px-1.5">{s.badge}</span>
+                      <span className="bg-red-500/15 text-red-600 dark:text-red-400 text-[10px] font-bold rounded-full px-1.5">{s.badge}</span>
                     )}
                   </DropdownMenuItem>
                 ))}
@@ -224,7 +224,7 @@ export function LeagueNav(props: NavProps) {
             <div className="flex items-center gap-2 mb-4">
               <h2 className="font-semibold text-foreground">Join requests</h2>
               {pendingCount > 0 && (
-                <span className="bg-red-500/15 text-red-400 text-xs font-bold rounded-full px-2 py-0.5">{pendingCount} pending</span>
+                <span className="bg-red-500/15 text-red-600 dark:text-red-400 text-xs font-bold rounded-full px-2 py-0.5">{pendingCount} pending</span>
               )}
             </div>
             <p className="text-sm text-muted-foreground mb-4">Review players who have requested to join. Assign their role before approving.</p>

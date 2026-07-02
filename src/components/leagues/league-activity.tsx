@@ -115,7 +115,7 @@ export function LeagueActivity({ leagueId }: { leagueId: string }) {
                         {p.name.split(' ')[0]}
                         {p.delta > 0
                           ? <span className="text-green-400 font-medium ml-0.5 flex items-center"><TrendingUp className="w-2.5 h-2.5" />+{p.delta}</span>
-                          : <span className="text-red-400 font-medium ml-0.5 flex items-center"><TrendingDown className="w-2.5 h-2.5" />{p.delta}</span>
+                          : <span className="text-red-600 dark:text-red-400 font-medium ml-0.5 flex items-center"><TrendingDown className="w-2.5 h-2.5" />{p.delta}</span>
                         }
                       </span>
                     ))}
@@ -138,7 +138,7 @@ function TeamNames({ players, won }: { players: { name: string; userId: string }
       {players.map((p, i) => (
         <span key={i}>
           {i > 0 && <span className="text-muted-foreground/80"> & </span>}
-          <Link href={`/players/${p.userId}`} className={`font-semibold hover:underline ${won ? 'text-green-300' : 'text-foreground/90'}`}>
+          <Link href={`/players/${p.userId}`} className={`font-semibold hover:underline ${won ? 'text-green-700 dark:text-green-300' : 'text-foreground/90'}`}>
             {p.name.split(' ')[0]}
           </Link>
         </span>

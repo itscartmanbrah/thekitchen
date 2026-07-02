@@ -209,13 +209,13 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
                         </>
                       )}
                       <DropdownMenuItem
-                        className="text-red-400"
+                        className="text-red-600 dark:text-red-400"
                         onClick={() => removeMember(m.id, m.user_id)}
                       >
                         Remove from league
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        className="text-red-300"
+                        className="text-red-700 dark:text-red-300"
                         onClick={() => { setBanTarget({ id: m.id, name: m.profiles.display_name }); setBanReason('') }}
                       >
                         <ShieldBan className="w-4 h-4 mr-2" />
@@ -274,7 +274,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
       <Dialog open={!!banTarget} onOpenChange={v => { if (!v) { setBanTarget(null); setBanReason('') } }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-300">
+            <DialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-300">
               <ShieldBan className="w-4 h-4" />
               Ban {banTarget?.name}?
             </DialogTitle>

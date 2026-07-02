@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { AppLogo } from '@/components/app-logo'
 import { InstallAppButton } from '@/components/install-app-button'
+import { ModeToggle } from '@/components/mode-toggle'
 import { LandingHero } from '@/components/landing-hero'
 import { LandingOpenPlay } from '@/components/landing-openplay'
 import { ResumeSessionBanner } from '@/components/resume-session-banner'
@@ -20,6 +21,7 @@ export default function LandingPage() {
             <span className="font-bold text-lg sm:text-xl text-foreground whitespace-nowrap">The Kitchen</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+            <ModeToggle />
             <InstallAppButton />
             <Button variant="ghost" asChild className="font-semibold hidden sm:inline-flex">
               <Link href="/play/new">Open Play</Link>

@@ -105,7 +105,7 @@ export function StyleBadge({ mode, courtCount }: { mode: string; courtCount?: nu
   return (
     <>
       <button type="button" onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1 text-[10px] font-bold text-violet-300 bg-violet-500/15 hover:bg-violet-500/25 transition rounded-full px-2 py-0.5 uppercase">
+        className="inline-flex items-center gap-1 text-[10px] font-bold text-violet-700 dark:text-violet-300 bg-violet-500/15 hover:bg-violet-500/25 transition rounded-full px-2 py-0.5 uppercase">
         {i.label}<Info className="w-3 h-3" />
       </button>
       <Dialog open={open} onOpenChange={setOpen}>

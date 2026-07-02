@@ -33,12 +33,12 @@ function NotifIcon({ type }: { type: string }) {
   if (type === 'league_announcement') return <Megaphone className="w-4 h-4 text-blue-500" />
   if (type === 'league_invite')      return <Bell className="w-4 h-4 text-green-500" />
   if (type === 'challenge_officiate') return <Swords className="w-4 h-4 text-orange-500" />
-  if (type === 'challenge_received') return <Swords className="w-4 h-4 text-red-400" />
+  if (type === 'challenge_received') return <Swords className="w-4 h-4 text-red-600 dark:text-red-400" />
   if (type === 'court_booking')      return <CalendarClock className="w-4 h-4 text-green-400" />
-  if (type === 'court_cancellation') return <CalendarClock className="w-4 h-4 text-red-400" />
+  if (type === 'court_cancellation') return <CalendarClock className="w-4 h-4 text-red-600 dark:text-red-400" />
   if (type === 'booking_request')    return <CalendarClock className="w-4 h-4 text-blue-500" />
   if (type === 'booking_approved')   return <CheckCircle className="w-4 h-4 text-green-400" />
-  if (type === 'booking_rejected')   return <XCircle className="w-4 h-4 text-red-400" />
+  if (type === 'booking_rejected')   return <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
   return <Bell className="w-4 h-4 text-muted-foreground/80" />
 }
 
@@ -343,7 +343,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
                     <Check className="w-3 h-3" /> Mark all read
                   </button>
                   <span className="text-gray-200">|</span>
-                  <button onClick={clearAll} className="text-xs text-muted-foreground/80 hover:text-red-400">
+                  <button onClick={clearAll} className="text-xs text-muted-foreground/80 hover:text-red-500 dark:hover:text-red-400">
                     Clear all
                   </button>
                 </>
@@ -393,7 +393,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
                       <button
                         onClick={() => declineInvite(n)}
                         disabled={!!inviteLoading[n.id]}
-                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-border text-muted-foreground hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/25 disabled:opacity-50"
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-border text-muted-foreground hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400 hover:border-red-500/25 disabled:opacity-50"
                       >
                         <XCircle className="w-3 h-3" />
                         {inviteLoading[n.id] === 'decline' ? 'Declining…' : 'Decline'}
@@ -415,7 +415,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
                       <button
                         onClick={() => declineOfficiate(n)}
                         disabled={!!challengeLoading[n.id]}
-                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-border text-muted-foreground hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/25 disabled:opacity-50"
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-border text-muted-foreground hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400 hover:border-red-500/25 disabled:opacity-50"
                       >
                         <XCircle className="w-3 h-3" />
                         {challengeLoading[n.id] === 'decline' ? 'Declining…' : 'Decline'}
@@ -437,7 +437,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
                       <button
                         onClick={() => declineChallenge(n)}
                         disabled={!!challengeLoading[n.id]}
-                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-border text-muted-foreground hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/25 disabled:opacity-50"
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-border text-muted-foreground hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400 hover:border-red-500/25 disabled:opacity-50"
                       >
                         <XCircle className="w-3 h-3" />
                         {challengeLoading[n.id] === 'decline' ? 'Declining…' : 'Decline'}

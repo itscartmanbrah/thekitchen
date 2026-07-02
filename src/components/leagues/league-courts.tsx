@@ -273,11 +273,11 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
           </div>
           <div className="flex gap-2">
             <button onClick={() => setIsIndoor(false)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${!isIndoor ? 'border-green-500 bg-green-500/10 text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${!isIndoor ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
               <Sun className="w-4 h-4" />Outdoor
             </button>
             <button onClick={() => setIsIndoor(true)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${isIndoor ? 'border-green-500 bg-green-500/10 text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${isIndoor ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
               <Home className="w-4 h-4" />Indoor
             </button>
           </div>
@@ -526,7 +526,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
 
           {selected.length > 0 && (
             <div className="mt-3 flex items-center justify-between gap-3 bg-green-500/10 border border-green-500/25 rounded-lg px-4 py-2.5">
-              <span className="text-sm text-green-300 font-medium">
+              <span className="text-sm text-green-700 dark:text-green-300 font-medium">
                 {selected.length} slot{selected.length > 1 ? 's' : ''} selected
               </span>
               <div className="flex gap-2">
@@ -542,7 +542,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
             <div className="mt-4 flex flex-wrap gap-2">
               {courts.map(c => (
                 <button key={c.id} onClick={() => openDelete(c)}
-                  className="flex items-center gap-1 text-xs text-muted-foreground/80 hover:text-red-400 border rounded-full px-2.5 py-1">
+                  className="flex items-center gap-1 text-xs text-muted-foreground/80 hover:text-red-500 dark:hover:text-red-400 border rounded-full px-2.5 py-1">
                   <Trash2 className="w-3 h-3" />{c.name}
                 </button>
               ))}
@@ -648,7 +648,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
               <div className="flex items-center gap-2 text-sm text-foreground">
                 <Clock className="w-4 h-4 text-muted-foreground/80" />
                 {fmtTime(detail.bookings[0].starts_at)} – {fmtHourLong(detailEndHour % 24)}
-                <span className="text-xs text-green-300 bg-green-500/10 rounded-full px-2 py-0.5 ml-1">
+                <span className="text-xs text-green-700 dark:text-green-300 bg-green-500/10 rounded-full px-2 py-0.5 ml-1">
                   {detailHours} hr{detailHours > 1 ? 's' : ''}
                 </span>
               </div>
@@ -659,7 +659,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
 
               {canCancel ? (
                 confirmCancel ? (
-                  <div className="rounded-lg bg-red-500/10 border border-red-500/25 px-3 py-2.5 text-sm text-red-300">
+                  <div className="rounded-lg bg-red-500/10 border border-red-500/25 px-3 py-2.5 text-sm text-red-700 dark:text-red-300">
                     Are you sure you want to cancel this booking? The slot{detailHours > 1 ? 's' : ''} will be freed for others.
                   </div>
                 ) : (
@@ -670,7 +670,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                   </p>
                 )
               ) : (
-                <div className="rounded-lg bg-amber-500/10 border border-amber-500/25 px-3 py-2.5 text-xs text-amber-300 space-y-2">
+                <div className="rounded-lg bg-amber-500/10 border border-amber-500/25 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-300 space-y-2">
                   <p>Cancellations close 2 hours before the start time. To cancel now, please contact the court admin.</p>
                   {detail.court.contact_phone ? (
                     <a
@@ -712,7 +712,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
       <Dialog open={!!deleteTarget} onOpenChange={v => { if (!v) setDeleteTarget(null) }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-300">
+            <DialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-300">
               <Trash2 className="w-4 h-4" />Delete &ldquo;{deleteTarget?.name}&rdquo;?
             </DialogTitle>
           </DialogHeader>
@@ -728,7 +728,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                 onChange={e => { setDeletePassword(e.target.value); setDeleteError('') }}
                 onKeyDown={e => { if (e.key === 'Enter') deleteCourt() }}
               />
-              {deleteError && <p className="text-xs text-red-400">{deleteError}</p>}
+              {deleteError && <p className="text-xs text-red-600 dark:text-red-400">{deleteError}</p>}
             </div>
           </div>
           <DialogFooter>
