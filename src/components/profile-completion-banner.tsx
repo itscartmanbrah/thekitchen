@@ -39,10 +39,10 @@ export function ProfileCompletionBanner() {
   return (
     <div className="mb-6 rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 flex items-center gap-3">
       <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
-        <UserCog className="w-4 h-4 text-amber-400" />
+        <UserCog className="w-4 h-4 text-amber-600 dark:text-amber-400" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-amber-200">Finish setting up your profile</p>
+        <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Finish setting up your profile</p>
         <p className="text-xs text-amber-700 dark:text-amber-300">
           Add {list} so you can join Men&apos;s, Women&apos;s, Mixed, and age-based tournament divisions.
         </p>
@@ -50,7 +50,7 @@ export function ProfileCompletionBanner() {
       <Button size="sm" asChild className="shrink-0">
         <Link href="/profile">Complete profile</Link>
       </Button>
-      <button onClick={dismiss} className="text-amber-400 hover:text-amber-300 shrink-0" aria-label="Dismiss">
+      <button onClick={dismiss} className="text-amber-600 dark:text-amber-400 hover:text-amber-300 shrink-0" aria-label="Dismiss">
         <X className="w-4 h-4" />
       </button>
     </div>

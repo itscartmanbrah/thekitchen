@@ -8,7 +8,10 @@ import { LeagueOpenPlay } from '@/components/leagues/league-open-play'
 import { OpenPlayMyHistory } from '@/components/open-play-my-history'
 
 export default function SoloHostPage() {
-  const [tab, setTab] = useState<'hosting' | 'history'>('hosting')
+  const [tab, setTab] = useState<'hosting' | 'history'>(() => {
+    if (typeof window === 'undefined') return 'hosting'
+    return new URLSearchParams(window.location.search).get('tab') === 'history' ? 'history' : 'hosting'
+  })
   return (
     <div className="min-h-screen bg-muted/40">
       <PlayHeader right={<Link href="/play/new" className="text-sm text-muted-foreground hover:text-primary">New session</Link>} />
