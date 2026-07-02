@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { PlayHeader, PlayBack } from '@/components/play-header'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LeagueOpenPlay } from '@/components/leagues/league-open-play'
 import { OpenPlayMyHistory } from '@/components/open-play-my-history'
 
@@ -14,14 +15,12 @@ export default function SoloHostPage() {
       <main className="max-w-3xl mx-auto px-4 py-6">
         <PlayBack />
 
-        <div className="flex items-center gap-1 mb-5 p-1 bg-zinc-100 rounded-xl w-fit">
-          {([['hosting', 'Hosting'], ['history', 'My games']] as const).map(([k, label]) => (
-            <button key={k} onClick={() => setTab(k)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-colors ${tab === k ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-900'}`}>
-              {label}
-            </button>
-          ))}
-        </div>
+        <Tabs value={tab} onValueChange={v => setTab(v as 'hosting' | 'history')} className="mb-5">
+          <TabsList>
+            <TabsTrigger value="hosting">Hosting</TabsTrigger>
+            <TabsTrigger value="history">My games</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         {tab === 'hosting' ? (
           <LeagueOpenPlay leagueId={null} isOrganizer solo />

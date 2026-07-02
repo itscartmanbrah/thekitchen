@@ -7,6 +7,8 @@ import { useRealtime } from '@/lib/use-realtime'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
@@ -928,7 +930,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
           </div>
 
           <label className="flex items-start gap-2 cursor-pointer">
-            <input type="checkbox" checked={rated} onChange={e => setRated(e.target.checked)} className="mt-0.5" />
+            <Checkbox checked={rated} onCheckedChange={v => setRated(v === true)} className="mt-0.5" />
             <span className="text-sm text-foreground/90">
               <span className="font-medium">Rated session</span>
               <span className="block text-xs text-muted-foreground/80">Games between league members count toward ELO. Guest games are always casual.</span>
@@ -1074,11 +1076,11 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
       {isOrganizer && (
         <div className="space-y-1.5 mb-4">
           <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-            <input type="checkbox" checked={session.allow_self_join} onChange={toggleSelfJoin} />
+            <Switch checked={session.allow_self_join} onCheckedChange={toggleSelfJoin} className="scale-90" />
             <span>Let players check themselves in from the share link (no account needed)</span>
           </label>
           <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-            <input type="checkbox" checked={session.auto_stage} onChange={toggleAutoStage} />
+            <Switch checked={session.auto_stage} onCheckedChange={toggleAutoStage} className="scale-90" />
             <span><strong>Keep courts busy</strong> — auto-stage the next game On Deck when a court frees (tap to send). Off = strict round-by-round.</span>
           </label>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
