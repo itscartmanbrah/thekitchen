@@ -1,9 +1,19 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
 
-const inter = Inter({ subsets: ['latin'] })
+// Geist — the shadcn/Vercel typeface (variable weight, already bundled locally)
+const geistSans = localFont({
+  src: './fonts/GeistVF.woff',
+  variable: '--font-geist-sans',
+  weight: '100 900',
+})
+const geistMono = localFont({
+  src: './fonts/GeistMonoVF.woff',
+  variable: '--font-geist-mono',
+  weight: '100 900',
+})
 
 export const metadata: Metadata = {
   title: 'The Kitchen | Pickleball League Rankings',
@@ -31,7 +41,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
         {children}
         <Toaster />
       </body>
