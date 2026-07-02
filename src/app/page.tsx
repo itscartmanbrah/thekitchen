@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import { AppLogo } from '@/components/app-logo'
 import { InstallAppButton } from '@/components/install-app-button'
 import { ModeToggle } from '@/components/mode-toggle'
@@ -10,7 +12,14 @@ import { Card, CardContent } from '@/components/ui/card'
 import { FadeIn, FadeInStagger, FadeInItem } from '@/components/ui/fade-in'
 import { Trophy, Users, Zap, BarChart3, Shield, Star } from 'lucide-react'
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  // Signed-in members go straight to their dashboard (PWA opens at / — they
+  // shouldn't see the marketing page + Sign in button). Anonymous Open Play
+  // hosts stay: the landing has their resume banner.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user && !(user as any).is_anonymous) redirect('/dashboard')
+
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}

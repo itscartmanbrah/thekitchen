@@ -5,10 +5,10 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'The Kitchen — Pickleball League Rankings',
     short_name: 'The Kitchen',
     description: 'Track your pickleball league rankings, matches, tournaments, and ELO ratings.',
-    start_url: '/',
+    start_url: '/dashboard',
     display: 'standalone',
     background_color: '#ffffff',
-    theme_color: '#16a34a',
+    theme_color: '#ffffff',
     orientation: 'portrait',
     categories: ['sports'],
     icons: [
