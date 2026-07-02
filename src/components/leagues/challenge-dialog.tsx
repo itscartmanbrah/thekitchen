@@ -172,7 +172,7 @@ export function ChallengeDialog({
                   className={`flex-1 text-sm py-2 rounded-lg border transition-colors ${
                     format === opt.value
                       ? 'border-green-500 bg-green-50 text-green-700 font-medium'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                      : 'border-border text-muted-foreground hover:border-border'
                   }`}
                 >
                   {opt.label}
@@ -199,7 +199,7 @@ export function ChallengeDialog({
                     className={`w-full flex items-center gap-3 p-2.5 rounded-lg border text-left transition-colors ${
                       officiatorId === m.user_id
                         ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        : 'border-border hover:border-border'
                     }`}
                   >
                     <PlayerAvatar
@@ -209,31 +209,31 @@ export function ChallengeDialog({
                       size="sm"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{m.profiles.display_name}</p>
-                      <p className="text-xs text-gray-500 capitalize">{m.role.replace('_', ' ')}</p>
+                      <p className="text-sm font-medium text-foreground">{m.profiles.display_name}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{m.role.replace('_', ' ')}</p>
                     </div>
                     {officiatorId === m.user_id && (
                       <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center shrink-0">
-                        <div className="w-2 h-2 rounded-full bg-white" />
+                        <div className="w-2 h-2 rounded-full bg-card" />
                       </div>
                     )}
                   </button>
                 ))}
               </div>
             )}
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-muted-foreground/80">
               The officiator must accept before your opponent is notified.
             </p>
           </div>
 
           {/* Proposed time */}
           <div className="space-y-1.5">
-            <Label>Proposed time <span className="text-gray-400 font-normal">(optional)</span></Label>
+            <Label>Proposed time <span className="text-muted-foreground/80 font-normal">(optional)</span></Label>
             <input
               type="datetime-local"
               value={proposedAt}
               onChange={e => setProposedAt(e.target.value)}
-              className="w-full text-sm border rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-300 bg-white"
+              className="w-full text-sm border rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-300 bg-card"
             />
             {hasConflict && (
               <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
@@ -250,7 +250,7 @@ export function ChallengeDialog({
 
           {/* Message */}
           <div className="space-y-1.5">
-            <Label>Message <span className="text-gray-400 font-normal">(optional)</span></Label>
+            <Label>Message <span className="text-muted-foreground/80 font-normal">(optional)</span></Label>
             <Textarea
               value={message}
               onChange={e => setMessage(e.target.value)}

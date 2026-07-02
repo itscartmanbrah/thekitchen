@@ -25,11 +25,11 @@ export function Navbar({ profile }: { profile: Profile | null }) {
   }
 
   return (
-    <nav className="border-b bg-white sticky top-0 z-50">
+    <nav className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2">
           <AppLogo className="w-7 h-7" />
-          <span className="font-bold text-gray-900">The Kitchen</span>
+          <span className="font-bold text-foreground">The Kitchen</span>
         </Link>
 
         <div className="flex items-center gap-2">

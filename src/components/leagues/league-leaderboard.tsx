@@ -21,11 +21,11 @@ function SeasonSelector({ allSeasons, selected, onChange, activeSeason }: {
 }) {
   return (
     <div className="flex items-center gap-2 mb-4">
-      <span className="text-xs text-gray-500 shrink-0">Season:</span>
+      <span className="text-xs text-muted-foreground shrink-0">Season:</span>
       <select
         value={selected}
         onChange={e => onChange(e.target.value)}
-        className="text-xs border rounded-lg px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
+        className="text-xs border rounded-lg px-2 py-1 bg-card text-foreground/90 focus:outline-none focus:ring-1 focus:ring-gray-300"
       >
         <option value="current">{activeSeason ? `${activeSeason.name} (current)` : 'Current'}</option>
         {allSeasons.filter(s => s.status === 'ended').map(s => (
@@ -191,7 +191,7 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
       })
   }, [formatFilter, leagueId])
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading leaderboard…</div>
+  if (loading) return <div className="text-center py-12 text-muted-foreground">Loading leaderboard…</div>
 
   const rankIcon = (rank: number) => {
     if (rank === 1) return '🥇'
@@ -224,10 +224,10 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
         {/* Season selector */}
         <SeasonSelector allSeasons={allSeasons} selected={selectedSeasonId} onChange={setSelectedSeasonId} activeSeason={activeSeason} />
         {seasonLoading ? (
-          <div className="text-center py-12 text-gray-500">Loading…</div>
+          <div className="text-center py-12 text-muted-foreground">Loading…</div>
         ) : (
           <div className="space-y-2">
-            <p className="text-xs text-gray-400 mb-3">Final standings — {season?.name}</p>
+            <p className="text-xs text-muted-foreground/80 mb-3">Final standings — {season?.name}</p>
             {(seasonResults ?? []).map((r, idx) => {
               const isMe = r.user_id === currentUserId
               const winRate = r.wins + r.losses > 0 ? Math.round((r.wins / (r.wins + r.losses)) * 100) : null
@@ -236,7 +236,7 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
                   <CardContent className="py-3 px-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 text-center shrink-0">
-                        {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : <span className="text-sm font-medium text-gray-500">#{idx + 1}</span>}
+                        {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : <span className="text-sm font-medium text-muted-foreground">#{idx + 1}</span>}
                       </div>
                       <Link href={`/players/${r.user_id}`} className="shrink-0">
                         <PlayerAvatar name={r.profiles.display_name} color={r.profiles.avatar_color} imageUrl={r.profiles.avatar_url} size="sm" />
@@ -249,7 +249,7 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
                       </div>
                       <div className="text-right shrink-0">
                         <div className="font-bold text-base">{formatElo(r.final_elo)}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           {r.wins}W {r.losses}L
                           {winRate !== null && <span className="ml-1">({winRate}%)</span>}
                         </div>
@@ -274,10 +274,10 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
 
       {/* Format tabs */}
       {usedFormats.length > 1 && (
-        <div className="flex gap-1 p-1 bg-gray-100 rounded-lg mb-4 w-fit">
+        <div className="flex gap-1 p-1 bg-muted rounded-lg mb-4 w-fit">
           <button
             onClick={() => setFormatFilter('all')}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${formatFilter === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${formatFilter === 'all' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground/90'}`}
           >
             All
           </button>
@@ -285,7 +285,7 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
             <button
               key={f}
               onClick={() => setFormatFilter(f)}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${formatFilter === f ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${formatFilter === f ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground/90'}`}
             >
               {formatLabels[f]}
             </button>
@@ -299,18 +299,18 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
         const topPb = getPickleballRating(ratingFor(displayed[0]))
         return (
           <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="rounded-xl bg-slate-900 px-4 py-3.5 shadow-md border-t-[3px] border-sky-500">
-              <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Players</p>
+            <div className="rounded-xl bg-zinc-900 px-4 py-3.5 shadow-md border-t-[3px] border-sky-500">
+              <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Players</p>
               <div className="text-2xl font-extrabold text-white mt-1"><CountUp value={displayed.length} /></div>
             </div>
-            <div className="rounded-xl bg-slate-900 px-4 py-3.5 shadow-md border-t-[3px] border-violet-500">
-              <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Top rating</p>
+            <div className="rounded-xl bg-zinc-900 px-4 py-3.5 shadow-md border-t-[3px] border-violet-500">
+              <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Top rating</p>
               <div className="text-2xl font-extrabold text-white mt-1"><CountUp value={parseFloat(topPb.rating)} decimals={2} /></div>
             </div>
-            <div className="rounded-xl bg-slate-900 px-4 py-3.5 shadow-md border-t-[3px] border-green-500">
-              <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Your rank</p>
+            <div className="rounded-xl bg-zinc-900 px-4 py-3.5 shadow-md border-t-[3px] border-green-500">
+              <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Your rank</p>
               <div className="text-2xl font-extrabold text-white mt-1">
-                {myIdx >= 0 ? <>#<CountUp value={myIdx + 1} /></> : <span className="text-lg text-slate-500">—</span>}
+                {myIdx >= 0 ? <>#<CountUp value={myIdx + 1} /></> : <span className="text-lg text-zinc-500">—</span>}
               </div>
             </div>
           </div>
@@ -332,11 +332,11 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: Math.min(idx * 0.02, 0.2) }}
-              className={`flex items-center gap-3 rounded-xl border bg-white px-4 py-3 ${isMe ? 'border-green-400 bg-green-50/60' : 'border-gray-200'}`}
+              className={`flex items-center gap-3 rounded-xl border bg-card px-4 py-3 ${isMe ? 'border-green-400 bg-green-50/60' : 'border-border'}`}
             >
               <div className="w-7 text-center shrink-0">
                 {rankIcon(idx + 1) ?? (
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-slate-900 text-xs font-extrabold italic text-white">{idx + 1}</span>
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-zinc-900 text-xs font-extrabold italic text-white">{idx + 1}</span>
                 )}
               </div>
               <Link href={`/players/${m.user_id}`} className="shrink-0">
@@ -350,13 +350,13 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
                   {isMe && <Badge variant="outline" className="text-xs py-0">You</Badge>}
                 </div>
                 <div className="flex items-center gap-1.5 mt-1">
-                  <span className={`text-[11px] font-medium rounded-full px-2 py-0.5 bg-gray-100 ${tier.color}`}>{tier.label}</span>
+                  <span className={`text-[11px] font-medium rounded-full px-2 py-0.5 bg-muted ${tier.color}`}>{tier.label}</span>
                   <FormDots results={form} />
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <div className="font-bold text-base text-gray-900"><CountUp value={shownElo} /></div>
-                <div className="text-xs text-gray-500">
+                <div className="font-bold text-base text-foreground"><CountUp value={shownElo} /></div>
+                <div className="text-xs text-muted-foreground">
                   {m.wins}W {m.losses}L
                   {winRate !== null && <span className="ml-1">({winRate}%)</span>}
                 </div>
@@ -365,8 +365,8 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
           )
         })}
         {displayed.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            <Trophy className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+          <div className="text-center py-12 text-muted-foreground">
+            <Trophy className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
             {members.length === 0 ? 'No players yet' : 'No players for this format yet'}
           </div>
         )}

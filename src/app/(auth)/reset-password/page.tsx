@@ -63,7 +63,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center gap-2 mb-8">
           <AppLogo className="w-10 h-10" />
-          <span className="font-bold text-2xl text-gray-900">The Kitchen</span>
+          <span className="font-bold text-2xl text-foreground">The Kitchen</span>
         </div>
 
         <Card>
@@ -76,7 +76,7 @@ export default function ResetPasswordPage() {
 
           {!ready ? (
             <CardContent>
-              <div className="text-center py-6 text-gray-400 text-sm">
+              <div className="text-center py-6 text-muted-foreground/80 text-sm">
                 If this page stays loading, your link may have expired.{' '}
                 <a href="/forgot-password" className="text-green-600 hover:underline">Request a new one.</a>
               </div>

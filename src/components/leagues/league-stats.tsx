@@ -22,7 +22,7 @@ function StatCard({ icon, label, children }: { icon: React.ReactNode; label: str
       <CardContent className="py-4 px-4">
         <div className="flex items-center gap-2 mb-2">
           {icon}
-          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{label}</span>
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</span>
         </div>
         {children}
       </CardContent>
@@ -141,19 +141,19 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
     compute()
   }, [leagueId])
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Crunching numbers…</div>
+  if (loading) return <div className="text-center py-12 text-muted-foreground">Crunching numbers…</div>
   if (!stats || stats.totalMatches === 0) return (
-    <div className="text-center py-16 text-gray-400">
-      <BarChart3 className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+    <div className="text-center py-16 text-muted-foreground/80">
+      <BarChart3 className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
       <p>Stats will appear once matches are completed.</p>
     </div>
   )
 
   return (
     <div className="grid sm:grid-cols-2 gap-3">
-      <StatCard icon={<Swords className="w-4 h-4 text-gray-500" />} label="Total matches">
-        <p className="text-2xl font-bold text-gray-900">{stats.totalMatches}</p>
-        <p className="text-xs text-gray-500 mt-0.5">Average score: {stats.avgScore}</p>
+      <StatCard icon={<Swords className="w-4 h-4 text-muted-foreground" />} label="Total matches">
+        <p className="text-2xl font-bold text-foreground">{stats.totalMatches}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">Average score: {stats.avgScore}</p>
       </StatCard>
 
       {stats.mostActive && (
@@ -166,7 +166,7 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
               <Link href={`/players/${stats.mostActive.userId}`} className="font-semibold text-sm hover:underline">
                 {stats.mostActive.name}
               </Link>
-              <p className="text-xs text-gray-500">{stats.mostActive.count} matches played</p>
+              <p className="text-xs text-muted-foreground">{stats.mostActive.count} matches played</p>
             </div>
           </div>
         </StatCard>
@@ -182,7 +182,7 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
               <Link href={`/players/${stats.topWinRate.userId}`} className="font-semibold text-sm hover:underline">
                 {stats.topWinRate.name}
               </Link>
-              <p className="text-xs text-gray-500">{stats.topWinRate.rate}% ({stats.topWinRate.wins}W–{stats.topWinRate.losses}L)</p>
+              <p className="text-xs text-muted-foreground">{stats.topWinRate.rate}% ({stats.topWinRate.wins}W–{stats.topWinRate.losses}L)</p>
             </div>
           </div>
         </StatCard>
@@ -198,7 +198,7 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
               <Link href={`/players/${stats.longestStreak.userId}`} className="font-semibold text-sm hover:underline">
                 {stats.longestStreak.name}
               </Link>
-              <p className="text-xs text-gray-500">{stats.longestStreak.streak} in a row 🔥</p>
+              <p className="text-xs text-muted-foreground">{stats.longestStreak.streak} in a row 🔥</p>
             </div>
           </div>
         </StatCard>
@@ -214,7 +214,7 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
               <Link href={`/players/${stats.biggestUpset.winnerId}`} className="font-semibold text-sm hover:underline">
                 {stats.biggestUpset.winner}
               </Link>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Won at {stats.biggestUpset.winnerElo} ELO vs {stats.biggestUpset.loserElo} (+{stats.biggestUpset.diff} underdog)
               </p>
             </div>

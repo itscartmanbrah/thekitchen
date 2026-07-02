@@ -45,9 +45,9 @@ export function InstallAppButton() {
         onClick={() => setOpen(true)}
         aria-label="Install app"
         title="Install app"
-        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
       >
-        <Download className="w-5 h-5 text-gray-600" />
+        <Download className="w-5 h-5 text-muted-foreground" />
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -59,7 +59,7 @@ export function InstallAppButton() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 text-sm text-gray-600">
+          <div className="space-y-4 text-sm text-muted-foreground">
             <p>Add The Kitchen to your home screen for a full-screen, app-like experience — no app store needed.</p>
 
             {deferred && (
@@ -70,8 +70,8 @@ export function InstallAppButton() {
             )}
 
             {/* iPhone / iPad */}
-            <div className="rounded-lg border bg-gray-50 px-3 py-2.5">
-              <p className="font-semibold text-gray-800 mb-1.5">📱 iPhone / iPad (Safari)</p>
+            <div className="rounded-lg border bg-muted/40 px-3 py-2.5">
+              <p className="font-semibold text-foreground mb-1.5">📱 iPhone / iPad (Safari)</p>
               <ol className="list-decimal pl-5 space-y-1">
                 <li>
                   Tap the <strong>Share</strong> button
@@ -84,8 +84,8 @@ export function InstallAppButton() {
             </div>
 
             {/* Android */}
-            <div className="rounded-lg border bg-gray-50 px-3 py-2.5">
-              <p className="font-semibold text-gray-800 mb-1.5">🤖 Android (Chrome)</p>
+            <div className="rounded-lg border bg-muted/40 px-3 py-2.5">
+              <p className="font-semibold text-foreground mb-1.5">🤖 Android (Chrome)</p>
               <ol className="list-decimal pl-5 space-y-1">
                 <li>Tap the <strong>⋮</strong> menu in the top-right.</li>
                 <li>Tap <strong>Install app</strong> (or <strong>Add to Home screen</strong>).</li>
@@ -93,7 +93,7 @@ export function InstallAppButton() {
               </ol>
             </div>
 
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-muted-foreground/80">
               Once added, open The Kitchen from your home screen just like any other app.
             </p>
           </div>

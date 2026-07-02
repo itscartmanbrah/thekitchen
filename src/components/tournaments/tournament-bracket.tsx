@@ -44,19 +44,19 @@ function Slot({
     <div className={`flex items-center gap-2 px-2.5 py-1.5 ${isWinner ? 'bg-green-50' : ''}`}>
       {player ? (
         <>
-          <span className="text-[10px] text-gray-400 w-4 text-right shrink-0">{seed}</span>
+          <span className="text-[10px] text-muted-foreground/80 w-4 text-right shrink-0">{seed}</span>
           <PlayerAvatar name={player.display_name} color={player.avatar_color} imageUrl={player.avatar_url} size="xs" />
-          <span className={`text-xs truncate flex-1 ${isWinner ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
+          <span className={`text-xs truncate flex-1 ${isWinner ? 'font-semibold text-foreground' : 'text-foreground/90'}`}>
             {player.display_name}
           </span>
           {score !== null && (
-            <span className={`text-xs font-bold shrink-0 ${isWinner ? 'text-green-700' : 'text-gray-400'}`}>
+            <span className={`text-xs font-bold shrink-0 ${isWinner ? 'text-green-700' : 'text-muted-foreground/80'}`}>
               {score}
             </span>
           )}
         </>
       ) : (
-        <span className="text-xs text-gray-300 italic pl-6">{isBye ? 'Bye' : 'TBD'}</span>
+        <span className="text-xs text-muted-foreground/50 italic pl-6">{isBye ? 'Bye' : 'TBD'}</span>
       )}
     </div>
   )
@@ -82,7 +82,7 @@ export function TournamentBracket({
       <div className="flex gap-6 min-w-fit">
         {rounds.map((roundMatches, i) => (
           <div key={i} className="flex flex-col justify-around gap-3 min-w-[220px]">
-            <p className="text-xs font-semibold text-gray-500 text-center -mb-1 flex items-center justify-center gap-1">
+            <p className="text-xs font-semibold text-muted-foreground text-center -mb-1 flex items-center justify-center gap-1">
               {i === totalRounds - 1 && <Trophy className="w-3 h-3 text-amber-500" />}
               {roundLabel(i + 1, totalRounds)}
             </p>
@@ -93,9 +93,9 @@ export function TournamentBracket({
               return (
                 <div
                   key={m.id}
-                  className={`rounded-lg border bg-white divide-y ${
-                    m.status === 'completed' ? 'border-gray-200' :
-                    m.status === 'ready' ? 'border-green-300 shadow-sm' : 'border-gray-100'
+                  className={`rounded-lg border bg-card divide-y ${
+                    m.status === 'completed' ? 'border-border' :
+                    m.status === 'ready' ? 'border-green-300 shadow-sm' : 'border-border'
                   } ${reportable ? 'cursor-pointer hover:border-green-500 transition-colors' : ''}`}
                   onClick={() => reportable && onReport(m)}
                   title={reportable ? 'Click to enter score' : undefined}

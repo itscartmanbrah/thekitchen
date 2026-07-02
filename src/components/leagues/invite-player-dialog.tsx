@@ -161,13 +161,13 @@ export function InvitePlayerDialog({ leagueId, onInvited }: Props) {
             <Label>Search by nickname</Label>
             {selected ? (
               // Selected player chip
-              <div className="flex items-center gap-2 border rounded-lg px-3 py-2 bg-gray-50">
+              <div className="flex items-center gap-2 border rounded-lg px-3 py-2 bg-muted/40">
                 <PlayerAvatar name={selected.display_name} color={selected.avatar_color} imageUrl={selected.avatar_url} size="sm" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{selected.display_name}</p>
-                  <p className="text-xs text-gray-400 truncate">{selected.email}</p>
+                  <p className="text-xs text-muted-foreground/80 truncate">{selected.email}</p>
                 </div>
-                <button onClick={reset} className="text-gray-400 hover:text-gray-600 shrink-0">
+                <button onClick={reset} className="text-muted-foreground/80 hover:text-muted-foreground shrink-0">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -175,7 +175,7 @@ export function InvitePlayerDialog({ leagueId, onInvited }: Props) {
               // Search input + dropdown
               <div ref={containerRef} className="relative">
                 <div className="flex items-center gap-1.5 h-9 rounded-md border border-input bg-background px-3 focus-within:ring-1 focus-within:ring-ring">
-                  <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                  <Search className="w-3.5 h-3.5 text-muted-foreground/80 shrink-0" />
                   <input
                     className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
                     placeholder="Type a player name…"
@@ -183,26 +183,26 @@ export function InvitePlayerDialog({ leagueId, onInvited }: Props) {
                     onChange={e => setQuery(e.target.value)}
                     onFocus={() => results.length > 0 && setDropdownOpen(true)}
                   />
-                  {searching && <span className="text-xs text-gray-400">…</span>}
+                  {searching && <span className="text-xs text-muted-foreground/80">…</span>}
                 </div>
 
                 {dropdownOpen && (
-                  <ul className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-md border bg-white shadow-md">
+                  <ul className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-md border bg-card shadow-md">
                     {results.length === 0 ? (
-                      <li className="px-3 py-2 text-xs text-gray-400">
+                      <li className="px-3 py-2 text-xs text-muted-foreground/80">
                         {query.trim() ? 'No players found' : 'Start typing to search'}
                       </li>
                     ) : results.map(p => (
                       <li key={p.id}>
                         <button
                           type="button"
-                          className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-50 text-left"
+                          className="flex items-center gap-2 w-full px-3 py-2 hover:bg-muted/50 text-left"
                           onMouseDown={e => { e.preventDefault(); pickPlayer(p) }}
                         >
                           <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url} size="sm" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">{p.display_name}</p>
-                            <p className="text-xs text-gray-400 truncate">{p.email}</p>
+                            <p className="text-xs text-muted-foreground/80 truncate">{p.email}</p>
                           </div>
                         </button>
                       </li>
@@ -226,7 +226,7 @@ export function InvitePlayerDialog({ leagueId, onInvited }: Props) {
                 <SelectItem value="admin">Admin</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-muted-foreground/80">
               They will receive a notification and must accept to join.
             </p>
           </div>

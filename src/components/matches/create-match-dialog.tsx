@@ -78,7 +78,7 @@ function PlayerSearch({
   return (
     <div ref={containerRef} className="relative">
       <div className="flex items-center gap-1.5 h-8 rounded-md border border-input bg-background px-2 text-xs focus-within:ring-1 focus-within:ring-ring">
-        <Search className="w-3 h-3 text-gray-400 shrink-0" />
+        <Search className="w-3 h-3 text-muted-foreground/80 shrink-0" />
         <input
           className="flex-1 bg-transparent outline-none placeholder:text-muted-foreground text-xs"
           placeholder="Search player…"
@@ -87,19 +87,19 @@ function PlayerSearch({
           onFocus={() => setOpen(true)}
         />
         {query && (
-          <button onClick={() => { setQuery(''); setOpen(false) }} className="text-gray-400 hover:text-gray-600">
+          <button onClick={() => { setQuery(''); setOpen(false) }} className="text-muted-foreground/80 hover:text-muted-foreground">
             <X className="w-3 h-3" />
           </button>
         )}
       </div>
       {open && filtered.length > 0 && (
-        <ul className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-md border bg-white shadow-md text-xs">
+        <ul className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-md border bg-card shadow-md text-xs">
           {filtered.map(m => (
             <li key={m.user_id}>
               <button
                 type="button"
                 className={`flex items-center gap-2 w-full px-2 py-1.5 text-left ${
-                  conflictedIds?.has(m.user_id) ? 'opacity-50 cursor-not-allowed hover:bg-transparent' : 'hover:bg-gray-50'
+                  conflictedIds?.has(m.user_id) ? 'opacity-50 cursor-not-allowed hover:bg-transparent' : 'hover:bg-muted/50'
                 }`}
                 onMouseDown={e => { e.preventDefault(); pick(m) }}
               >
@@ -114,7 +114,7 @@ function PlayerSearch({
         </ul>
       )}
       {open && query.trim() && filtered.length === 0 && (
-        <div className="absolute z-50 mt-1 w-full rounded-md border bg-white shadow-md px-3 py-2 text-xs text-gray-400">
+        <div className="absolute z-50 mt-1 w-full rounded-md border bg-card shadow-md px-3 py-2 text-xs text-muted-foreground/80">
           No players found
         </div>
       )}
@@ -310,10 +310,10 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
                       const m = getMember(userId)
                       if (!m) return null
                       return (
-                        <div key={userId} className="flex items-center gap-2 bg-gray-50 rounded px-2 py-1">
+                        <div key={userId} className="flex items-center gap-2 bg-muted/40 rounded px-2 py-1">
                           <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} imageUrl={m.profiles.avatar_url} size="sm" />
                           <span className="text-xs flex-1 truncate">{m.profiles.display_name}</span>
-                          <button onClick={() => removeFromTeam(teamNum, userId)} className="text-gray-400 hover:text-gray-600">
+                          <button onClick={() => removeFromTeam(teamNum, userId)} className="text-muted-foreground/80 hover:text-muted-foreground">
                             <X className="w-3 h-3" />
                           </button>
                         </div>
@@ -361,7 +361,7 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
 
           <div className="space-y-2">
             <Label htmlFor="scheduled-at">
-              Scheduled date & time <span className="text-gray-400 font-normal text-xs">(optional)</span>
+              Scheduled date & time <span className="text-muted-foreground/80 font-normal text-xs">(optional)</span>
             </Label>
             <Input
               id="scheduled-at"
@@ -373,7 +373,7 @@ export function CreateMatchDialog({ leagueId, onCreated }: Props) {
 
           <div className="space-y-2">
             <Label htmlFor="match-notes">
-              Notes <span className="text-gray-400 font-normal text-xs">(optional)</span>
+              Notes <span className="text-muted-foreground/80 font-normal text-xs">(optional)</span>
             </Label>
             <Textarea
               id="match-notes"

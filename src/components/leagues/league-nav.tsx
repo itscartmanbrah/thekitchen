@@ -116,7 +116,7 @@ export function LeagueNav(props: NavProps) {
   return (
     <div>
       {/* Tier 1 — groups (athletic segmented bar) */}
-      <div className="flex items-center gap-1 mb-4 overflow-x-auto p-1 bg-slate-100 rounded-xl">
+      <div className="flex items-center gap-1 mb-4 overflow-x-auto p-1 bg-zinc-100 rounded-xl">
         {groups.filter(g => !g.gear).map(g => {
           const on = activeGroup.key === g.key
           const Icon = g.icon
@@ -125,10 +125,10 @@ export function LeagueNav(props: NavProps) {
               key={g.key}
               onClick={() => selectGroup(g.key)}
               className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-colors ${
-                on ? 'text-white' : 'text-slate-500 hover:text-slate-900'
+                on ? 'text-white' : 'text-zinc-500 hover:text-zinc-900'
               }`}
             >
-              {on && <motion.div layoutId="grp-pill" className="absolute inset-0 bg-slate-900 rounded-lg shadow-sm" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />}
+              {on && <motion.div layoutId="grp-pill" className="absolute inset-0 bg-zinc-900 rounded-lg shadow-sm" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />}
               <Icon className={`w-4 h-4 relative z-10 ${on ? 'text-green-400' : ''}`} />
               <span className="relative z-10">{g.label}</span>
             </button>
@@ -142,7 +142,7 @@ export function LeagueNav(props: NavProps) {
               <DropdownMenuTrigger asChild>
                 <button
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-colors ${
-                    activeGroup.gear ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'
+                    activeGroup.gear ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-900'
                   }`}
                 >
                   <Settings className={`w-4 h-4 ${activeGroup.gear ? 'text-green-400' : ''}`} />
@@ -177,7 +177,7 @@ export function LeagueNav(props: NavProps) {
                 key={s.key}
                 onClick={() => go(s.key)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wide whitespace-nowrap transition-colors border-b-2 ${
-                  on ? 'border-green-500 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-700'
+                  on ? 'border-green-500 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-700'
                 }`}
               >
                 {s.label}
@@ -222,12 +222,12 @@ export function LeagueNav(props: NavProps) {
         {active === 'requests' && isAdmin && (
           <div className="max-w-lg">
             <div className="flex items-center gap-2 mb-4">
-              <h2 className="font-semibold text-gray-900">Join requests</h2>
+              <h2 className="font-semibold text-foreground">Join requests</h2>
               {pendingCount > 0 && (
                 <span className="bg-red-100 text-red-600 text-xs font-bold rounded-full px-2 py-0.5">{pendingCount} pending</span>
               )}
             </div>
-            <p className="text-sm text-gray-500 mb-4">Review players who have requested to join. Assign their role before approving.</p>
+            <p className="text-sm text-muted-foreground mb-4">Review players who have requested to join. Assign their role before approving.</p>
             <LeagueWaitlist leagueId={leagueId} />
           </div>
         )}
@@ -236,7 +236,7 @@ export function LeagueNav(props: NavProps) {
             <LeagueSettings league={league} isHeadAdmin={isHeadAdmin} />
             <LeagueSeasonManager leagueId={leagueId} currentUserId={currentUserId} />
             <div className="max-w-lg">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Invite links</h3>
+              <h3 className="text-sm font-semibold text-foreground/90 mb-3">Invite links</h3>
               <LeagueInviteLinks leagueId={leagueId} />
             </div>
           </div>

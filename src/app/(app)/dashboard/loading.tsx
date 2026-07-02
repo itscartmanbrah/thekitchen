@@ -15,7 +15,7 @@ export default function DashboardLoading() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="rounded-xl border bg-white overflow-hidden">
+          <div key={i} className="rounded-xl border bg-card overflow-hidden">
             <Skeleton className="h-2 w-full rounded-none" />
             <div className="p-4 space-y-3">
               <Skeleton className="h-5 w-3/4" />

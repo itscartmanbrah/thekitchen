@@ -232,7 +232,7 @@ export function LeagueTournaments({
 
   const legacyPlayerMap = new Map(legacyPlayers.map(p => [p.user_id, p]))
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading tournaments…</div>
+  if (loading) return <div className="text-center py-12 text-muted-foreground">Loading tournaments…</div>
 
   // ── Tournament detail ──────────────────────────────────────────────────────
   if (selected) {
@@ -242,7 +242,7 @@ export function LeagueTournaments({
         <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
           <button
             onClick={() => { setSelected(null); setSelectedDivision(null) }}
-            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground/90"
           >
             <ArrowLeft className="w-4 h-4" /> All tournaments
           </button>
@@ -254,11 +254,11 @@ export function LeagueTournaments({
 
         {!selectedDivision && (
           <div className="mb-4">
-            <h2 className="font-bold text-gray-900 flex items-center gap-2">
+            <h2 className="font-bold text-foreground flex items-center gap-2">
               <Trophy className="w-4 h-4 text-amber-500" />
               {selected.name}
             </h2>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-muted-foreground/80 mt-0.5">
               Seeded by ELO within each division.{' '}
               <Link href="/tournaments-guide" className="underline hover:text-green-600">Learn how brackets work</Link>
             </p>
@@ -266,7 +266,7 @@ export function LeagueTournaments({
         )}
 
         {bracketLoading ? (
-          <div className="text-center py-12 text-gray-500">Loading…</div>
+          <div className="text-center py-12 text-muted-foreground">Loading…</div>
         ) : selectedDivision ? (
           <DivisionView
             division={selectedDivision}
@@ -305,13 +305,13 @@ export function LeagueTournaments({
                 <CardContent className="py-3 px-4 flex items-center gap-3">
                   <Trophy className={`w-4 h-4 shrink-0 ${
                     d.status === 'completed' ? 'text-amber-500' :
-                    d.status === 'active' ? 'text-green-600' : 'text-gray-400'
+                    d.status === 'active' ? 'text-green-600' : 'text-muted-foreground/80'
                   }`} />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{d.name}</p>
-                    <p className="text-xs text-gray-400 truncate">{divisionRuleSummary(d as any)}</p>
+                    <p className="text-xs text-muted-foreground/80 truncate">{divisionRuleSummary(d as any)}</p>
                   </div>
-                  <span className="flex items-center gap-1 text-xs text-gray-400 shrink-0">
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground/80 shrink-0">
                     <Users className="w-3 h-3" />
                     {entryCounts[d.id] ?? 0}
                   </span>
@@ -371,10 +371,10 @@ export function LeagueTournaments({
     <div>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             {tournaments.length} tournament{tournaments.length !== 1 ? 's' : ''}
           </p>
-          <Link href="/tournaments-guide" className="text-xs text-gray-400 hover:text-green-600 underline">
+          <Link href="/tournaments-guide" className="text-xs text-muted-foreground/80 hover:text-green-600 underline">
             How do brackets &amp; seeding work?
           </Link>
         </div>
@@ -386,8 +386,8 @@ export function LeagueTournaments({
       </div>
 
       {tournaments.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
-          <Trophy className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+        <div className="text-center py-16 text-muted-foreground/80">
+          <Trophy className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
           <p className="text-sm">No tournaments yet.{isAdmin ? ' Create one to get started!' : ''}</p>
         </div>
       ) : (
@@ -398,20 +398,20 @@ export function LeagueTournaments({
                 <Trophy className={`w-4 h-4 shrink-0 ${t.status === 'completed' ? 'text-amber-500' : 'text-green-600'}`} />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{t.name}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-muted-foreground/80">
                     {new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </p>
                 </div>
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                   t.status === 'active' ? 'bg-green-100 text-green-700' :
-                  t.status === 'completed' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'
+                  t.status === 'completed' ? 'bg-amber-100 text-amber-700' : 'bg-muted text-muted-foreground'
                 }`}>
                   {t.status === 'active' ? 'In progress' : t.status === 'completed' ? 'Completed' : 'Cancelled'}
                 </span>
                 {isAdmin && (
                   <button
                     onClick={e => { e.stopPropagation(); setDeleteTarget(t) }}
-                    className="text-gray-300 hover:text-red-500 transition-colors shrink-0 p-1"
+                    className="text-muted-foreground/50 hover:text-red-500 transition-colors shrink-0 p-1"
                     title="Delete tournament"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -432,7 +432,7 @@ export function LeagueTournaments({
               Delete &ldquo;{deleteTarget?.name}&rdquo;?
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             This removes the tournament, all divisions, registrations, and brackets permanently.
             Completed matches keep counting toward league ELO and player records.
           </p>
@@ -462,7 +462,7 @@ export function LeagueTournaments({
 
             <div className="space-y-1.5">
               <Label>Divisions ({chosenDivisions.length} selected)</Label>
-              <p className="text-xs text-gray-400 -mt-1">
+              <p className="text-xs text-muted-foreground/80 -mt-1">
                 Players register themselves into divisions they&apos;re eligible for.
                 Eligibility (gender, age, rating) is enforced automatically.
               </p>
@@ -476,7 +476,7 @@ export function LeagueTournaments({
                       className={`text-xs px-2.5 py-1.5 rounded-full border transition-colors ${
                         active
                           ? 'border-green-500 bg-green-50 text-green-700 font-medium'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                          : 'border-border text-muted-foreground hover:border-border'
                       }`}
                     >
                       {preset.name}
@@ -488,29 +488,29 @@ export function LeagueTournaments({
 
             {chosenDivisions.length > 0 && (
               <div className="space-y-1.5">
-                <p className="text-xs font-medium text-gray-500">Selected divisions</p>
+                <p className="text-xs font-medium text-muted-foreground">Selected divisions</p>
                 {chosenDivisions.map(d => (
-                  <div key={d.name} className="flex items-center gap-2 bg-gray-50 border rounded-lg px-3 py-2">
+                  <div key={d.name} className="flex items-center gap-2 bg-muted/40 border rounded-lg px-3 py-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800">{d.name}</p>
-                      <p className="text-xs text-gray-400">{divisionRuleSummary(d)}</p>
+                      <p className="text-sm font-medium text-foreground">{d.name}</p>
+                      <p className="text-xs text-muted-foreground/80">{divisionRuleSummary(d)}</p>
                     </div>
                     <select
                       value={d.bracket_type}
                       onChange={e => setChosenDivisions(prev => prev.map(x =>
                         x.name === d.name ? { ...x, bracket_type: e.target.value as any } : x
                       ))}
-                      className="text-xs border rounded-md px-2 py-1 bg-white"
+                      className="text-xs border rounded-md px-2 py-1 bg-card"
                     >
                       <option value="single_elim">Single elim</option>
                       <option value="round_robin">Round robin</option>
                     </select>
-                    <button onClick={() => togglePreset(d)} className="text-gray-400 hover:text-red-500">
+                    <button onClick={() => togglePreset(d)} className="text-muted-foreground/80 hover:text-red-500">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted-foreground/80">
                   Tip: round robin suits small divisions (under ~6 entries) — everyone plays everyone.
                 </p>
               </div>

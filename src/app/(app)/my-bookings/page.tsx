@@ -144,17 +144,17 @@ export default function MyBookingsPage() {
   return (
     <div className="max-w-2xl">
       <div className="flex items-center justify-between mb-5">
-        <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+        <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
           <CalendarClock className="w-5 h-5 text-green-600" />
           My court bookings
         </h1>
-        <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+        <div className="flex gap-1 p-1 bg-muted rounded-lg">
           {(['upcoming', 'past'] as const).map(s => (
             <button
               key={s}
               onClick={() => setScope(s)}
               className={`px-3 py-1 rounded-md text-xs font-medium capitalize transition-colors ${
-                scope === s ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                scope === s ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground/90'
               }`}
             >
               {s}
@@ -164,33 +164,33 @@ export default function MyBookingsPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Loading bookings…</div>
+        <div className="text-center py-12 text-muted-foreground">Loading bookings…</div>
       ) : sessions.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
-          <CalendarClock className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+        <div className="text-center py-16 text-muted-foreground/80">
+          <CalendarClock className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
           <p className="text-sm">No {scope} court bookings.</p>
         </div>
       ) : (
         <div className="space-y-5">
           {groups.map(g => (
             <div key={g.key}>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{g.label}</p>
+              <p className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wide mb-2">{g.label}</p>
               <div className="space-y-1.5">
                 {g.sessions.map(s => {
                   const hours = s.bookings.length
                   return (
-                    <div key={s.id} className="bg-white border rounded-lg px-3 py-2.5">
+                    <div key={s.id} className="bg-card border rounded-lg px-3 py-2.5">
                       <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700 w-32 shrink-0">
-                          <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        <div className="flex items-center gap-1.5 text-sm font-medium text-foreground/90 w-32 shrink-0">
+                          <Clock className="w-3.5 h-3.5 text-muted-foreground/80" />
                           {fmtTime(s.start)}–{fmtTime(s.end)}
                         </div>
                         <span className="text-[11px] font-semibold text-green-700 bg-green-50 rounded-full px-2 py-0.5 shrink-0">
                           {hours} hr{hours > 1 ? 's' : ''}
                         </span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-gray-800 truncate">{s.court_name}</p>
-                          <p className="text-xs text-gray-400 truncate flex items-center gap-1">
+                          <p className="text-sm text-foreground truncate">{s.court_name}</p>
+                          <p className="text-xs text-muted-foreground/80 truncate flex items-center gap-1">
                             <MapPin className="w-3 h-3" />{s.league_name}
                           </p>
                         </div>
@@ -212,7 +212,7 @@ export default function MyBookingsPage() {
                               key={b.id}
                               onClick={() => onHourClick(s, b)}
                               title="Cancel this hour"
-                              className="group text-[11px] font-medium text-gray-600 bg-white border rounded-md px-2 py-1 hover:border-red-300 hover:bg-red-50 hover:text-red-600 transition-colors"
+                              className="group text-[11px] font-medium text-muted-foreground bg-card border rounded-md px-2 py-1 hover:border-red-300 hover:bg-red-50 hover:text-red-600 transition-colors"
                             >
                               {fmtHourChip(b.starts_at)}
                               <span className="text-red-400 ml-1 opacity-0 group-hover:opacity-100">✕</span>
@@ -234,7 +234,7 @@ export default function MyBookingsPage() {
         <DialogContent className="sm:max-w-sm">
           <DialogHeader><DialogTitle>Cancel this booking?</DialogTitle></DialogHeader>
           {confirmTarget && (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Your booking on {confirmTarget.court_name} ({fmtTime(confirmTarget.start)}–{fmtTime(confirmTarget.end)})
               will be cancelled and the slot{confirmTarget.bookings.length > 1 ? 's' : ''} freed for others.
             </p>
@@ -254,7 +254,7 @@ export default function MyBookingsPage() {
           <DialogHeader><DialogTitle>Cancellation window closed</DialogTitle></DialogHeader>
           {contactTarget && (
             <div className="space-y-3">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 This booking starts in under 2 hours, so it can no longer be cancelled here.
                 Please contact the court admin to cancel.
               </p>
@@ -267,7 +267,7 @@ export default function MyBookingsPage() {
                   {contactTarget.contact_phone}
                 </a>
               ) : (
-                <p className="text-sm font-medium text-gray-700">No contact number set — reach out to your league admin.</p>
+                <p className="text-sm font-medium text-foreground/90">No contact number set — reach out to your league admin.</p>
               )}
             </div>
           )}

@@ -46,7 +46,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center gap-2 mb-8">
           <AppLogo className="w-10 h-10" />
-          <span className="font-bold text-2xl text-gray-900">The Kitchen</span>
+          <span className="font-bold text-2xl text-foreground">The Kitchen</span>
         </div>
         <Card>
           <CardHeader>
@@ -56,9 +56,9 @@ export default function LoginPage() {
           <CardContent className="pt-6 pb-0">
             <GoogleSignInButton label="Sign in with Google" />
             <div className="flex items-center gap-3 my-4">
-              <span className="flex-1 h-px bg-gray-200" />
-              <span className="text-xs text-gray-400">or</span>
-              <span className="flex-1 h-px bg-gray-200" />
+              <span className="flex-1 h-px bg-muted" />
+              <span className="text-xs text-muted-foreground/80">or</span>
+              <span className="flex-1 h-px bg-muted" />
             </div>
           </CardContent>
           <form onSubmit={handleLogin}>
@@ -77,7 +77,7 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Link href="/forgot-password" className="text-xs text-green-600 hover:underline">
+                  <Link href="/forgot-password" className="text-xs text-primary hover:underline">
                     Forgot password?
                   </Link>
                 </div>
@@ -100,9 +100,9 @@ export default function LoginPage() {
                   </>
                 ) : 'Sign in'}
               </Button>
-              <p className="text-sm text-center text-gray-600">
+              <p className="text-sm text-center text-muted-foreground">
                 No account?{' '}
-                <Link href="/signup" className="text-green-600 hover:underline font-medium">
+                <Link href="/signup" className="text-primary hover:underline font-medium">
                   Create one free
                 </Link>
               </p>

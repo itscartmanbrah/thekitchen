@@ -58,7 +58,7 @@ export function RematchButton({ match, onCreated }: Props) {
     <Button
       size="sm"
       variant="ghost"
-      className="gap-1 text-gray-500 hover:text-gray-800 px-2 sm:px-3"
+      className="gap-1 text-muted-foreground hover:text-foreground px-2 sm:px-3"
       onClick={handleRematch}
       disabled={loading}
       title="Rematch — same players, same format"

@@ -146,7 +146,7 @@ export default function SignupPage() {
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
           <AppLogo className="w-10 h-10" />
-          <span className="font-bold text-2xl text-gray-900">The Kitchen</span>
+          <span className="font-bold text-2xl text-foreground">The Kitchen</span>
         </div>
 
         <Card>
@@ -158,9 +158,9 @@ export default function SignupPage() {
           <CardContent className="pb-0">
             <GoogleSignInButton label="Sign up with Google" />
             <div className="flex items-center gap-3 my-4">
-              <span className="flex-1 h-px bg-gray-200" />
-              <span className="text-xs text-gray-400">or sign up with email</span>
-              <span className="flex-1 h-px bg-gray-200" />
+              <span className="flex-1 h-px bg-muted" />
+              <span className="text-xs text-muted-foreground/80">or sign up with email</span>
+              <span className="flex-1 h-px bg-muted" />
             </div>
           </CardContent>
 
@@ -169,7 +169,7 @@ export default function SignupPage() {
 
               {/* Name */}
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Name</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Name</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="firstName">First name *</Label>
@@ -196,7 +196,7 @@ export default function SignupPage() {
 
               <div className="space-y-1.5">
                 <Label htmlFor="nickname">
-                  Nickname <span className="text-gray-400 font-normal">(optional — shown on leaderboard)</span>
+                  Nickname <span className="text-muted-foreground/80 font-normal">(optional — shown on leaderboard)</span>
                 </Label>
                 <Input
                   id="nickname"
@@ -210,7 +210,7 @@ export default function SignupPage() {
 
               {/* Contact */}
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Contact</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Contact</p>
                 <div className="space-y-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="email">Email address *</Label>
@@ -225,7 +225,7 @@ export default function SignupPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="phone">
-                      Phone number <span className="text-gray-400 font-normal">(optional)</span>
+                      Phone number <span className="text-muted-foreground/80 font-normal">(optional)</span>
                     </Label>
                     <Input
                       id="phone"
@@ -250,13 +250,13 @@ export default function SignupPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="gender">
-                      Gender <span className="text-gray-400 font-normal">(optional — needed for Men&apos;s/Women&apos;s/Mixed tournament divisions)</span>
+                      Gender <span className="text-muted-foreground/80 font-normal">(optional — needed for Men&apos;s/Women&apos;s/Mixed tournament divisions)</span>
                     </Label>
                     <select
                       id="gender"
                       value={gender}
                       onChange={e => setGender(e.target.value)}
-                      className="w-full h-10 text-sm border border-input rounded-md px-3 bg-white focus:outline-none focus:ring-1 focus:ring-ring"
+                      className="w-full h-10 text-sm border border-input rounded-md px-3 bg-card focus:outline-none focus:ring-1 focus:ring-ring"
                     >
                       <option value="">Prefer not to say</option>
                       <option value="male">Male</option>
@@ -270,7 +270,7 @@ export default function SignupPage() {
 
               {/* Password */}
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Password</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Password</p>
                 <div className="space-y-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="password">Password *</Label>
@@ -306,9 +306,9 @@ export default function SignupPage() {
                 ) : 'Create account'}
               </Button>
 
-              <p className="text-sm text-center text-gray-600">
+              <p className="text-sm text-center text-muted-foreground">
                 Already have an account?{' '}
-                <Link href="/login" className="text-green-600 hover:underline font-medium">
+                <Link href="/login" className="text-primary hover:underline font-medium">
                   Sign in
                 </Link>
               </p>

@@ -69,7 +69,7 @@ export function LeagueAnnouncements({ leagueId, isAdmin }: { leagueId: string; i
 
       {isAdmin && (
         composing ? (
-          <div className="bg-gray-50 border rounded-lg p-3 space-y-2">
+          <div className="bg-muted/40 border rounded-lg p-3 space-y-2">
             <Textarea
               placeholder="Write an announcement…"
               value={draft}
@@ -88,7 +88,7 @@ export function LeagueAnnouncements({ leagueId, isAdmin }: { leagueId: string; i
         ) : (
           <button
             onClick={() => setComposing(true)}
-            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground/80 hover:text-muted-foreground transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             Add announcement

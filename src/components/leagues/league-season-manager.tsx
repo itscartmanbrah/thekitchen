@@ -176,7 +176,7 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
   return (
     <div className="space-y-4 max-w-lg">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700">Season management</h3>
+        <h3 className="text-sm font-semibold text-foreground/90">Season management</h3>
         {!activeSeason && (
           <Button size="sm" variant="outline" onClick={() => {
             setSeasonName(`Season ${seasons.length + 1}`)
@@ -195,10 +195,10 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-gray-900">{activeSeason.name}</span>
+                  <span className="font-semibold text-foreground">{activeSeason.name}</span>
                   <span className="text-xs bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded-full">Active</span>
                 </div>
-                <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+                <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     Started {fmt(activeSeason.started_at)}
@@ -222,8 +222,8 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
         </Card>
       ) : (
         <Card className="border-dashed">
-          <CardContent className="py-6 text-center text-gray-400 text-sm">
-            <Trophy className="w-6 h-6 mx-auto mb-1 text-gray-300" />
+          <CardContent className="py-6 text-center text-muted-foreground/80 text-sm">
+            <Trophy className="w-6 h-6 mx-auto mb-1 text-muted-foreground/50" />
             No active season. Start one to begin tracking season standings.
           </CardContent>
         </Card>
@@ -232,19 +232,19 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
       {/* Past seasons */}
       {endedSeasons.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Past seasons</p>
+          <p className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider mb-2">Past seasons</p>
           <div className="space-y-2">
             {endedSeasons.map(s => (
               <Card key={s.id}>
                 <CardContent className="py-3 px-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-700">{s.name}</p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-sm font-medium text-foreground/90">{s.name}</p>
+                      <p className="text-xs text-muted-foreground/80">
                         {fmt(s.started_at)} → {s.ended_at ? fmt(s.ended_at) : '—'}
                       </p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-300" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
                   </div>
                 </CardContent>
               </Card>
@@ -268,7 +268,7 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
                 placeholder="e.g. Season 1, Summer 2026…"
               />
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-muted-foreground/80">
               All future matches will be tagged to this season. The leaderboard will show a season selector once you have at least one ended season.
             </p>
           </div>
@@ -288,7 +288,7 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
             <DialogTitle>End {activeSeason?.name}?</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Current standings will be saved as the final results for this season. Choose what happens to player ELO ratings.
             </p>
             <div className="space-y-2">
@@ -299,19 +299,19 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
                   className={`w-full text-left rounded-lg border p-3 transition-colors ${
                     resetType === opt.value
                       ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-border hover:border-border'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-0.5">
                     <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                      resetType === opt.value ? 'border-green-500' : 'border-gray-300'
+                      resetType === opt.value ? 'border-green-500' : 'border-border'
                     }`}>
                       {resetType === opt.value && <div className="w-1.5 h-1.5 rounded-full bg-green-500" />}
                     </div>
-                    <span className="text-sm font-medium text-gray-900">{opt.label}</span>
+                    <span className="text-sm font-medium text-foreground">{opt.label}</span>
                   </div>
-                  <p className="text-xs text-gray-500 ml-5">{opt.description}</p>
-                  <p className="text-xs text-gray-400 ml-5 mt-0.5 font-mono">{opt.example}</p>
+                  <p className="text-xs text-muted-foreground ml-5">{opt.description}</p>
+                  <p className="text-xs text-muted-foreground/80 ml-5 mt-0.5 font-mono">{opt.example}</p>
                 </button>
               ))}
             </div>

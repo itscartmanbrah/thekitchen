@@ -39,7 +39,7 @@ const statusVariants: Record<string, 'default' | 'secondary' | 'outline' | 'succ
 }
 
 function EloDelta({ delta }: { delta: number }) {
-  if (delta === 0) return <span className="text-xs text-gray-400">±0</span>
+  if (delta === 0) return <span className="text-xs text-muted-foreground/80">±0</span>
   if (delta > 0) return (
     <span className="text-xs text-green-600 font-medium flex items-center gap-0.5">
       <TrendingUp className="w-3 h-3" />+{delta}
@@ -161,23 +161,23 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
 
   const usedFormats = Array.from(new Set(matches.map(m => m.format))) as MatchFormat[]
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading matches…</div>
+  if (loading) return <div className="text-center py-12 text-muted-foreground">Loading matches…</div>
 
   return (
     <div>
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="font-semibold text-gray-900">Match history</h2>
+        <h2 className="font-semibold text-foreground">Match history</h2>
         {isAdmin && <CreateMatchDialog leagueId={leagueId} onCreated={fetchMatches} />}
       </div>
 
       {/* Filters */}
       {matches.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
-          <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+          <div className="flex gap-1 p-1 bg-muted rounded-lg">
             <button
               onClick={() => setFormatFilter('all')}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${formatFilter === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${formatFilter === 'all' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground/90'}`}
             >
               All
             </button>
@@ -185,7 +185,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
               <button
                 key={f}
                 onClick={() => setFormatFilter(f)}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${formatFilter === f ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${formatFilter === f ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground/90'}`}
               >
                 {formatLabels[f]}
               </button>
@@ -195,7 +195,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
           <select
             value={playerFilter}
             onChange={e => setPlayerFilter(e.target.value)}
-            className="text-xs border rounded-lg px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
+            className="text-xs border rounded-lg px-2 py-1 bg-card text-foreground/90 focus:outline-none focus:ring-1 focus:ring-gray-300"
           >
             <option value="all">All players</option>
             {members.map((m: any) => (
@@ -207,13 +207,13 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
             type="date"
             value={dateFilter}
             onChange={e => { setDateFilter(e.target.value); fetchMatches(e.target.value) }}
-            className="text-xs border rounded-lg px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
+            className="text-xs border rounded-lg px-2 py-1 bg-card text-foreground/90 focus:outline-none focus:ring-1 focus:ring-gray-300"
             title="Filter by date"
           />
           {dateFilter && (
             <button
               onClick={() => { setDateFilter(''); fetchMatches('') }}
-              className="text-xs text-gray-400 hover:text-gray-700 underline"
+              className="text-xs text-muted-foreground/80 hover:text-foreground/90 underline"
             >
               Clear date
             </button>
@@ -222,8 +222,8 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
       )}
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-gray-500">
-          <Swords className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+        <div className="text-center py-16 text-muted-foreground">
+          <Swords className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
           <p>{dateFilter ? 'No matches on this date.' : matches.length === 0 ? 'No matches yet.' : 'No matches match your filters.'}</p>
           {isAdmin && matches.length === 0 && !dateFilter && <p className="text-sm mt-1">Create the first match to get things going.</p>}
         </div>
@@ -274,16 +274,16 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                       <div className="flex items-center gap-2 mx-1">
                         {match.status === 'completed' ? (
                           <div className="flex items-center gap-1 font-bold text-lg">
-                            <span className={match.team1_score > match.team2_score ? 'text-green-600' : 'text-gray-400'}>
+                            <span className={match.team1_score > match.team2_score ? 'text-green-600' : 'text-muted-foreground/80'}>
                               {match.team1_score}
                             </span>
-                            <span className="text-gray-300 font-normal">–</span>
-                            <span className={match.team2_score > match.team1_score ? 'text-green-600' : 'text-gray-400'}>
+                            <span className="text-muted-foreground/50 font-normal">–</span>
+                            <span className={match.team2_score > match.team1_score ? 'text-green-600' : 'text-muted-foreground/80'}>
                               {match.team2_score}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-gray-400 text-sm font-medium">vs</span>
+                          <span className="text-muted-foreground/80 text-sm font-medium">vs</span>
                         )}
                       </div>
 
@@ -306,7 +306,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                         <Badge variant={statusVariants[match.status]} className="text-xs mb-0.5">
                           {match.status}
                         </Badge>
-                        <p className="text-xs text-gray-500">{formatLabels[match.format]}</p>
+                        <p className="text-xs text-muted-foreground">{formatLabels[match.format]}</p>
                       </div>
                       {canSubmitScore && <SubmitScoreDialog match={match} onSubmitted={fetchMatches} />}
                       {match.status === 'completed' && isAdmin && (
@@ -343,7 +343,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                       {/* Expand toggle */}
                       <button
                         onClick={() => setExpandedId(isExpanded ? null : match.id)}
-                        className="text-gray-400 hover:text-gray-600 p-1"
+                        className="text-muted-foreground/80 hover:text-muted-foreground p-1"
                         aria-label={isExpanded ? 'Collapse' : 'Expand'}
                       >
                         {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -353,15 +353,15 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
 
                   {/* Scheduled / notes row */}
                   {(scheduledDate || match.notes) && (
-                    <div className="flex flex-wrap gap-3 mt-2 pt-2 border-t border-gray-100">
+                    <div className="flex flex-wrap gap-3 mt-2 pt-2 border-t border-border">
                       {scheduledDate && (
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="w-3 h-3" />
                           {scheduledDate}
                         </div>
                       )}
                       {match.notes && (
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <StickyNote className="w-3 h-3" />
                           {match.notes}
                         </div>
@@ -372,7 +372,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
 
                 {/* ── Expanded detail panel ── */}
                 {isExpanded && (
-                  <div className="border-t border-gray-100 bg-gray-50 px-4 py-4 space-y-4">
+                  <div className="border-t border-border bg-muted/40 px-4 py-4 space-y-4">
 
                     {/* Players breakdown — stacked on phones, side-by-side from sm: up */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -383,9 +383,9 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                           return (
                             <div
                               key={teamIdx}
-                              className={`rounded-lg border p-3 bg-white ${isCompleted ? (won ? 'border-green-200' : 'border-gray-100') : 'border-gray-100'}`}
+                              className={`rounded-lg border p-3 bg-card ${isCompleted ? (won ? 'border-green-200' : 'border-border') : 'border-border'}`}
                             >
-                              <p className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                              <p className="text-xs font-semibold text-muted-foreground/80 uppercase mb-2">
                                 Team {teamIdx + 1}{isCompleted && (won ? ' · 🏆 Winner' : ' · Runner-up')}
                               </p>
                               <div className="space-y-2">
@@ -396,12 +396,12 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                                     <Link key={p.id} href={`/players/${p.user_id}`} className="flex items-center gap-2 group">
                                       <PlayerAvatar name={p.profiles.display_name} color={p.profiles.avatar_color} imageUrl={p.profiles.avatar_url} size="sm" />
                                       <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-medium text-gray-800 group-hover:text-green-700 truncate">
+                                        <p className="text-xs font-medium text-foreground group-hover:text-green-700 truncate">
                                           {p.profiles.display_name}
                                         </p>
                                         <div className="flex items-center gap-1.5 flex-wrap">
-                                          {rank && <span className="text-xs text-gray-400">#{rank}</span>}
-                                          <span className="text-xs text-gray-500 font-medium">
+                                          {rank && <span className="text-xs text-muted-foreground/80">#{rank}</span>}
+                                          <span className="text-xs text-muted-foreground font-medium">
                                             {p.elo_before} ELO
                                           </span>
                                           {delta !== null && <EloDelta delta={delta} />}
@@ -412,7 +412,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                                 })}
                               </div>
                               {isCompleted && (
-                                <div className={`mt-2 pt-2 border-t text-center text-2xl font-bold ${won ? 'text-green-600 border-green-100' : 'text-gray-400 border-gray-100'}`}>
+                                <div className={`mt-2 pt-2 border-t text-center text-2xl font-bold ${won ? 'text-green-600 border-green-100' : 'text-muted-foreground/80 border-border'}`}>
                                   {score}
                                 </div>
                               )}
@@ -422,20 +422,20 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                     </div>
 
                     {/* Match meta: official + format + points */}
-                    <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                       {/* Officiator or creator */}
                       {official && (
                         <div className="flex items-center gap-1.5">
-                          <Shield className="w-3 h-3 text-gray-400" />
+                          <Shield className="w-3 h-3 text-muted-foreground/80" />
                           <PlayerAvatar name={official.display_name} color={official.avatar_color} imageUrl={official.avatar_url} size="xs" />
                           <span>
                             {match.officiator ? 'Officiated by' : 'Created by'}{' '}
-                            <span className="font-medium text-gray-700">{official.display_name}</span>
+                            <span className="font-medium text-foreground/90">{official.display_name}</span>
                           </span>
                         </div>
                       )}
                       <div className="flex items-center gap-1">
-                        <Swords className="w-3 h-3 text-gray-400" />
+                        <Swords className="w-3 h-3 text-muted-foreground/80" />
                         <span>{formatLabels[match.format]} · Playing to {match.max_points ?? 11}</span>
                       </div>
                     </div>

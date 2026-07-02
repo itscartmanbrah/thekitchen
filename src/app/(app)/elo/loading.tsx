@@ -7,7 +7,7 @@ export default function EloLoading() {
       <Skeleton className="h-4 w-80 mb-8" />
       <div className="space-y-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-xl border bg-white p-5 space-y-2">
+          <div key={i} className="rounded-xl border bg-card p-5 space-y-2">
             <Skeleton className="h-5 w-40" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-3/4" />

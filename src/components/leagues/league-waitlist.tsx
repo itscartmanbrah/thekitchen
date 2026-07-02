@@ -105,8 +105,8 @@ export function LeagueWaitlist({ leagueId }: { leagueId: string }) {
   }
 
   if (pending.length === 0) return (
-    <div className="text-center py-8 text-gray-400 text-sm">
-      <Clock className="w-6 h-6 mx-auto mb-1 text-gray-300" />
+    <div className="text-center py-8 text-muted-foreground/80 text-sm">
+      <Clock className="w-6 h-6 mx-auto mb-1 text-muted-foreground/50" />
       No pending requests
     </div>
   )
@@ -126,9 +126,9 @@ export function LeagueWaitlist({ leagueId }: { leagueId: string }) {
               />
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm">{m.profiles.display_name}</p>
-                <p className="text-xs text-gray-400">{m.profiles.email}</p>
+                <p className="text-xs text-muted-foreground/80">{m.profiles.email}</p>
               </div>
-              <p className="text-xs text-gray-400 shrink-0">
+              <p className="text-xs text-muted-foreground/80 shrink-0">
                 {new Date(m.joined_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </p>
             </div>

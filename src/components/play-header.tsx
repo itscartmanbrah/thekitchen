@@ -45,11 +45,11 @@ export function PlayHeader({ right }: { right?: ReactNode }) {
   }
 
   return (
-    <header className="border-b bg-white sticky top-0 z-40">
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
       <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
         <Link href={home} className="flex items-center gap-2 min-w-0">
           <AppLogo className="w-7 h-7 shrink-0" />
-          <span className="font-bold text-gray-900 truncate">The Kitchen</span>
+          <span className="font-bold text-foreground truncate">The Kitchen</span>
         </Link>
         <div className="flex items-center gap-2 shrink-0">
           {right}
@@ -82,7 +82,7 @@ export function PlayHeader({ right }: { right?: ReactNode }) {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Link href="/login" className="text-sm text-gray-500 hover:text-green-600">Sign in</Link>
+            <Link href="/login" className="text-sm text-muted-foreground hover:text-primary">Sign in</Link>
           )}
         </div>
       </div>
@@ -107,7 +107,7 @@ export function PlayBack() {
     else router.push(home)
   }
   return (
-    <button onClick={goBack} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-3">
+    <button onClick={goBack} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-3">
       <ArrowLeft className="w-4 h-4" /> Back
     </button>
   )

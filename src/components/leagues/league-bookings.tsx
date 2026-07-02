@@ -238,17 +238,17 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+        <h2 className="font-semibold text-foreground flex items-center gap-2">
           <CalendarClock className="w-4 h-4 text-green-600" />
           {isAdmin ? 'Court bookings' : 'My bookings'}
         </h2>
-        <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+        <div className="flex gap-1 p-1 bg-muted rounded-lg">
           {(['upcoming', 'past'] as const).map(s => (
             <button
               key={s}
               onClick={() => setScope(s)}
               className={`px-3 py-1 rounded-md text-xs font-medium capitalize transition-colors ${
-                scope === s ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                scope === s ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground/90'
               }`}
             >
               {s}
@@ -266,16 +266,16 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
           <div className="space-y-1.5">
             {pendingSessions.map(s => (
               <div key={s.id} className="bg-blue-50/60 border border-blue-200 rounded-lg px-3 py-2.5 flex items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700 w-32 shrink-0">
-                  <Clock className="w-3.5 h-3.5 text-gray-400" />{fmtTime(s.start)}–{fmtTime(s.end)}
+                <div className="flex items-center gap-1.5 text-sm font-medium text-foreground/90 w-32 shrink-0">
+                  <Clock className="w-3.5 h-3.5 text-muted-foreground/80" />{fmtTime(s.start)}–{fmtTime(s.end)}
                 </div>
-                <div className="flex items-center gap-1 text-xs text-gray-500 shrink-0">
-                  <MapPin className="w-3 h-3 text-gray-400" />{s.court_name}
+                <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                  <MapPin className="w-3 h-3 text-muted-foreground/80" />{s.court_name}
                 </div>
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <PlayerAvatar name={s.display_name} color={s.avatar_color} imageUrl={s.avatar_url} size="xs" />
-                  <span className="text-sm text-gray-800 truncate">{s.display_name}</span>
-                  <span className="text-[10px] text-gray-400">{dayLabel(s.start)}</span>
+                  <span className="text-sm text-foreground truncate">{s.display_name}</span>
+                  <span className="text-[10px] text-muted-foreground/80">{dayLabel(s.start)}</span>
                 </div>
                 <div className="flex gap-1.5 shrink-0">
                   <Button size="sm" className="h-7 px-2.5 text-xs" onClick={() => approveRequest(s)}>Approve</Button>
@@ -288,47 +288,47 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Loading bookings…</div>
+        <div className="text-center py-12 text-muted-foreground">Loading bookings…</div>
       ) : sessions.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
-          <CalendarClock className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+        <div className="text-center py-16 text-muted-foreground/80">
+          <CalendarClock className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
           <p className="text-sm">No {scope} bookings.</p>
         </div>
       ) : (
         <div className="space-y-5">
           {groups.map(g => (
             <div key={g.key}>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{g.label}</p>
+              <p className="text-xs font-semibold text-muted-foreground/80 uppercase tracking-wide mb-2">{g.label}</p>
               <div className="space-y-1.5">
                 {g.sessions.map(s => {
                   const hours = s.bookings.length
                   const isOpen = expanded.has(s.id)
                   return (
-                    <div key={s.id} className="bg-white border rounded-lg overflow-hidden">
+                    <div key={s.id} className="bg-card border rounded-lg overflow-hidden">
                       {/* Summary row */}
                       <div className="flex items-center gap-3 px-3 py-2.5">
                         <button onClick={() => toggle(s.id)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
-                          <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700 w-32 shrink-0">
-                            <Clock className="w-3.5 h-3.5 text-gray-400" />
+                          <div className="flex items-center gap-1.5 text-sm font-medium text-foreground/90 w-32 shrink-0">
+                            <Clock className="w-3.5 h-3.5 text-muted-foreground/80" />
                             {fmtTime(s.start)}–{fmtTime(s.end)}
                           </div>
                           <span className="text-[11px] font-semibold text-green-700 bg-green-50 rounded-full px-2 py-0.5 shrink-0">
                             {hours} hr{hours > 1 ? 's' : ''}
                           </span>
-                          <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 shrink-0">
-                            <MapPin className="w-3 h-3 text-gray-400" />
+                          <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                            <MapPin className="w-3 h-3 text-muted-foreground/80" />
                             {s.court_name}
                           </div>
                           <div className="flex items-center gap-2 flex-1 min-w-0">
                             <PlayerAvatar name={s.display_name} color={s.avatar_color} imageUrl={s.avatar_url} size="xs" />
-                            <span className="text-sm text-gray-800 truncate">{s.display_name}</span>
+                            <span className="text-sm text-foreground truncate">{s.display_name}</span>
                             {s.status === 'pending' && (
                               <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded-full px-2 py-0.5 shrink-0">Awaiting approval</span>
                             )}
                           </div>
                           {hours > 1 && (isOpen
-                            ? <ChevronUp className="w-4 h-4 text-gray-400 shrink-0" />
-                            : <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />)}
+                            ? <ChevronUp className="w-4 h-4 text-muted-foreground/80 shrink-0" />
+                            : <ChevronDown className="w-4 h-4 text-muted-foreground/80 shrink-0" />)}
                         </button>
                         {scope === 'upcoming' && (
                           <Button
@@ -343,8 +343,8 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
 
                       {/* Expanded: compact hour chips */}
                       {isOpen && hours > 1 && (
-                        <div className="border-t bg-gray-50 px-3 py-2.5">
-                          <p className="text-[11px] text-gray-400 mb-2 flex items-center gap-1">
+                        <div className="border-t bg-muted/40 px-3 py-2.5">
+                          <p className="text-[11px] text-muted-foreground/80 mb-2 flex items-center gap-1">
                             <MapPin className="w-3 h-3" />{s.court_name} · {hours} one-hour slots
                           </p>
                           <div className="flex flex-wrap gap-1.5">
@@ -354,19 +354,19 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
                                   key={b.id}
                                   onClick={() => onHourClick(s, b)}
                                   title="Cancel this hour"
-                                  className="group text-[11px] font-medium text-gray-600 bg-white border rounded-md px-2 py-1 hover:border-red-300 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                  className="group text-[11px] font-medium text-muted-foreground bg-card border rounded-md px-2 py-1 hover:border-red-300 hover:bg-red-50 hover:text-red-600 transition-colors"
                                 >
                                   {fmtHourChip(b.starts_at)}
                                   <span className="text-red-400 ml-1 opacity-0 group-hover:opacity-100">✕</span>
                                 </button>
                               ) : (
-                                <span key={b.id} className="text-[11px] font-medium text-gray-600 bg-white border rounded-md px-2 py-1">
+                                <span key={b.id} className="text-[11px] font-medium text-muted-foreground bg-card border rounded-md px-2 py-1">
                                   {fmtHourChip(b.starts_at)}
                                 </span>
                               )
                             ))}
                           </div>
-                          <p className="text-[11px] text-gray-400 mt-2">Tap an hour to cancel just that slot, or use Cancel above for the whole booking.</p>
+                          <p className="text-[11px] text-muted-foreground/80 mt-2">Tap an hour to cancel just that slot, or use Cancel above for the whole booking.</p>
                         </div>
                       )}
                     </div>
@@ -385,7 +385,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
             <DialogTitle>Cancel this booking?</DialogTitle>
           </DialogHeader>
           {confirmTarget && (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               {confirmTarget.display_name}&apos;s booking on {confirmTarget.court_name} ({fmtTime(confirmTarget.start)}–{fmtTime(confirmTarget.end)})
               will be cancelled and the slot{confirmTarget.bookings.length > 1 ? 's' : ''} freed for others.
             </p>
@@ -405,7 +405,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
           <DialogHeader><DialogTitle>Decline this booking request?</DialogTitle></DialogHeader>
           {rejectTarget && (
             <div className="space-y-3">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 {rejectTarget.display_name}&apos;s request for {rejectTarget.court_name} ({fmtTime(rejectTarget.start)}–{fmtTime(rejectTarget.end)}) will be declined.
               </p>
               <Textarea
@@ -430,7 +430,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
           </DialogHeader>
           {contactTarget && (
             <div className="space-y-3">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 This booking starts in under 2 hours, so it can no longer be cancelled here.
                 Please contact the court admin to cancel.
               </p>
@@ -443,7 +443,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
                   {contactTarget.contact_phone}
                 </a>
               ) : (
-                <p className="text-sm font-medium text-gray-700">No contact number set — reach out to your league admin.</p>
+                <p className="text-sm font-medium text-foreground/90">No contact number set — reach out to your league admin.</p>
               )}
             </div>
           )}

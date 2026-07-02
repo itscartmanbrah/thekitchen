@@ -70,11 +70,11 @@ export function LeagueActivity({ leagueId }: { leagueId: string }) {
     return () => { supabase.removeChannel(ch) }
   }, [leagueId])
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading activity…</div>
+  if (loading) return <div className="text-center py-12 text-muted-foreground">Loading activity…</div>
 
   if (items.length === 0) return (
-    <div className="text-center py-16 text-gray-400">
-      <Activity className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+    <div className="text-center py-16 text-muted-foreground/80">
+      <Activity className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
       <p>No completed matches yet.</p>
     </div>
   )
@@ -100,9 +100,9 @@ export function LeagueActivity({ leagueId }: { leagueId: string }) {
 
                 <div className="flex-1 min-w-0">
                   {/* Main line */}
-                  <p className="text-sm text-gray-800">
+                  <p className="text-sm text-foreground">
                     <TeamNames players={item.team1} won={team1Won} />
-                    <span className="text-gray-500 font-bold mx-1">
+                    <span className="text-muted-foreground font-bold mx-1">
                       {item.score1}–{item.score2}
                     </span>
                     <TeamNames players={item.team2} won={!team1Won} />
@@ -111,7 +111,7 @@ export function LeagueActivity({ leagueId }: { leagueId: string }) {
                   {/* ELO deltas */}
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
                     {[...item.team1, ...item.team2].map((p, i) => (
-                      <span key={i} className="text-xs text-gray-500 flex items-center gap-0.5">
+                      <span key={i} className="text-xs text-muted-foreground flex items-center gap-0.5">
                         {p.name.split(' ')[0]}
                         {p.delta > 0
                           ? <span className="text-green-600 font-medium ml-0.5 flex items-center"><TrendingUp className="w-2.5 h-2.5" />+{p.delta}</span>
@@ -121,7 +121,7 @@ export function LeagueActivity({ leagueId }: { leagueId: string }) {
                     ))}
                   </div>
 
-                  <p className="text-xs text-gray-400 mt-1">{formatLabels[item.format]} · {timeAgo}</p>
+                  <p className="text-xs text-muted-foreground/80 mt-1">{formatLabels[item.format]} · {timeAgo}</p>
                 </div>
               </div>
             </CardContent>
@@ -137,8 +137,8 @@ function TeamNames({ players, won }: { players: { name: string; userId: string }
     <>
       {players.map((p, i) => (
         <span key={i}>
-          {i > 0 && <span className="text-gray-400"> & </span>}
-          <Link href={`/players/${p.userId}`} className={`font-semibold hover:underline ${won ? 'text-green-700' : 'text-gray-700'}`}>
+          {i > 0 && <span className="text-muted-foreground/80"> & </span>}
+          <Link href={`/players/${p.userId}`} className={`font-semibold hover:underline ${won ? 'text-green-700' : 'text-foreground/90'}`}>
             {p.name.split(' ')[0]}
           </Link>
         </span>

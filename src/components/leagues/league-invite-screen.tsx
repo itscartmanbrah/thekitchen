@@ -130,10 +130,10 @@ export function LeagueInviteScreen({ league, membershipId, userId }: Props) {
         🎾
       </div>
 
-      <h1 className="text-xl font-bold text-gray-900 mb-1">You&apos;ve been invited!</h1>
-      <p className="text-gray-500 text-sm mb-6">
+      <h1 className="text-xl font-bold text-foreground mb-1">You&apos;ve been invited!</h1>
+      <p className="text-muted-foreground text-sm mb-6">
         An admin has invited you to join <strong>{league.name}</strong>.
-        {league.description && <><br /><span className="text-gray-400 text-xs">{league.description}</span></>}
+        {league.description && <><br /><span className="text-muted-foreground/80 text-xs">{league.description}</span></>}
       </p>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center">

@@ -16,7 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .single()
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/40">
       <ClaimGuestsOnLoad />
       <Navbar profile={profile} />
       <main className="max-w-6xl mx-auto px-4 py-8">

@@ -175,52 +175,52 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
             <PlayerAvatar name={profile.display_name} color={profile.avatar_color} imageUrl={(profile as any).avatar_url} size="lg" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-bold text-gray-900">{profile.display_name}</h1>
+                <h1 className="text-xl font-bold text-foreground">{profile.display_name}</h1>
                 {isOwn && (
                   <Link href="/profile">
-                    <Badge variant="outline" className="text-xs cursor-pointer hover:bg-gray-50">Edit profile</Badge>
+                    <Badge variant="outline" className="text-xs cursor-pointer hover:bg-muted/50">Edit profile</Badge>
                   </Link>
                 )}
               </div>
               {profile.nickname && (profile.first_name || profile.last_name) && (
-                <p className="text-sm text-gray-500 mt-0.5">{profile.first_name} {profile.last_name}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{profile.first_name} {profile.last_name}</p>
               )}
-              <p className="text-xs text-gray-400 mt-1">Member since {memberSince}</p>
+              <p className="text-xs text-muted-foreground/80 mt-1">Member since {memberSince}</p>
               <div className="flex items-center gap-2 mt-3 flex-wrap">
                 <span className={`text-sm font-bold ${pb.color}`}>{pb.rating}</span>
-                <span className="text-gray-300">·</span>
+                <span className="text-muted-foreground/50">·</span>
                 <span className={`text-sm font-medium ${tier.color}`}>{tier.label}</span>
               </div>
             </div>
 
             <div className="hidden sm:grid grid-cols-3 gap-3 text-center shrink-0">
               <div>
-                <p className="text-lg font-bold text-gray-900">{rankedMemberships.length}</p>
-                <p className="text-xs text-gray-500">Leagues</p>
+                <p className="text-lg font-bold text-foreground">{rankedMemberships.length}</p>
+                <p className="text-xs text-muted-foreground">Leagues</p>
               </div>
               <div>
                 <p className="text-lg font-bold text-green-600">{totalWins}</p>
-                <p className="text-xs text-gray-500">Wins</p>
+                <p className="text-xs text-muted-foreground">Wins</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-gray-500">{totalLosses}</p>
-                <p className="text-xs text-gray-500">Losses</p>
+                <p className="text-lg font-bold text-muted-foreground">{totalLosses}</p>
+                <p className="text-xs text-muted-foreground">Losses</p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3 text-center mt-4 sm:hidden">
-            <div className="bg-gray-50 rounded-lg py-2">
-              <p className="text-lg font-bold text-gray-900">{rankedMemberships.length}</p>
-              <p className="text-xs text-gray-500">Leagues</p>
+            <div className="bg-muted/40 rounded-lg py-2">
+              <p className="text-lg font-bold text-foreground">{rankedMemberships.length}</p>
+              <p className="text-xs text-muted-foreground">Leagues</p>
             </div>
             <div className="bg-green-50 rounded-lg py-2">
               <p className="text-lg font-bold text-green-600">{totalWins}</p>
-              <p className="text-xs text-gray-500">Wins</p>
+              <p className="text-xs text-muted-foreground">Wins</p>
             </div>
-            <div className="bg-gray-50 rounded-lg py-2">
-              <p className="text-lg font-bold text-gray-500">{totalLosses}</p>
-              <p className="text-xs text-gray-500">Losses</p>
+            <div className="bg-muted/40 rounded-lg py-2">
+              <p className="text-lg font-bold text-muted-foreground">{totalLosses}</p>
+              <p className="text-xs text-muted-foreground">Losses</p>
             </div>
           </div>
         </CardContent>
@@ -230,17 +230,17 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
       {h2h && (
         <Card className="mb-6">
           <CardContent className="py-4 px-4">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Your head-to-head</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Your head-to-head</p>
             <div className="flex items-center gap-3">
               {/* My side */}
               <div className="flex-1 text-center">
                 <p className="text-3xl font-bold text-green-600">{h2h.myWins}</p>
-                <p className="text-xs text-gray-500 mt-0.5">You</p>
+                <p className="text-xs text-muted-foreground mt-0.5">You</p>
               </div>
 
               {/* Bar */}
               <div className="flex-[2] space-y-1.5">
-                <div className="flex rounded-full overflow-hidden h-3 bg-gray-100">
+                <div className="flex rounded-full overflow-hidden h-3 bg-muted">
                   <div
                     className="bg-green-500 transition-all"
                     style={{ width: `${Math.round((h2h.myWins / h2h.total) * 100)}%` }}
@@ -250,13 +250,13 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                     style={{ width: `${Math.round((h2h.theirWins / h2h.total) * 100)}%` }}
                   />
                 </div>
-                <p className="text-xs text-center text-gray-400">{h2h.total} match{h2h.total !== 1 ? 'es' : ''} played</p>
+                <p className="text-xs text-center text-muted-foreground/80">{h2h.total} match{h2h.total !== 1 ? 'es' : ''} played</p>
               </div>
 
               {/* Their side */}
               <div className="flex-1 text-center">
                 <p className="text-3xl font-bold text-red-400">{h2h.theirWins}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{profile.display_name.split(' ')[0]}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{profile.display_name.split(' ')[0]}</p>
               </div>
             </div>
           </CardContent>
@@ -264,13 +264,13 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
       )}
 
       {/* ── League memberships + per-league chart ── */}
-      <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+      <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
         Leagues · Rankings
       </h2>
 
       {rankedMemberships.length === 0 ? (
         <Card>
-          <CardContent className="py-10 text-center text-gray-400 text-sm">
+          <CardContent className="py-10 text-center text-muted-foreground/80 text-sm">
             Not a member of any leagues yet.
           </CardContent>
         </Card>
@@ -292,51 +292,51 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                        <p className="font-semibold text-gray-900 text-sm">{m.leagues?.name}</p>
+                        <p className="font-semibold text-foreground text-sm">{m.leagues?.name}</p>
                         <Badge variant="outline" className="text-xs py-0">
                           {roleLabels[m.role] ?? m.role}
                         </Badge>
                       </div>
                       {m.leagues?.location && (
-                        <div className="flex items-center gap-1 text-xs text-gray-400 mb-2">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground/80 mb-2">
                           <MapPin className="w-3 h-3" />
                           {m.leagues.location}
                         </div>
                       )}
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <div className="flex items-center gap-1 bg-gray-100 rounded-full px-2.5 py-0.5">
-                          <Trophy className="w-3 h-3 text-gray-500" />
-                          <span className="text-xs font-semibold text-gray-700">
+                        <div className="flex items-center gap-1 bg-muted rounded-full px-2.5 py-0.5">
+                          <Trophy className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-xs font-semibold text-foreground/90">
                             #{m.rank} of {m.totalPlayers}
                           </span>
                         </div>
                         <span className={`text-xs font-semibold ${mPb.color}`}>{mPb.rating}</span>
-                        <span className="text-gray-300 text-xs">·</span>
+                        <span className="text-muted-foreground/50 text-xs">·</span>
                         <span className={`text-xs ${mTier.color}`}>{mTier.label}</span>
                       </div>
                     </div>
 
                     <div className="text-right shrink-0">
-                      <p className="text-xl font-bold text-gray-900">{formatElo(m.elo_rating)}</p>
-                      <p className="text-xs text-gray-400">ELO</p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xl font-bold text-foreground">{formatElo(m.elo_rating)}</p>
+                      <p className="text-xs text-muted-foreground/80">ELO</p>
+                      <p className="text-xs text-muted-foreground mt-1">
                         <span className="text-green-600 font-medium">{m.wins}W</span>
                         {' – '}
-                        <span className="text-gray-500">{m.losses}L</span>
-                        {mWR !== null && <span className="ml-1 text-gray-400">({mWR}%)</span>}
+                        <span className="text-muted-foreground">{m.losses}L</span>
+                        {mWR !== null && <span className="ml-1 text-muted-foreground/80">({mWR}%)</span>}
                       </p>
                     </div>
                   </div>
 
                   {/* Format ratings + career high */}
                   <div className="flex items-center gap-2 flex-wrap mb-2">
-                    <div className="flex items-center gap-1.5 bg-gray-50 border rounded-lg px-2.5 py-1">
-                      <span className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">Singles</span>
-                      <span className="text-xs font-bold text-gray-800">{formatElo(m.singles_elo ?? m.elo_rating)}</span>
+                    <div className="flex items-center gap-1.5 bg-muted/40 border rounded-lg px-2.5 py-1">
+                      <span className="text-[10px] uppercase tracking-wide text-muted-foreground/80 font-medium">Singles</span>
+                      <span className="text-xs font-bold text-foreground">{formatElo(m.singles_elo ?? m.elo_rating)}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-gray-50 border rounded-lg px-2.5 py-1">
-                      <span className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">Doubles</span>
-                      <span className="text-xs font-bold text-gray-800">{formatElo(m.doubles_elo ?? m.elo_rating)}</span>
+                    <div className="flex items-center gap-1.5 bg-muted/40 border rounded-lg px-2.5 py-1">
+                      <span className="text-[10px] uppercase tracking-wide text-muted-foreground/80 font-medium">Doubles</span>
+                      <span className="text-xs font-bold text-foreground">{formatElo(m.doubles_elo ?? m.elo_rating)}</span>
                     </div>
                     <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1">
                       <span className="text-[10px] uppercase tracking-wide text-amber-600 font-medium">Career high</span>
@@ -347,7 +347,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                   {/* Season history */}
                   {m.seasonHistory.length > 0 && (
                     <div className="border-t pt-3 mt-2 space-y-1.5">
-                      <p className="text-xs text-gray-400 font-medium mb-2">Season history</p>
+                      <p className="text-xs text-muted-foreground/80 font-medium mb-2">Season history</p>
                       {m.seasonHistory.map((sr: any, i: number) => {
                         const sWR = sr.wins + sr.losses > 0
                           ? Math.round((sr.wins / (sr.wins + sr.losses)) * 100)
@@ -357,11 +357,11 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                             <div className="flex items-center gap-2">
                               {i === 0 && sr.final_rank === 1 && <span>🏆</span>}
                               {i === 0 && sr.final_rank === 2 && <span>🥈</span>}
-                              <span className="text-gray-600 font-medium">{sr.seasons?.name ?? 'Season'}</span>
-                              <span className="text-gray-400">· Final #{sr.final_rank}</span>
+                              <span className="text-muted-foreground font-medium">{sr.seasons?.name ?? 'Season'}</span>
+                              <span className="text-muted-foreground/80">· Final #{sr.final_rank}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-500">
-                              <span className="font-semibold text-gray-700">{sr.final_elo} ELO</span>
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <span className="font-semibold text-foreground/90">{sr.final_elo} ELO</span>
                               <span>{sr.wins}W {sr.losses}L{sWR !== null ? ` (${sWR}%)` : ''}</span>
                             </div>
                           </div>
@@ -373,13 +373,13 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                   {/* Per-league ELO chart */}
                   {m.eloHistory.length >= 2 ? (
                     <div className="border-t pt-3">
-                      <p className="text-xs text-gray-400 flex items-center gap-1 mb-1">
+                      <p className="text-xs text-muted-foreground/80 flex items-center gap-1 mb-1">
                         <TrendingUp className="w-3 h-3" /> ELO progression
                       </p>
                       <EloHistoryChart data={m.eloHistory} />
                     </div>
                   ) : m.eloHistory.length === 1 ? (
-                    <p className="text-xs text-gray-400 border-t pt-3">
+                    <p className="text-xs text-muted-foreground/80 border-t pt-3">
                       Play one more match to see your ELO chart.
                     </p>
                   ) : null}
@@ -391,8 +391,8 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
         </div>
       )}
 
-      <p className="mt-6 text-xs text-center text-gray-400">
-        <Link href="/elo" className="underline hover:text-gray-600">How are these ratings calculated?</Link>
+      <p className="mt-6 text-xs text-center text-muted-foreground/80">
+        <Link href="/elo" className="underline hover:text-muted-foreground">How are these ratings calculated?</Link>
       </p>
     </div>
   )

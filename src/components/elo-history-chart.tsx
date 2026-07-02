@@ -13,16 +13,16 @@ function CustomTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null
   const d = payload[0].payload as DataPoint
   return (
-    <div className="bg-white border rounded-lg shadow-lg px-3 py-2 text-xs">
-      <p className="font-semibold text-gray-800">{d.elo} ELO</p>
-      <p className="text-gray-500">{d.label}</p>
+    <div className="bg-card border rounded-lg shadow-lg px-3 py-2 text-xs">
+      <p className="font-semibold text-foreground">{d.elo} ELO</p>
+      <p className="text-muted-foreground">{d.label}</p>
     </div>
   )
 }
 
 export function EloHistoryChart({ data, startElo = 1000 }: Props) {
   if (data.length < 2) return (
-    <div className="flex items-center justify-center h-24 text-xs text-gray-400">
+    <div className="flex items-center justify-center h-24 text-xs text-muted-foreground/80">
       Need at least 2 matches to show a chart
     </div>
   )

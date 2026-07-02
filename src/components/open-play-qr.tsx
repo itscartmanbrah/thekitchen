@@ -11,10 +11,10 @@ export function OpenPlayQR({ shareCode, size = 220 }: { shareCode: string; size?
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="bg-white p-3 rounded-xl border shadow-sm">
+      <div className="bg-card p-3 rounded-xl border shadow-sm">
         <QRCodeSVG value={url} size={size} level="M" />
       </div>
-      <p className="text-xs text-gray-500 text-center break-all max-w-[260px]">{url}</p>
+      <p className="text-xs text-muted-foreground text-center break-all max-w-[260px]">{url}</p>
     </div>
   )
 }

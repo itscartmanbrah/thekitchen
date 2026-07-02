@@ -232,22 +232,22 @@ export function DivisionView({
     status: m.status,
   }))
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading division…</div>
+  if (loading) return <div className="text-center py-12 text-muted-foreground">Loading division…</div>
 
   const standings = div.bracket_type === 'round_robin' ? computeStandings(entries, matches) : []
 
   return (
     <div>
-      <button onClick={onBack} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4">
+      <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground/90 mb-4">
         <ArrowLeft className="w-4 h-4" /> All divisions
       </button>
 
       <div className="mb-4">
-        <h3 className="font-bold text-gray-900 flex items-center gap-2">
+        <h3 className="font-bold text-foreground flex items-center gap-2">
           <Trophy className="w-4 h-4 text-amber-500" />
           {div.name}
         </h3>
-        <p className="text-xs text-gray-400 mt-0.5">{divisionRuleSummary(div as any)}</p>
+        <p className="text-xs text-muted-foreground/80 mt-0.5">{divisionRuleSummary(div as any)}</p>
         {winner && (
           <div className="mt-2 inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
             <span className="text-lg">🏆</span>
@@ -284,15 +284,15 @@ export function DivisionView({
           </div>
 
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-2">{entries.length} registered</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">{entries.length} registered</p>
             {entries.length === 0 ? (
-              <p className="text-sm text-gray-400 py-6 text-center">No entries yet — be the first!</p>
+              <p className="text-sm text-muted-foreground/80 py-6 text-center">No entries yet — be the first!</p>
             ) : (
               <div className="space-y-1.5">
                 {entries.map(e => (
-                  <div key={e.id} className="flex items-center gap-2.5 bg-white border rounded-lg px-3 py-2">
+                  <div key={e.id} className="flex items-center gap-2.5 bg-card border rounded-lg px-3 py-2">
                     <PlayerAvatar name={e.name} color={e.avatar_color} imageUrl={e.avatar_url} size="sm" />
-                    <span className="text-sm font-medium text-gray-800 flex-1 truncate">{e.name}</span>
+                    <span className="text-sm font-medium text-foreground flex-1 truncate">{e.name}</span>
                     {(e.user_id === currentUserId || e.partner_id === currentUserId) && (
                       <span className="text-[10px] font-bold text-green-600 bg-green-50 rounded-full px-2 py-0.5">YOU</span>
                     )}
@@ -310,17 +310,17 @@ export function DivisionView({
           <div className="space-y-6">
             {/* Standings */}
             <div>
-              <p className="text-xs font-semibold text-gray-500 mb-2">Standings</p>
-              <div className="rounded-xl border overflow-hidden bg-white">
+              <p className="text-xs font-semibold text-muted-foreground mb-2">Standings</p>
+              <div className="rounded-xl border overflow-hidden bg-card">
                 {standings.map((s, i) => (
                   <div key={s.entry.id} className={`flex items-center gap-3 px-3 py-2 border-b last:border-b-0 ${
                     div.winner_entry_id === s.entry.id ? 'bg-amber-50' : ''
                   }`}>
-                    <span className="text-xs font-bold text-gray-400 w-5">{i + 1}</span>
+                    <span className="text-xs font-bold text-muted-foreground/80 w-5">{i + 1}</span>
                     <PlayerAvatar name={s.entry.name} color={s.entry.avatar_color} imageUrl={s.entry.avatar_url} size="sm" />
-                    <span className="text-sm font-medium text-gray-800 flex-1 truncate">{s.entry.name}</span>
-                    <span className="text-xs text-gray-500">{s.wins}W–{s.losses}L</span>
-                    <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-green-600' : s.diff < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                    <span className="text-sm font-medium text-foreground flex-1 truncate">{s.entry.name}</span>
+                    <span className="text-xs text-muted-foreground">{s.wins}W–{s.losses}L</span>
+                    <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-green-600' : s.diff < 0 ? 'text-red-500' : 'text-muted-foreground/80'}`}>
                       {s.diff > 0 ? '+' : ''}{s.diff}
                     </span>
                   </div>
@@ -330,7 +330,7 @@ export function DivisionView({
 
             {/* Matches */}
             <div>
-              <p className="text-xs font-semibold text-gray-500 mb-2">Matches</p>
+              <p className="text-xs font-semibold text-muted-foreground mb-2">Matches</p>
               <div className="space-y-1.5">
                 {matches.map(m => {
                   const e1 = m.entry1_id ? entryMap.get(m.entry1_id) : null
@@ -339,16 +339,16 @@ export function DivisionView({
                   return (
                     <div
                       key={m.id}
-                      className={`flex items-center gap-2 bg-white border rounded-lg px-3 py-2 ${
+                      className={`flex items-center gap-2 bg-card border rounded-lg px-3 py-2 ${
                         reportable ? 'cursor-pointer hover:border-green-400' : ''
                       }`}
                       onClick={() => reportable && (setScoreMatch(m), setScore1(''), setScore2(''))}
                     >
                       <span className={`text-sm flex-1 text-right truncate ${m.winner_entry_id === m.entry1_id ? 'font-semibold' : ''}`}>{e1?.name}</span>
                       {m.status === 'completed' ? (
-                        <span className="text-sm font-bold text-gray-700 px-2 shrink-0">{m.score1} – {m.score2}</span>
+                        <span className="text-sm font-bold text-foreground/90 px-2 shrink-0">{m.score1} – {m.score2}</span>
                       ) : (
-                        <span className="text-xs text-gray-400 px-2 shrink-0">vs</span>
+                        <span className="text-xs text-muted-foreground/80 px-2 shrink-0">vs</span>
                       )}
                       <span className={`text-sm flex-1 truncate ${m.winner_entry_id === m.entry2_id ? 'font-semibold' : ''}`}>{e2?.name}</span>
                       {reportable && <span className="text-[10px] text-green-600 font-medium shrink-0">Enter score</span>}
@@ -379,14 +379,14 @@ export function DivisionView({
           </DialogHeader>
           <div className="space-y-1.5">
             {div.gender === 'mixed' && (
-              <p className="text-xs text-gray-400 mb-2">Mixed division — your partner must be the opposite gender.</p>
+              <p className="text-xs text-muted-foreground/80 mb-2">Mixed division — your partner must be the opposite gender.</p>
             )}
             {members.map(m => (
               <button
                 key={m.user_id}
                 onClick={() => setPartnerId(m.user_id)}
                 className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg border text-left transition-colors ${
-                  partnerId === m.user_id ? 'border-green-400 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                  partnerId === m.user_id ? 'border-green-400 bg-green-50' : 'border-border hover:border-border'
                 }`}
               >
                 <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} imageUrl={m.profiles.avatar_url} size="sm" />
@@ -428,7 +428,7 @@ export function DivisionView({
                   </div>
                 )
               })}
-              <p className="text-xs text-gray-400">The result counts toward league ELO like any other match.</p>
+              <p className="text-xs text-muted-foreground/80">The result counts toward league ELO like any other match.</p>
             </div>
           )}
           <DialogFooter>

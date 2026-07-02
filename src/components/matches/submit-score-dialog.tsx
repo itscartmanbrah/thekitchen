@@ -106,7 +106,7 @@ export function SubmitScoreDialog({ match, onSubmitted }: Props) {
                 {team1.map((p: any) => (
                   <div key={p.id} className="flex items-center gap-2">
                     <PlayerAvatar name={p.profiles.display_name} color={p.profiles.avatar_color} imageUrl={p.profiles.avatar_url} size="sm" />
-                    <span className="text-sm font-medium text-gray-700 truncate">{p.profiles.display_name}</span>
+                    <span className="text-sm font-medium text-foreground/90 truncate">{p.profiles.display_name}</span>
                   </div>
                 ))}
               </div>
@@ -126,7 +126,7 @@ export function SubmitScoreDialog({ match, onSubmitted }: Props) {
                 {team2.map((p: any) => (
                   <div key={p.id} className="flex items-center gap-2">
                     <PlayerAvatar name={p.profiles.display_name} color={p.profiles.avatar_color} imageUrl={p.profiles.avatar_url} size="sm" />
-                    <span className="text-sm font-medium text-gray-700 truncate">{p.profiles.display_name}</span>
+                    <span className="text-sm font-medium text-foreground/90 truncate">{p.profiles.display_name}</span>
                   </div>
                 ))}
               </div>

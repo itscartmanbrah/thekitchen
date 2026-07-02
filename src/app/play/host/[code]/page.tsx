@@ -35,15 +35,15 @@ export default function SoloHostByCodePage({ params }: { params: { code: string 
   }, [params.code])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PlayHeader right={<Link href="/play/new" className="text-sm text-gray-500 hover:text-green-600">New session</Link>} />
+    <div className="min-h-screen bg-muted/40">
+      <PlayHeader right={<Link href="/play/new" className="text-sm text-muted-foreground hover:text-primary">New session</Link>} />
       <main className="max-w-3xl mx-auto px-4 py-6">
         <PlayBack />
         {state === 'loading' && <OpenPlaySkeleton />}
         {state === 'error' && (
           <div className="text-center py-16">
-            <p className="text-gray-500 mb-4">We couldn&apos;t open that session — the link may be invalid or the session has ended.</p>
-            <Link href="/play/new" className="text-green-600 font-medium hover:underline">Start a new session →</Link>
+            <p className="text-muted-foreground mb-4">We couldn&apos;t open that session — the link may be invalid or the session has ended.</p>
+            <Link href="/play/new" className="text-primary font-medium hover:underline">Start a new session →</Link>
           </div>
         )}
         {state === 'ok' && <LeagueOpenPlay leagueId={null} isOrganizer solo />}

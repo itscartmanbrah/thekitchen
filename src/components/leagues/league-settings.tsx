@@ -158,7 +158,7 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
             </div>
 
             <div className="space-y-2">
-              <Label>Banner image <span className="text-gray-400 font-normal text-xs">(optional — replaces the color strip)</span></Label>
+              <Label>Banner image <span className="text-muted-foreground/80 font-normal text-xs">(optional — replaces the color strip)</span></Label>
               {bannerImageUrl ? (
                 <div className="relative rounded-lg overflow-hidden border">
                   <img src={bannerImageUrl} alt="Banner" className="w-full h-24 object-cover" />
@@ -171,13 +171,13 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
                   </button>
                 </div>
               ) : (
-                <label className="flex items-center gap-3 p-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-green-400 hover:bg-green-50 transition-colors">
-                  <ImagePlus className="w-5 h-5 text-gray-400" />
+                <label className="flex items-center gap-3 p-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-green-400 hover:bg-green-50 transition-colors">
+                  <ImagePlus className="w-5 h-5 text-muted-foreground/80" />
                   <div>
-                    <p className="text-sm font-medium text-gray-700">
+                    <p className="text-sm font-medium text-foreground/90">
                       {uploadingBanner ? 'Uploading…' : 'Upload banner image'}
                     </p>
-                    <p className="text-xs text-gray-400">PNG, JPG, WEBP up to 5MB</p>
+                    <p className="text-xs text-muted-foreground/80">PNG, JPG, WEBP up to 5MB</p>
                   </div>
                   <input
                     type="file"
@@ -200,7 +200,7 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
             <CardTitle className="text-base text-red-600">Danger zone</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600 mb-4">Permanently delete this league and all its data. This cannot be undone.</p>
+            <p className="text-sm text-muted-foreground mb-4">Permanently delete this league and all its data. This cannot be undone.</p>
             <Button variant="destructive" size="sm" onClick={() => { setShowDeleteDialog(true); setDeletePassword(''); setDeleteError('') }}>
               Delete league
             </Button>
@@ -215,7 +215,7 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
             <DialogTitle className="text-red-600">Delete {league.name}?</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               This will permanently delete the league, all matches, and all rankings. <strong>This cannot be undone.</strong>
             </p>
             <div className="space-y-2">

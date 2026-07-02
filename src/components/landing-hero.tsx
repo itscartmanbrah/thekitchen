@@ -30,12 +30,12 @@ export function LandingHero() {
         ELO-powered pickleball rankings
       </motion.div>
 
-      <motion.h1 {...up(1)} className="text-5xl md:text-6xl font-extrabold italic uppercase tracking-tight text-gray-900 mb-6 leading-[0.95]">
+      <motion.h1 {...up(1)} className="text-5xl md:text-6xl font-extrabold italic uppercase tracking-tight text-foreground mb-6 leading-[0.95]">
         Run your pickleball league<br />
         <span className="tk-shiny">like a pro.</span>
       </motion.h1>
 
-      <motion.p {...up(2)} className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+      <motion.p {...up(2)} className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
         The Kitchen tracks every dink, drive, and drop shot. Create leagues, log matches,
         and watch your ELO rating climb with a fair, margin-aware ranking system.
       </motion.p>
@@ -48,7 +48,7 @@ export function LandingHero() {
           <Link href="/login">Sign in</Link>
         </Button>
       </motion.div>
-      <motion.p {...up(4)} className="text-sm text-gray-500 mt-4">Free to create. Invite your crew with a 6-character code.</motion.p>
+      <motion.p {...up(4)} className="text-sm text-muted-foreground mt-4">Free to create. Invite your crew with a 6-character code.</motion.p>
     </section>
   )
 }

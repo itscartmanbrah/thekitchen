@@ -85,13 +85,13 @@ const ONE_COURT_NOTE =
 export function StyleExplainer({ mode, courtCount }: { mode: string; courtCount?: number }) {
   const i = styleInfo(mode)
   return (
-    <div className="text-[11px] text-gray-600 bg-gray-50 border rounded-lg px-3 py-2 space-y-1.5">
-      <p className="font-semibold text-gray-800">{i.label} — <span className="font-normal text-gray-500">{i.tagline}</span></p>
+    <div className="text-[11px] text-muted-foreground bg-muted/40 border rounded-lg px-3 py-2 space-y-1.5">
+      <p className="font-semibold text-foreground">{i.label} — <span className="font-normal text-muted-foreground">{i.tagline}</span></p>
       <ul className="space-y-0.5">
         {i.how.map((h, idx) => <li key={idx} className="flex gap-1.5"><span className="text-violet-500">•</span><span>{h}</span></li>)}
       </ul>
       {courtCount === 1 && mode !== 'balanced' && (
-        <p className="text-gray-500 pt-0.5"><strong>On one court:</strong> {ONE_COURT_NOTE.replace('On a single court the', 'the')}</p>
+        <p className="text-muted-foreground pt-0.5"><strong>On one court:</strong> {ONE_COURT_NOTE.replace('On a single court the', 'the')}</p>
       )}
     </div>
   )
@@ -111,12 +111,12 @@ export function StyleBadge({ mode, courtCount }: { mode: string; courtCount?: nu
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>{i.label}</DialogTitle></DialogHeader>
-          <p className="text-sm text-gray-500 -mt-1">{i.tagline}</p>
+          <p className="text-sm text-muted-foreground -mt-1">{i.tagline}</p>
           <ul className="space-y-2 mt-1">
-            {i.how.map((h, idx) => <li key={idx} className="flex gap-2 text-sm text-gray-700"><span className="text-violet-500 mt-0.5">•</span><span>{h}</span></li>)}
+            {i.how.map((h, idx) => <li key={idx} className="flex gap-2 text-sm text-foreground/90"><span className="text-violet-500 mt-0.5">•</span><span>{h}</span></li>)}
           </ul>
           {courtCount === 1 && mode !== 'balanced' && (
-            <div className="text-xs text-gray-600 bg-gray-50 border rounded-lg p-3 mt-1">{ONE_COURT_NOTE}</div>
+            <div className="text-xs text-muted-foreground bg-muted/40 border rounded-lg p-3 mt-1">{ONE_COURT_NOTE}</div>
           )}
         </DialogContent>
       </Dialog>

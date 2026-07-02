@@ -136,13 +136,13 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
     }
   }
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading members…</div>
+  if (loading) return <div className="text-center py-12 text-muted-foreground">Loading members…</div>
 
   return (
     <div className="space-y-3">
       {isAdmin && (
         <div className="flex justify-between items-center">
-          <p className="text-sm text-gray-500">{members.length} member{members.length !== 1 ? 's' : ''}</p>
+          <p className="text-sm text-muted-foreground">{members.length} member{members.length !== 1 ? 's' : ''}</p>
           <InvitePlayerDialog leagueId={leagueId} onInvited={fetchMembers} />
         </div>
       )}
@@ -161,7 +161,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
                     <span className="font-medium text-sm truncate">{m.profiles.display_name}</span>
                     {isMe && <Badge variant="outline" className="text-xs py-0">You</Badge>}
                   </div>
-                  <span className="text-xs text-gray-500 hidden sm:block">{m.profiles.email}</span>
+                  <span className="text-xs text-muted-foreground hidden sm:block">{m.profiles.email}</span>
                   <Badge variant={m.role === 'head_admin' ? 'default' : m.role === 'admin' ? 'secondary' : 'outline'} className="text-xs sm:hidden mt-0.5">
                     {roleLabels[m.role] ?? m.role}
                   </Badge>
@@ -175,7 +175,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
                 {!isMe && (
                   <button
                     onClick={() => setChallengeTarget({ id: m.user_id, name: m.profiles.display_name })}
-                    className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700 hover:bg-green-50 transition-colors shrink-0"
+                    className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-green-400 hover:text-green-700 hover:bg-green-50 transition-colors shrink-0"
                   >
                     <Swords className="w-3 h-3" />
                     Challenge
@@ -234,7 +234,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
       {/* Banned members (admins only) */}
       {isAdmin && bannedMembers.length > 0 && (
         <div className="pt-4">
-          <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
+          <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
             <ShieldBan className="w-3.5 h-3.5" />
             Banned ({bannedMembers.length})
           </p>
@@ -247,17 +247,17 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
                     <div className="flex-1 min-w-0">
                       <span className="font-medium text-sm truncate block">{b.profiles.display_name}</span>
                       {b.ban_reason && (
-                        <span className="text-xs text-gray-500 italic truncate block">&ldquo;{b.ban_reason}&rdquo;</span>
+                        <span className="text-xs text-muted-foreground italic truncate block">&ldquo;{b.ban_reason}&rdquo;</span>
                       )}
                       {b.banned_at && (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-muted-foreground/80">
                           Banned {new Date(b.banned_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                       )}
                     </div>
                     <button
                       onClick={() => unbanMember(b.id, b.profiles.display_name)}
-                      className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700 hover:bg-green-50 transition-colors shrink-0"
+                      className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-green-400 hover:text-green-700 hover:bg-green-50 transition-colors shrink-0"
                     >
                       <ShieldCheck className="w-3 h-3" />
                       Unban
@@ -280,7 +280,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               They will be removed from the leaderboard and matches, and won&apos;t be able to rejoin this league while banned.
             </p>
             <Textarea

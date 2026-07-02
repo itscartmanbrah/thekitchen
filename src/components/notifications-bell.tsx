@@ -39,7 +39,7 @@ function NotifIcon({ type }: { type: string }) {
   if (type === 'booking_request')    return <CalendarClock className="w-4 h-4 text-blue-500" />
   if (type === 'booking_approved')   return <CheckCircle className="w-4 h-4 text-green-600" />
   if (type === 'booking_rejected')   return <XCircle className="w-4 h-4 text-red-500" />
-  return <Bell className="w-4 h-4 text-gray-400" />
+  return <Bell className="w-4 h-4 text-muted-foreground/80" />
 }
 
 export function NotificationsBell({ userId }: { userId: string }) {
@@ -320,10 +320,10 @@ export function NotificationsBell({ userId }: { userId: string }) {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(o => !o)}
-        className="relative w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+        className="relative w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
         aria-label="Notifications"
       >
-        <Bell className="w-5 h-5 text-gray-600" />
+        <Bell className="w-5 h-5 text-muted-foreground" />
         {unread > 0 && (
           <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
             {unread > 9 ? '9+' : unread}
@@ -332,18 +332,18 @@ export function NotificationsBell({ userId }: { userId: string }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 w-80 bg-white border rounded-xl shadow-xl z-50 overflow-hidden">
+        <div className="absolute right-0 top-10 w-80 bg-card border rounded-xl shadow-xl z-50 overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b">
-            <span className="font-semibold text-sm text-gray-900">Notifications</span>
+            <span className="font-semibold text-sm text-foreground">Notifications</span>
             <div className="flex items-center gap-2">
               {notifications.length > 0 && (
                 <>
-                  <button onClick={markAllRead} className="text-xs text-gray-400 hover:text-green-600 flex items-center gap-1">
+                  <button onClick={markAllRead} className="text-xs text-muted-foreground/80 hover:text-green-600 flex items-center gap-1">
                     <Check className="w-3 h-3" /> Mark all read
                   </button>
                   <span className="text-gray-200">|</span>
-                  <button onClick={clearAll} className="text-xs text-gray-400 hover:text-red-500">
+                  <button onClick={clearAll} className="text-xs text-muted-foreground/80 hover:text-red-500">
                     Clear all
                   </button>
                 </>
@@ -354,8 +354,8 @@ export function NotificationsBell({ userId }: { userId: string }) {
           {/* List */}
           <div className="max-h-[28rem] overflow-y-auto divide-y divide-gray-50">
             {notifications.length === 0 ? (
-              <div className="py-10 text-center text-gray-400 text-sm">
-                <Bell className="w-6 h-6 mx-auto mb-2 text-gray-300" />
+              <div className="py-10 text-center text-muted-foreground/80 text-sm">
+                <Bell className="w-6 h-6 mx-auto mb-2 text-muted-foreground/50" />
                 No notifications yet
               </div>
             ) : notifications.map(n => (
@@ -363,21 +363,21 @@ export function NotificationsBell({ userId }: { userId: string }) {
                 key={n.id}
                 className={`px-4 py-3 flex items-start gap-3 ${!n.read ? 'bg-green-50/60' : ''}`}
               >
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
                   <NotifIcon type={n.type} />
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <p className={`text-sm leading-snug ${!n.read ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
+                    <p className={`text-sm leading-snug ${!n.read ? 'font-semibold text-foreground' : 'text-foreground/90'}`}>
                       {n.title}
                     </p>
                     {!n.read && n.type !== 'league_invite' && (
                       <span className="w-2 h-2 bg-green-500 rounded-full shrink-0 mt-1" />
                     )}
                   </div>
-                  {n.body && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{n.body}</p>}
-                  <p className="text-xs text-gray-400 mt-1">{timeAgo(n.created_at)}</p>
+                  {n.body && <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{n.body}</p>}
+                  <p className="text-xs text-muted-foreground/80 mt-1">{timeAgo(n.created_at)}</p>
 
                   {/* League invite: Accept / Decline */}
                   {n.type === 'league_invite' && (
@@ -393,7 +393,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
                       <button
                         onClick={() => declineInvite(n)}
                         disabled={!!inviteLoading[n.id]}
-                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50"
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-border text-muted-foreground hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50"
                       >
                         <XCircle className="w-3 h-3" />
                         {inviteLoading[n.id] === 'decline' ? 'Declining…' : 'Decline'}
@@ -415,7 +415,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
                       <button
                         onClick={() => declineOfficiate(n)}
                         disabled={!!challengeLoading[n.id]}
-                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50"
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-border text-muted-foreground hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50"
                       >
                         <XCircle className="w-3 h-3" />
                         {challengeLoading[n.id] === 'decline' ? 'Declining…' : 'Decline'}
@@ -437,7 +437,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
                       <button
                         onClick={() => declineChallenge(n)}
                         disabled={!!challengeLoading[n.id]}
-                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50"
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-border text-muted-foreground hover:bg-red-50 hover:text-red-600 hover:border-red-200 disabled:opacity-50"
                       >
                         <XCircle className="w-3 h-3" />
                         {challengeLoading[n.id] === 'decline' ? 'Declining…' : 'Decline'}
@@ -447,7 +447,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
 
                   {/* Regular notifications: mark read */}
                   {!['league_invite', 'challenge_officiate', 'challenge_received'].includes(n.type) && !n.read && (
-                    <button onClick={() => markOneRead(n.id)} className="text-xs text-gray-400 hover:text-gray-600 mt-1">
+                    <button onClick={() => markOneRead(n.id)} className="text-xs text-muted-foreground/80 hover:text-muted-foreground mt-1">
                       Mark read
                     </button>
                   )}

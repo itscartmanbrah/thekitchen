@@ -150,14 +150,14 @@ export default function ProfilePage() {
     setSaving(false)
   }
 
-  if (!profile) return <div className="text-center py-12 text-gray-500">Loading…</div>
+  if (!profile) return <div className="text-center py-12 text-muted-foreground">Loading…</div>
 
   const previewName = nickname.trim() || `${firstName} ${lastName}`.trim() || profile.display_name
 
   return (
     <div className="max-w-lg">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
+        <h1 className="text-2xl font-bold text-foreground">Profile</h1>
         <Link href={`/players/${profile.id}`}>
           <Button variant="outline" size="sm" className="gap-1.5 text-xs">
             <ExternalLink className="w-3.5 h-3.5" />
@@ -169,7 +169,7 @@ export default function ProfilePage() {
       {/* ── League stats ── */}
       {memberships.length > 0 && (
         <div className="mb-5 space-y-2">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Your Rankings</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Your Rankings</p>
           {memberships.map((m: any) => {
             const mPb   = getPickleballRating(m.elo_rating)
             const mTier = getEloTier(m.elo_rating)
@@ -182,24 +182,24 @@ export default function ProfilePage() {
                 <CardContent className="py-3 px-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-gray-900 truncate">{m.leagues?.name}</p>
+                      <p className="font-semibold text-sm text-foreground truncate">{m.leagues?.name}</p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <div className="flex items-center gap-1 bg-gray-100 rounded-full px-2 py-0.5">
-                          <Trophy className="w-3 h-3 text-gray-500" />
-                          <span className="text-xs font-semibold text-gray-700">#{m.rank} of {m.totalPlayers}</span>
+                        <div className="flex items-center gap-1 bg-muted rounded-full px-2 py-0.5">
+                          <Trophy className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-xs font-semibold text-foreground/90">#{m.rank} of {m.totalPlayers}</span>
                         </div>
                         <span className={`text-xs font-semibold ${mPb.color}`}>{mPb.rating}</span>
-                        <span className="text-gray-300 text-xs">·</span>
+                        <span className="text-muted-foreground/50 text-xs">·</span>
                         <span className={`text-xs ${mTier.color}`}>{mTier.label}</span>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-lg font-bold text-gray-900">{formatElo(m.elo_rating)}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-lg font-bold text-foreground">{formatElo(m.elo_rating)}</p>
+                      <p className="text-xs text-muted-foreground">
                         <span className="text-green-600 font-medium">{m.wins}W</span>
                         {' – '}
                         {m.losses}L
-                        {mWR !== null && <span className="ml-1 text-gray-400">({mWR}%)</span>}
+                        {mWR !== null && <span className="ml-1 text-muted-foreground/80">({mWR}%)</span>}
                       </p>
                     </div>
                   </div>
@@ -218,11 +218,11 @@ export default function ProfilePage() {
           <form onSubmit={handleSave} className="space-y-5">
 
             {/* Avatar preview + upload */}
-            <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-4 p-3 bg-muted/40 rounded-lg">
               <div className="relative shrink-0">
                 <PlayerAvatar name={previewName} color={avatarColor} imageUrl={avatarUrl} size="lg" />
-                <label className="absolute -bottom-1 -right-1 w-6 h-6 bg-white border border-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-100 shadow-sm">
-                  <Camera className="w-3 h-3 text-gray-600" />
+                <label className="absolute -bottom-1 -right-1 w-6 h-6 bg-card border border-border rounded-full flex items-center justify-center cursor-pointer hover:bg-muted shadow-sm">
+                  <Camera className="w-3 h-3 text-muted-foreground" />
                   <input
                     type="file"
                     accept="image/*"
@@ -233,9 +233,9 @@ export default function ProfilePage() {
                 </label>
               </div>
               <div>
-                <p className="font-semibold text-gray-900">{previewName}</p>
-                <p className="text-xs text-gray-500">{profile.email}</p>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="font-semibold text-foreground">{previewName}</p>
+                <p className="text-xs text-muted-foreground">{profile.email}</p>
+                <p className="text-xs text-muted-foreground/80 mt-0.5">
                   {uploadingAvatar ? 'Uploading…' : 'Click the camera icon to change photo'}
                 </p>
               </div>
@@ -243,7 +243,7 @@ export default function ProfilePage() {
 
             {/* Name */}
             <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Name</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Name</p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="firstName">First name *</Label>
@@ -268,7 +268,7 @@ export default function ProfilePage() {
 
             <div className="space-y-1.5">
               <Label htmlFor="nickname">
-                Nickname <span className="text-gray-400 font-normal text-xs">(shown on leaderboard if set)</span>
+                Nickname <span className="text-muted-foreground/80 font-normal text-xs">(shown on leaderboard if set)</span>
               </Label>
               <Input
                 id="nickname"
@@ -282,12 +282,12 @@ export default function ProfilePage() {
 
             {/* Contact */}
             <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Contact</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Contact</p>
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <Label>Email address</Label>
-                  <Input value={profile.email} disabled className="bg-gray-50 text-gray-500" />
-                  <p className="text-xs text-gray-400">Email cannot be changed here.</p>
+                  <Input value={profile.email} disabled className="bg-muted/40 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground/80">Email cannot be changed here.</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="phone">Phone number</Label>
@@ -314,13 +314,13 @@ export default function ProfilePage() {
                     id="gender"
                     value={gender}
                     onChange={e => setGender(e.target.value)}
-                    className="w-full h-10 text-sm border border-input rounded-md px-3 bg-white focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full h-10 text-sm border border-input rounded-md px-3 bg-card focus:outline-none focus:ring-1 focus:ring-ring"
                   >
                     <option value="">Prefer not to say</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                   </select>
-                  <p className="text-xs text-gray-400">Needed to enter Men&apos;s, Women&apos;s, or Mixed tournament divisions.</p>
+                  <p className="text-xs text-muted-foreground/80">Needed to enter Men&apos;s, Women&apos;s, or Mixed tournament divisions.</p>
                 </div>
               </div>
             </div>
@@ -329,7 +329,7 @@ export default function ProfilePage() {
 
             {/* Avatar color */}
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Avatar color</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Avatar color</p>
               <div className="flex gap-2 flex-wrap">
                 {AVATAR_COLORS.map(color => (
                   <button

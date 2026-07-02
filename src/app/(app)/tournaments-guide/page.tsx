@@ -11,7 +11,7 @@ function Section({ title, icon, children }: {
   return (
     <Card className="mb-5">
       <CardHeader className="pb-2 pt-5">
-        <CardTitle className="text-base flex items-center gap-2 font-semibold text-gray-900">
+        <CardTitle className="text-base flex items-center gap-2 font-semibold text-foreground">
           {icon}
           {title}
         </CardTitle>
@@ -28,8 +28,8 @@ function Step({ number, title, children }: { number: number; title: string; chil
         {number}
       </div>
       <div className="flex-1">
-        <p className="font-semibold text-sm text-gray-900 mb-1">{title}</p>
-        <div className="text-sm text-gray-600 leading-relaxed space-y-2">{children}</div>
+        <p className="font-semibold text-sm text-foreground mb-1">{title}</p>
+        <div className="text-sm text-muted-foreground leading-relaxed space-y-2">{children}</div>
       </div>
     </div>
   )
@@ -37,10 +37,10 @@ function Step({ number, title, children }: { number: number; title: string; chil
 
 function ExBox({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-gray-50 border rounded-lg px-3 py-2 text-center">
-      <p className="text-xs text-gray-500 mb-0.5">{label}</p>
-      <p className="font-mono font-semibold text-sm text-gray-900">{value}</p>
-      {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+    <div className="bg-muted/40 border rounded-lg px-3 py-2 text-center">
+      <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
+      <p className="font-mono font-semibold text-sm text-foreground">{value}</p>
+      {sub && <p className="text-xs text-muted-foreground/80 mt-0.5">{sub}</p>}
     </div>
   )
 }
@@ -48,8 +48,8 @@ function ExBox({ label, value, sub }: { label: string; value: string; sub?: stri
 function FAQ({ q, a }: { q: string; a: string }) {
   return (
     <div>
-      <p className="font-semibold text-sm text-gray-900 mb-1">{q}</p>
-      <p className="text-sm text-gray-600 leading-relaxed">{a}</p>
+      <p className="font-semibold text-sm text-foreground mb-1">{q}</p>
+      <p className="text-sm text-muted-foreground leading-relaxed">{a}</p>
     </div>
   )
 }
@@ -64,10 +64,10 @@ export default function TournamentsGuidePage() {
           <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
             <Trophy className="w-4 h-4 text-amber-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">How Tournaments Work</h1>
+          <h1 className="text-2xl font-bold text-foreground">How Tournaments Work</h1>
         </div>
-        <p className="text-gray-500 text-sm leading-relaxed">
-          The Kitchen runs <strong className="text-gray-700">single-elimination tournaments</strong> with
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          The Kitchen runs <strong className="text-foreground/90">single-elimination tournaments</strong> with
           automatic seeding. This page explains exactly how the bracket is built, why some
           players skip the first round, and how results affect your ELO — no guesswork.
         </p>
@@ -75,14 +75,14 @@ export default function TournamentsGuidePage() {
 
       {/* ── The big idea ── */}
       <Section title="The big idea" icon={<Info className="w-4 h-4 text-blue-500" />}>
-        <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
+        <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
           <p>
-            In a single-elimination tournament, <strong className="text-gray-800">lose once and you&apos;re out</strong>.
+            In a single-elimination tournament, <strong className="text-foreground">lose once and you&apos;re out</strong>.
             Winners advance round by round — Quarterfinals, Semifinals, Final — until one
             champion remains.
           </p>
           <p>
-            Who plays whom is not random: the bracket is <strong className="text-gray-800">seeded by your league
+            Who plays whom is not random: the bracket is <strong className="text-foreground">seeded by your league
             ELO at the moment the tournament is created</strong>. The #1 seed is the highest-rated
             entrant, #2 the next, and so on.
           </p>
@@ -100,7 +100,7 @@ export default function TournamentsGuidePage() {
           <Step number={1} title="Players are seeded by ELO">
             <p>
               When an admin creates the tournament, every entrant is ranked by their current
-              league ELO. That ranking is their <strong className="text-gray-800">seed</strong> — the small number
+              league ELO. That ranking is their <strong className="text-foreground">seed</strong> — the small number
               you see next to each name in the bracket.
             </p>
           </Step>
@@ -111,7 +111,7 @@ export default function TournamentsGuidePage() {
             <p>
               Brackets only work with 2, 4, 8, 16, 32, or 64 slots. If the number of entrants
               doesn&apos;t fit exactly, the bracket rounds <em>up</em> and the empty slots become{' '}
-              <strong className="text-gray-800">byes</strong>.
+              <strong className="text-foreground">byes</strong>.
             </p>
             <div className="grid grid-cols-3 gap-2 mt-1">
               <ExBox label="12 players" value="16 slots" sub="4 byes" />
@@ -124,13 +124,13 @@ export default function TournamentsGuidePage() {
 
           <Step number={3} title="Top seeds get the byes — that's why some players start in Round 2">
             <p>
-              A <strong className="text-gray-800">bye</strong> means &ldquo;no opponent in this round — advance
-              automatically.&rdquo; Byes always go to the <strong className="text-gray-800">highest seeds</strong>,
+              A <strong className="text-foreground">bye</strong> means &ldquo;no opponent in this round — advance
+              automatically.&rdquo; Byes always go to the <strong className="text-foreground">highest seeds</strong>,
               which is standard practice in every sport from tennis to the NFL playoffs.
             </p>
             <p>
               So when you see the #1 seed already sitting in Round 2 before a single point has
-              been played, <strong className="text-gray-800">they haven&apos;t won anything yet</strong> — they
+              been played, <strong className="text-foreground">they haven&apos;t won anything yet</strong> — they
               simply didn&apos;t have a first-round opponent. Their Round 1 card shows
               &ldquo;Bye&rdquo;.
             </p>
@@ -156,7 +156,7 @@ export default function TournamentsGuidePage() {
             <p>
               When an admin or officiator enters a score, the winner moves into the next round
               automatically. Every tournament game is also recorded as a{' '}
-              <strong className="text-gray-800">real league match</strong> — it updates your ELO, win/loss
+              <strong className="text-foreground">real league match</strong> — it updates your ELO, win/loss
               record, and form exactly like any other game.{' '}
               <Link href="/elo" className="text-green-600 underline hover:text-green-700">
                 See how ELO is calculated
@@ -169,23 +169,23 @@ export default function TournamentsGuidePage() {
 
       {/* ── Divisions ── */}
       <Section title="Divisions (tiers)" icon={<span className="text-base">🎯</span>}>
-        <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
+        <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
           <p>
-            Tournaments are split into <strong className="text-gray-800">divisions</strong> like real
+            Tournaments are split into <strong className="text-foreground">divisions</strong> like real
             pickleball events — Open Men, Novice Women, 35+ Mixed, Junior 12 &amp; Under. Each
             division has its own registration, bracket, and champion.
           </p>
           <p>
-            <strong className="text-gray-800">You register yourself</strong> into divisions you&apos;re
+            <strong className="text-foreground">You register yourself</strong> into divisions you&apos;re
             eligible for. Eligibility is checked automatically from your profile and rating:
           </p>
           <ul className="list-disc pl-5 space-y-1">
-            <li><strong className="text-gray-800">Gender</strong> — Men&apos;s/Women&apos;s divisions need your gender set in Profile settings; Mixed teams need one man and one woman</li>
-            <li><strong className="text-gray-800">Age</strong> — taken from your date of birth (e.g. 35+, Junior 12 &amp; Under)</li>
-            <li><strong className="text-gray-800">Skill</strong> — rating caps use your league ELO (e.g. Beginner = under 3.5, Novice = under 3.0)</li>
+            <li><strong className="text-foreground">Gender</strong> — Men&apos;s/Women&apos;s divisions need your gender set in Profile settings; Mixed teams need one man and one woman</li>
+            <li><strong className="text-foreground">Age</strong> — taken from your date of birth (e.g. 35+, Junior 12 &amp; Under)</li>
+            <li><strong className="text-foreground">Skill</strong> — rating caps use your league ELO (e.g. Beginner = under 3.5, Novice = under 3.0)</li>
           </ul>
           <p>
-            Doubles and Mixed divisions are entered as a <strong className="text-gray-800">team</strong> —
+            Doubles and Mixed divisions are entered as a <strong className="text-foreground">team</strong> —
             you pick your partner when you register, and your team is seeded by your combined
             doubles rating.
           </p>
@@ -198,8 +198,8 @@ export default function TournamentsGuidePage() {
 
       {/* ── Spectators ── */}
       <Section title="Following along as a spectator" icon={<FastForward className="w-4 h-4 text-purple-500" />}>
-        <p className="text-sm text-gray-600 leading-relaxed">
-          Every tournament has a <strong className="text-gray-800">public share link</strong> (the
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Every tournament has a <strong className="text-foreground">public share link</strong> (the
           &ldquo;Share with spectators&rdquo; button). Anyone with the link can watch the bracket
           update live — friends, family, club members — no account or login needed. They see
           exactly the same bracket you do, minus the score-entry controls.
@@ -207,7 +207,7 @@ export default function TournamentsGuidePage() {
       </Section>
 
       {/* ── FAQ ── */}
-      <Section title="Common questions" icon={<HelpCircle className="w-4 h-4 text-gray-400" />}>
+      <Section title="Common questions" icon={<HelpCircle className="w-4 h-4 text-muted-foreground/80" />}>
         <div className="space-y-5">
           <FAQ
             q="Why is a player already in Round 2 before any matches were played?"
@@ -241,9 +241,9 @@ export default function TournamentsGuidePage() {
         </div>
       </Section>
 
-      <p className="text-xs text-center text-gray-400 pb-8">
+      <p className="text-xs text-center text-muted-foreground/80 pb-8">
         Want to know how the ratings behind seeding work?{' '}
-        <Link href="/elo" className="underline hover:text-gray-600">Read the ELO guide.</Link>
+        <Link href="/elo" className="underline hover:text-muted-foreground">Read the ELO guide.</Link>
       </p>
 
     </div>

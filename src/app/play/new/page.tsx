@@ -60,7 +60,7 @@ export default function NewSoloSessionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/40">
       <PlayHeader />
 
       <ResumeSessionBanner />
@@ -68,12 +68,12 @@ export default function NewSoloSessionPage() {
       <main className="max-w-md mx-auto px-4 py-10">
         <PlayBack />
         <div className="flex items-center gap-2 mb-1">
-          <Swords className="w-5 h-5 text-green-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Start an Open Play session</h1>
+          <Swords className="w-5 h-5 text-primary" />
+          <h1 className="text-2xl font-bold text-foreground">Start an Open Play session</h1>
         </div>
-        <p className="text-sm text-gray-500 mb-6">No account needed. Add players by name and run it — auto-balanced matchups, fair rotation, live board.</p>
+        <p className="text-sm text-muted-foreground mb-6">No account needed. Add players by name and run it — auto-balanced matchups, fair rotation, live board.</p>
 
-        <div className="space-y-4 bg-white border rounded-2xl p-5">
+        <div className="space-y-4 bg-card border rounded-2xl p-5">
           <div className="space-y-1.5">
             <Label htmlFor="n">Session name</Label>
             <Input id="n" placeholder="e.g. Tuesday Night Pickleball" value={name} onChange={e => { setName(e.target.value); setError('') }} />
@@ -89,7 +89,7 @@ export default function NewSoloSessionPage() {
               <div className="flex gap-1">
                 {(['doubles', 'singles'] as const).map(f => (
                   <button key={f} type="button" onClick={() => setFormat(f)}
-                    className={`flex-1 text-sm py-2 rounded-lg border capitalize ${format === f ? 'border-green-500 bg-green-50 text-green-700 font-medium' : 'border-gray-200 text-gray-600'}`}>{f}</button>
+                    className={`flex-1 text-sm py-2 rounded-lg border capitalize ${format === f ? 'border-primary bg-green-50 text-green-700 font-medium' : 'border-border text-muted-foreground'}`}>{f}</button>
                 ))}
               </div>
             </div>
@@ -100,9 +100,9 @@ export default function NewSoloSessionPage() {
             <div className="grid grid-cols-2 gap-1.5">
               {playStyles.map(m => (
                 <button key={m.k} type="button" onClick={() => setMode(m.k)}
-                  className={`text-left px-3 py-2 rounded-lg border ${mode === m.k ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 text-gray-600'}`}>
+                  className={`text-left px-3 py-2 rounded-lg border ${mode === m.k ? 'border-primary bg-green-50 text-green-700' : 'border-border text-muted-foreground'}`}>
                   <span className="block text-sm font-medium">{m.label}</span>
-                  <span className="block text-[10px] text-gray-400">{m.desc}</span>
+                  <span className="block text-[10px] text-muted-foreground/80">{m.desc}</span>
                 </button>
               ))}
             </div>
@@ -110,16 +110,16 @@ export default function NewSoloSessionPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="mx">Max players <span className="text-gray-400 font-normal">(optional)</span></Label>
+            <Label htmlFor="mx">Max players <span className="text-muted-foreground/80 font-normal">(optional)</span></Label>
             <Input id="mx" type="number" min={2} max={200} placeholder="No limit" value={maxPlayers}
               onChange={e => setMaxPlayers(e.target.value)} />
-            <p className="text-xs text-gray-400">When full, extra check-ins go on a waitlist and are let in automatically as spots free up.</p>
+            <p className="text-xs text-muted-foreground/80">When full, extra check-ins go on a waitlist and are let in automatically as spots free up.</p>
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <Button onClick={start} disabled={busy} className="w-full">{busy ? 'Starting…' : 'Start session →'}</Button>
-          <p className="text-[11px] text-gray-400 text-center">Standalone sessions don’t track ELO. Want ratings &amp; history? <Link href="/signup" className="text-green-600 hover:underline">Create a free league</Link>.</p>
+          <p className="text-[11px] text-muted-foreground/80 text-center">Standalone sessions don’t track ELO. Want ratings &amp; history? <Link href="/signup" className="text-primary hover:underline">Create a free league</Link>.</p>
         </div>
       </main>
     </div>

@@ -14,7 +14,7 @@ function Section({ title, icon, children }: {
   return (
     <Card className="mb-5">
       <CardHeader className="pb-2 pt-5">
-        <CardTitle className="text-base flex items-center gap-2 font-semibold text-gray-900">
+        <CardTitle className="text-base flex items-center gap-2 font-semibold text-foreground">
           {icon}
           {title}
         </CardTitle>
@@ -31,8 +31,8 @@ function Step({ number, title, children }: { number: number; title: string; chil
         {number}
       </div>
       <div className="flex-1">
-        <p className="font-semibold text-sm text-gray-900 mb-1">{title}</p>
-        <div className="text-sm text-gray-600 leading-relaxed space-y-2">{children}</div>
+        <p className="font-semibold text-sm text-foreground mb-1">{title}</p>
+        <div className="text-sm text-muted-foreground leading-relaxed space-y-2">{children}</div>
       </div>
     </div>
   )
@@ -48,10 +48,10 @@ function CodeBlock({ children }: { children: React.ReactNode }) {
 
 function ExBox({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-gray-50 border rounded-lg px-3 py-2 text-center">
-      <p className="text-xs text-gray-500 mb-0.5">{label}</p>
-      <p className="font-mono font-semibold text-sm text-gray-900">{value}</p>
-      {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+    <div className="bg-muted/40 border rounded-lg px-3 py-2 text-center">
+      <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
+      <p className="font-mono font-semibold text-sm text-foreground">{value}</p>
+      {sub && <p className="text-xs text-muted-foreground/80 mt-0.5">{sub}</p>}
     </div>
   )
 }
@@ -59,8 +59,8 @@ function ExBox({ label, value, sub }: { label: string; value: string; sub?: stri
 function FAQ({ q, a }: { q: string; a: string }) {
   return (
     <div>
-      <p className="font-semibold text-sm text-gray-900 mb-1">{q}</p>
-      <p className="text-sm text-gray-600 leading-relaxed">{a}</p>
+      <p className="font-semibold text-sm text-foreground mb-1">{q}</p>
+      <p className="text-sm text-muted-foreground leading-relaxed">{a}</p>
     </div>
   )
 }
@@ -90,28 +90,28 @@ export default function EloPage() {
           <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
             <TrendingUp className="w-4 h-4 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">How Rankings Work</h1>
+          <h1 className="text-2xl font-bold text-foreground">How Rankings Work</h1>
         </div>
-        <p className="text-gray-500 text-sm leading-relaxed">
-          The Kitchen uses a points system called <strong className="text-gray-700">ELO</strong> to rank
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          The Kitchen uses a points system called <strong className="text-foreground/90">ELO</strong> to rank
           players fairly. This page explains exactly how every number is calculated — no guesswork.
         </p>
       </div>
 
       {/* ── The big idea ── */}
       <Section title="The big idea" icon={<Info className="w-4 h-4 text-blue-500" />}>
-        <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
+        <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
           <p>
-            Every player starts at <strong className="text-gray-800">1,000 points</strong> when they
+            Every player starts at <strong className="text-foreground">1,000 points</strong> when they
             join a league. After each match, a small number of points move from the loser to the winner.
           </p>
           <p>
-            The clever part: <strong className="text-gray-800">the amount of points that move depends on how surprising the result was.</strong>{' '}
+            The clever part: <strong className="text-foreground">the amount of points that move depends on how surprising the result was.</strong>{' '}
             If you beat someone way better than you, you gain a lot. If you beat someone
             much weaker, you gain almost nothing — the system expected you to win.
           </p>
           <p>
-            On top of that, <strong className="text-gray-800">winning by a bigger margin earns more points</strong> than
+            On top of that, <strong className="text-foreground">winning by a bigger margin earns more points</strong> than
             scraping through. A 11–0 blowout moves more than an 11–9 squeaker.
           </p>
           <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-xs text-green-800">
@@ -143,8 +143,8 @@ export default function EloPage() {
 
           <Step number={2} title="After the match: see how dominant the win was">
             <p>
-              We look at the final score gap and calculate a <strong className="text-gray-800">margin multiplier</strong>.
-              This is a number between <strong className="text-gray-800">1.0× and 1.5×</strong> that
+              We look at the final score gap and calculate a <strong className="text-foreground">margin multiplier</strong>.
+              This is a number between <strong className="text-foreground">1.0× and 1.5×</strong> that
               scales the points transfer up for bigger wins.
             </p>
             <CodeBlock>
@@ -163,7 +163,7 @@ export default function EloPage() {
           <Step number={3} title="Calculate the points to transfer">
             <p>
               Combine the expected score, the actual result (win = 1, loss = 0), and the margin
-              multiplier with a sensitivity constant called <strong className="text-gray-800">K (= 32)</strong>.
+              multiplier with a sensitivity constant called <strong className="text-foreground">K (= 32)</strong>.
               Higher K means bigger swings per match.
             </p>
             <CodeBlock>
@@ -178,7 +178,7 @@ export default function EloPage() {
 
           <Step number={4} title="Doubles & Mixed Doubles">
             <p>
-              For team formats, each <strong className="text-gray-800">team&apos;s average points</strong> are
+              For team formats, each <strong className="text-foreground">team&apos;s average points</strong> are
               used to calculate the expected score. The same points change is then applied to every
               individual on the team.
             </p>
@@ -190,13 +190,13 @@ export default function EloPage() {
           </Step>
 
           {/* Full worked example */}
-          <div className="bg-gray-50 rounded-xl p-4 border">
-            <p className="font-semibold text-sm text-gray-900 mb-3">Full worked example — 11–5 win, both players at 1,000</p>
-            <div className="space-y-1.5 text-xs font-mono text-gray-700">
-              <p><span className="text-gray-400">Step 1 —</span> Expected score = 1 ÷ (1 + 10^0) = <strong>0.50 (50%)</strong></p>
-              <p><span className="text-gray-400">Step 2 —</span> Multiplier = 1 + (6 ÷ 11) × 0.5 = <strong>1.27×</strong></p>
-              <p><span className="text-gray-400">Step 3 —</span> Points change = 32 × 1.27 × (1.0 − 0.50) = <strong>≈ +20 pts</strong></p>
-              <div className="mt-2 pt-2 border-t border-gray-200 grid grid-cols-2 gap-2">
+          <div className="bg-muted/40 rounded-xl p-4 border">
+            <p className="font-semibold text-sm text-foreground mb-3">Full worked example — 11–5 win, both players at 1,000</p>
+            <div className="space-y-1.5 text-xs font-mono text-foreground/90">
+              <p><span className="text-muted-foreground/80">Step 1 —</span> Expected score = 1 ÷ (1 + 10^0) = <strong>0.50 (50%)</strong></p>
+              <p><span className="text-muted-foreground/80">Step 2 —</span> Multiplier = 1 + (6 ÷ 11) × 0.5 = <strong>1.27×</strong></p>
+              <p><span className="text-muted-foreground/80">Step 3 —</span> Points change = 32 × 1.27 × (1.0 − 0.50) = <strong>≈ +20 pts</strong></p>
+              <div className="mt-2 pt-2 border-t border-border grid grid-cols-2 gap-2">
                 <div className="bg-green-100 rounded px-3 py-2 text-center">
                   <p className="text-green-700 font-semibold">Winner</p>
                   <p className="text-green-800">1,000 → <strong>1,020</strong></p>
@@ -214,14 +214,14 @@ export default function EloPage() {
 
       {/* ── Pickleball rating ── */}
       <Section title="Pickleball skill rating (2.00 – 8.00)" icon={<span className="text-base">🏓</span>}>
-        <div className="space-y-3 text-sm text-gray-600 leading-relaxed mb-4">
+        <div className="space-y-3 text-sm text-muted-foreground leading-relaxed mb-4">
           <p>
-            Alongside your ELO points, The Kitchen shows a <strong className="text-gray-800">DUPR-style skill rating</strong> on
+            Alongside your ELO points, The Kitchen shows a <strong className="text-foreground">DUPR-style skill rating</strong> on
             the familiar 2.00 – 8.00 scale. It&apos;s continuous, so close players get
             distinguishable ratings like 3.92 and 4.04 rather than the same rounded label.
           </p>
           <p>
-            Your skill rating is <strong className="text-gray-800">calculated automatically from your ELO points</strong>:
+            Your skill rating is <strong className="text-foreground">calculated automatically from your ELO points</strong>:
             1,000 ELO = 3.50, and every 250 ELO points = one full rating point. As your
             points go up, your rating goes up — no self-assessment needed.
           </p>
@@ -238,24 +238,24 @@ export default function EloPage() {
                 <span className={`font-bold text-base w-10 shrink-0 ${pb.color}`}>{row.rating}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium text-gray-800">{row.label}</p>
-                    <span className="text-xs text-gray-400">{row.eloRange}</span>
+                    <p className="text-sm font-medium text-foreground">{row.label}</p>
+                    <span className="text-xs text-muted-foreground/80">{row.eloRange}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5">{row.desc}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{row.desc}</p>
                 </div>
               </div>
             )
           })}
         </div>
 
-        <p className="text-xs text-gray-400 mt-3">
+        <p className="text-xs text-muted-foreground/80 mt-3">
           * This is an approximation based on league performance. Official USA Pickleball ratings
           require a certified assessment.
         </p>
       </Section>
 
       {/* ── FAQ ── */}
-      <Section title="Common questions" icon={<HelpCircle className="w-4 h-4 text-gray-400" />}>
+      <Section title="Common questions" icon={<HelpCircle className="w-4 h-4 text-muted-foreground/80" />}>
         <div className="space-y-5">
           <FAQ
             q="Why did I barely gain any points after winning?"
@@ -289,9 +289,9 @@ export default function EloPage() {
         </div>
       </Section>
 
-      <p className="text-xs text-center text-gray-400 pb-8">
+      <p className="text-xs text-center text-muted-foreground/80 pb-8">
         Questions about your rating?{' '}
-        <Link href="/dashboard" className="underline hover:text-gray-600">Go back to your leagues.</Link>
+        <Link href="/dashboard" className="underline hover:text-muted-foreground">Go back to your leagues.</Link>
       </p>
 
     </div>

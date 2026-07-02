@@ -161,10 +161,10 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
     await fetchData()
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading…</div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground/80">Loading…</div>
   if (!data?.session) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-400 px-4 text-center">
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground/80 px-4 text-center">
         This Open Play session isn&apos;t available. Ask the organiser for the current link.
       </div>
     )
@@ -185,14 +185,14 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
   )
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white">
+    <div className="min-h-screen bg-muted/40">
+      <header className="border-b bg-card">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <AppLogo className="w-7 h-7" />
-            <span className="font-bold text-gray-900">The Kitchen</span>
+            <span className="font-bold text-foreground">The Kitchen</span>
           </Link>
-          <button onClick={() => setShowQr(true)} className="flex items-center gap-1.5 text-sm text-green-600 font-medium hover:text-green-700">
+          <button onClick={() => setShowQr(true)} className="flex items-center gap-1.5 text-sm text-primary font-medium hover:text-primary">
             <QrCode className="w-4 h-4" />Invite
           </button>
         </div>
@@ -200,12 +200,12 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
 
       {showQr && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowQr(false)}>
-          <div className="bg-white rounded-2xl p-5 max-w-xs w-full" onClick={e => e.stopPropagation()}>
+          <div className="bg-card rounded-2xl p-5 max-w-xs w-full" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-1">
-              <h2 className="font-semibold text-gray-900">Scan to join</h2>
-              <button onClick={() => setShowQr(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+              <h2 className="font-semibold text-foreground">Scan to join</h2>
+              <button onClick={() => setShowQr(false)} className="text-muted-foreground/80 hover:text-muted-foreground"><X className="w-5 h-5" /></button>
             </div>
-            <p className="text-sm text-gray-500 mb-3">Have a friend scan this to check into the session.</p>
+            <p className="text-sm text-muted-foreground mb-3">Have a friend scan this to check into the session.</p>
             <OpenPlayQR shareCode={params.code} />
           </div>
         </div>
@@ -213,11 +213,11 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         <div className="mb-5">
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
             {session.name}
             {session.rated && <span className="text-[10px] font-bold text-green-700 bg-green-100 rounded-full px-2 py-0.5">RATED</span>}
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             {session.league_name} · <span className="capitalize">{session.format}</span>
             {session.status === 'ended' && <span className="ml-2 text-amber-600 font-medium">Session ended</span>}
           </p>
@@ -251,7 +251,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
               {joinError && <p className="text-xs text-red-600 mb-2">{joinError}</p>}
               <div className={`mb-6 rounded-xl border px-4 py-3 flex items-center justify-between gap-3 ${resting ? 'border-amber-200 bg-amber-50' : 'border-green-200 bg-green-50'}`}>
                 <div className="flex items-center gap-2 min-w-0">
-                  {resting ? <Pause className="w-4 h-4 text-amber-600 shrink-0" /> : <Check className="w-4 h-4 text-green-600 shrink-0" />}
+                  {resting ? <Pause className="w-4 h-4 text-amber-600 shrink-0" /> : <Check className="w-4 h-4 text-primary shrink-0" />}
                   <span className={`text-sm truncate ${resting ? 'text-amber-800' : 'text-green-800'}`}>
                     {resting
                       ? <>Resting — <strong>{me.name}</strong>, you&apos;ll sit out until you&apos;re back.</>
@@ -280,17 +280,17 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
           if (signedIn) {
             const askGender = needsGender && !profile?.gender
             return (
-              <div className="mb-6 rounded-xl border bg-white px-4 py-3">
-                <p className="text-sm font-medium text-gray-800 mb-1 flex items-center gap-1.5">
-                  <UserPlus className="w-4 h-4 text-green-600" />Join the queue
+              <div className="mb-6 rounded-xl border bg-card px-4 py-3">
+                <p className="text-sm font-medium text-foreground mb-1 flex items-center gap-1.5">
+                  <UserPlus className="w-4 h-4 text-primary" />Join the queue
                 </p>
-                <p className="text-xs text-gray-500 mb-2">Signed in as <strong>{profile?.name ?? 'you'}</strong></p>
+                <p className="text-xs text-muted-foreground mb-2">Signed in as <strong>{profile?.name ?? 'you'}</strong></p>
                 {askGender && (
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs text-gray-500">I am a</span>
+                    <span className="text-xs text-muted-foreground">I am a</span>
                     {(['m', 'f'] as const).map(g => (
                       <button key={g} type="button" onClick={() => { setJoinGender(g); setJoinError('') }}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold border ${joinGender === g ? 'border-green-500 bg-green-600 text-white' : 'border-gray-200 text-gray-600'}`}>
+                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold border ${joinGender === g ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'}`}>
                         {g === 'm' ? 'Man' : 'Woman'}
                       </button>
                     ))}
@@ -298,10 +298,10 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                 )}
                 {needsLevel && (
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs text-gray-500">My level</span>
+                    <span className="text-xs text-muted-foreground">My level</span>
                     {[1, 2, 3, 4, 5].map(n => (
                       <button key={n} type="button" onClick={() => { setJoinLevel(n); setJoinError('') }}
-                        className={`w-8 h-8 rounded-lg text-sm font-semibold border ${joinLevel === n ? 'border-green-500 bg-green-600 text-white' : 'border-gray-200 text-gray-600'}`}>{n}</button>
+                        className={`w-8 h-8 rounded-lg text-sm font-semibold border ${joinLevel === n ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'}`}>{n}</button>
                     ))}
                   </div>
                 )}
@@ -316,20 +316,20 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
           {
             const ret = encodeURIComponent(`/play/${params.code}`)
             return (
-            <div className="mb-6 rounded-xl border bg-white px-4 py-4 space-y-3">
-              <p className="text-sm font-medium text-gray-800 flex items-center gap-1.5">
-                <UserPlus className="w-4 h-4 text-green-600" />Join the queue
+            <div className="mb-6 rounded-xl border bg-card px-4 py-4 space-y-3">
+              <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                <UserPlus className="w-4 h-4 text-primary" />Join the queue
               </p>
 
               {/* Account path (recommended) */}
               <div className="space-y-2">
                 <Button asChild className="w-full"><Link href={`/login?redirect=${ret}&join=1`}>Sign in &amp; join</Link></Button>
                 <Button asChild variant="outline" className="w-full"><Link href={`/signup?redirect=${ret}&join=1`}>Create a free account</Link></Button>
-                <p className="text-[11px] text-gray-400 text-center">With an account, your play history &amp; Open Play stats are tracked across every session.</p>
+                <p className="text-[11px] text-muted-foreground/80 text-center">With an account, your play history &amp; Open Play stats are tracked across every session.</p>
               </div>
 
-              <div className="flex items-center gap-2 text-[11px] text-gray-400">
-                <div className="h-px bg-gray-200 flex-1" />or play as a guest<div className="h-px bg-gray-200 flex-1" />
+              <div className="flex items-center gap-2 text-[11px] text-muted-foreground/80">
+                <div className="h-px bg-muted flex-1" />or play as a guest<div className="h-px bg-muted flex-1" />
               </div>
 
               {/* Guest path */}
@@ -338,10 +338,10 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                 onKeyDown={e => { if (e.key === 'Enter') join() }} />
               {needsGender && (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500">I am a</span>
+                  <span className="text-xs text-muted-foreground">I am a</span>
                   {(['m', 'f'] as const).map(g => (
                     <button key={g} type="button" onClick={() => { setJoinGender(g); setJoinError('') }}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold border ${joinGender === g ? 'border-green-500 bg-green-600 text-white' : 'border-gray-200 text-gray-600'}`}>
+                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold border ${joinGender === g ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'}`}>
                       {g === 'm' ? 'Man' : 'Woman'}
                     </button>
                   ))}
@@ -349,10 +349,10 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
               )}
               {needsLevel && (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500">My level</span>
+                  <span className="text-xs text-muted-foreground">My level</span>
                   {[1, 2, 3, 4, 5].map(n => (
                     <button key={n} type="button" onClick={() => { setJoinLevel(n); setJoinError('') }}
-                      className={`w-8 h-8 rounded-lg text-sm font-semibold border ${joinLevel === n ? 'border-green-500 bg-green-600 text-white' : 'border-gray-200 text-gray-600'}`}>
+                      className={`w-8 h-8 rounded-lg text-sm font-semibold border ${joinLevel === n ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'}`}>
                       {n}
                     </button>
                   ))}
@@ -371,10 +371,10 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
         {/* Convert joined guests into accounts */}
         {myId && !signedIn && (
           <div className="mb-6 rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-white px-4 py-4">
-            <p className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
-              <Trophy className="w-4 h-4 text-green-600" />Make it count
+            <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+              <Trophy className="w-4 h-4 text-primary" />Make it count
             </p>
-            <p className="text-xs text-gray-500 mt-1 mb-3">
+            <p className="text-xs text-muted-foreground mt-1 mb-3">
               Create a free account to track your rating &amp; match history, join leagues, and run your own Open Play sessions.
             </p>
             <div className="flex gap-2">
@@ -385,46 +385,46 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
         )}
 
         {/* Courts */}
-        <p className="text-xs font-semibold text-gray-500 mb-2">On the courts now</p>
+        <p className="text-xs font-semibold text-muted-foreground mb-2">On the courts now</p>
         <div className="grid gap-2 sm:grid-cols-2 mb-6">
           {Array.from({ length: session.court_count }, (_, i) => i + 1).map(courtNo => {
             const g = games.find(x => x.court === courtNo)
             return (
-              <div key={courtNo} className="border rounded-xl p-3 bg-white">
-                <p className="text-xs font-semibold text-gray-400 mb-2">Court {courtNo}</p>
+              <div key={courtNo} className="border rounded-xl p-3 bg-card">
+                <p className="text-xs font-semibold text-muted-foreground/80 mb-2">Court {courtNo}</p>
                 {g ? (
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5">
                       {g.team1.map(id => <Avatar key={id} id={id} />)}
-                      <span className="text-xs font-medium text-gray-800 truncate">{g.team1.map(name).join(' & ')}</span>
+                      <span className="text-xs font-medium text-foreground truncate">{g.team1.map(name).join(' & ')}</span>
                     </div>
-                    <div className="flex items-center gap-1 text-[10px] text-gray-300"><Swords className="w-3 h-3" /></div>
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground/50"><Swords className="w-3 h-3" /></div>
                     <div className="flex items-center gap-1.5">
                       {g.team2.map(id => <Avatar key={id} id={id} />)}
-                      <span className="text-xs font-medium text-gray-800 truncate">{g.team2.map(name).join(' & ')}</span>
+                      <span className="text-xs font-medium text-foreground truncate">{g.team2.map(name).join(' & ')}</span>
                     </div>
                   </div>
-                ) : <div className="text-xs text-gray-300 py-3 text-center">Open</div>}
+                ) : <div className="text-xs text-muted-foreground/50 py-3 text-center">Open</div>}
               </div>
             )
           })}
         </div>
 
         {/* Queue */}
-        <p className="text-xs font-semibold text-gray-500 mb-2 flex items-center gap-1">
+        <p className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1">
           <Clock className="w-3.5 h-3.5" />Up next ({queued.length})
         </p>
         <div className="space-y-1.5">
           {queued.map((p, i) => (
-            <div key={p.id} className={`flex items-center gap-2.5 border rounded-lg px-3 py-2 ${p.id === myId ? 'bg-green-50 border-green-300' : 'bg-white'}`}>
-              <span className="text-xs text-gray-400 w-5">{i + 1}</span>
+            <div key={p.id} className={`flex items-center gap-2.5 border rounded-lg px-3 py-2 ${p.id === myId ? 'bg-green-50 border-green-300' : 'bg-card'}`}>
+              <span className="text-xs text-muted-foreground/80 w-5">{i + 1}</span>
               <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-semibold shrink-0"
                 style={{ backgroundColor: p.avatar_color }}>{initials(p.name)}</span>
-              <span className="text-sm text-gray-800 flex-1 truncate">{p.name}</span>
-              <span className="text-xs text-gray-400">{p.wins}W {p.losses}L</span>
+              <span className="text-sm text-foreground flex-1 truncate">{p.name}</span>
+              <span className="text-xs text-muted-foreground/80">{p.wins}W {p.losses}L</span>
             </div>
           ))}
-          {queued.length === 0 && <p className="text-sm text-gray-400 py-3 text-center">Nobody waiting right now.</p>}
+          {queued.length === 0 && <p className="text-sm text-muted-foreground/80 py-3 text-center">Nobody waiting right now.</p>}
         </div>
 
         {/* Waitlist (session at max capacity) */}
@@ -435,11 +435,11 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
             </p>
             <div className="space-y-1.5">
               {waitlist.map((p, i) => (
-                <div key={p.id} className={`flex items-center gap-2.5 border rounded-lg px-3 py-2 ${p.id === myId ? 'bg-amber-50 border-amber-300' : 'bg-white border-amber-100'}`}>
+                <div key={p.id} className={`flex items-center gap-2.5 border rounded-lg px-3 py-2 ${p.id === myId ? 'bg-amber-50 border-amber-300' : 'bg-card border-amber-100'}`}>
                   <span className="text-xs text-amber-500 font-bold w-5">{i + 1}</span>
                   <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-semibold shrink-0"
                     style={{ backgroundColor: p.avatar_color }}>{initials(p.name)}</span>
-                  <span className="text-sm text-gray-800 flex-1 truncate">{p.name}</span>
+                  <span className="text-sm text-foreground flex-1 truncate">{p.name}</span>
                   {p.id === myId && <span className="text-[10px] font-bold uppercase text-amber-600">You</span>}
                 </div>
               ))}
@@ -447,9 +447,9 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
           </>
         )}
 
-        <p className="text-xs text-gray-400 text-center mt-8">
+        <p className="text-xs text-muted-foreground/80 text-center mt-8">
           Powered by The Kitchen.{' '}
-          <Link href="/signup" className="text-green-600 hover:underline">Create your own league</Link>
+          <Link href="/signup" className="text-primary hover:underline">Create your own league</Link>
         </p>
       </main>
     </div>

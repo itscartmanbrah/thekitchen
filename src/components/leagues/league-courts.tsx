@@ -273,11 +273,11 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
           </div>
           <div className="flex gap-2">
             <button onClick={() => setIsIndoor(false)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${!isIndoor ? 'border-green-500 bg-green-50 text-green-700 font-medium' : 'border-gray-200 text-gray-600'}`}>
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${!isIndoor ? 'border-green-500 bg-green-50 text-green-700 font-medium' : 'border-border text-muted-foreground'}`}>
               <Sun className="w-4 h-4" />Outdoor
             </button>
             <button onClick={() => setIsIndoor(true)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${isIndoor ? 'border-green-500 bg-green-50 text-green-700 font-medium' : 'border-gray-200 text-gray-600'}`}>
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${isIndoor ? 'border-green-500 bg-green-50 text-green-700 font-medium' : 'border-border text-muted-foreground'}`}>
               <Home className="w-4 h-4" />Indoor
             </button>
           </div>
@@ -285,21 +285,21 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
             <div className="space-y-1.5">
               <Label htmlFor="open-hour">Opens</Label>
               <select id="open-hour" value={openHour} onChange={e => setOpenHour(parseInt(e.target.value))}
-                className="w-full h-10 text-sm border border-input rounded-md px-2 bg-white">
+                className="w-full h-10 text-sm border border-input rounded-md px-2 bg-card">
                 {Array.from({ length: 24 }, (_, h) => <option key={h} value={h}>{fmtHourLong(h)}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="close-hour">Closes</Label>
               <select id="close-hour" value={closeHour} onChange={e => setCloseHour(parseInt(e.target.value))}
-                className="w-full h-10 text-sm border border-input rounded-md px-2 bg-white">
+                className="w-full h-10 text-sm border border-input rounded-md px-2 bg-card">
                 {Array.from({ length: 24 }, (_, h) => h + 1).map(h => <option key={h} value={h}>{fmtHourLong(h % 24)}</option>)}
               </select>
             </div>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="contact-phone">
-              Contact phone <span className="text-gray-400 font-normal">(for cancellations)</span>
+              Contact phone <span className="text-muted-foreground/80 font-normal">(for cancellations)</span>
             </Label>
             <Input
               id="contact-phone" type="tel" inputMode="tel" placeholder="+63 900 000 0000"
@@ -307,7 +307,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
               onChange={e => setContactPhone(e.target.value.replace(/[^\d\s+\-().]/g, ''))}
               maxLength={20}
             />
-            <p className="text-xs text-gray-400">Shown to players who need to cancel within 2 hours of their booking.</p>
+            <p className="text-xs text-muted-foreground/80">Shown to players who need to cancel within 2 hours of their booking.</p>
           </div>
         </div>
         <DialogFooter>
@@ -318,12 +318,12 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
     </Dialog>
   )
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading courts…</div>
+  if (loading) return <div className="text-center py-12 text-muted-foreground">Loading courts…</div>
 
   if (courts.length === 0) {
     return (
-      <div className="text-center py-16 text-gray-400">
-        <MapPin className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+      <div className="text-center py-16 text-muted-foreground/80">
+        <MapPin className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
         <p className="text-sm mb-4">No courts set up yet.{isAdmin ? '' : ' Ask an admin to add one.'}</p>
         {isAdmin && <Button size="sm" onClick={() => setAddOpen(true)}><Plus className="w-4 h-4 mr-1" />Add a court</Button>}
         {AddCourtDialog}
@@ -391,30 +391,30 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">{courts.length} court{courts.length !== 1 ? 's' : ''} · each slot 60 min</p>
+        <p className="text-sm text-muted-foreground">{courts.length} court{courts.length !== 1 ? 's' : ''} · each slot 60 min</p>
         {isAdmin && <Button size="sm" onClick={() => setAddOpen(true)}><Plus className="w-4 h-4 mr-1" />Add court</Button>}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-5">
         {/* Calendar */}
         <div className="lg:w-72 shrink-0">
-          <div className="border rounded-xl p-3 bg-white">
+          <div className="border rounded-xl p-3 bg-card">
             <div className="flex items-center justify-between mb-2">
               <button onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1))}
-                className="w-7 h-7 rounded-full border flex items-center justify-center text-gray-500 hover:bg-gray-50">
+                className="w-7 h-7 rounded-full border flex items-center justify-center text-muted-foreground hover:bg-muted/50">
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm font-semibold text-foreground">
                 {calMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </span>
               <button onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1))}
-                className="w-7 h-7 rounded-full border flex items-center justify-center text-gray-500 hover:bg-gray-50">
+                className="w-7 h-7 rounded-full border flex items-center justify-center text-muted-foreground hover:bg-muted/50">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
             <div className="grid grid-cols-7 gap-1 text-center mb-1">
               {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
-                <span key={i} className="text-[11px] font-medium text-gray-400">{d}</span>
+                <span key={i} className="text-[11px] font-medium text-muted-foreground/80">{d}</span>
               ))}
             </div>
             <div className="grid grid-cols-7 gap-1">
@@ -429,8 +429,8 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                     onClick={() => setSelectedDate(startOfDay(d))}
                     className={`h-8 rounded-full text-xs flex items-center justify-center transition-colors ${
                       isSel ? 'bg-gray-900 text-white font-semibold'
-                        : past ? 'text-gray-300 cursor-not-allowed'
-                        : 'text-gray-700 hover:bg-green-50'
+                        : past ? 'text-muted-foreground/50 cursor-not-allowed'
+                        : 'text-foreground/90 hover:bg-green-50'
                     }`}
                   >
                     {d.getDate()}
@@ -444,10 +444,10 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
         {/* Timetable */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <h3 className="text-sm font-semibold text-gray-900">
+            <h3 className="text-sm font-semibold text-foreground">
               Select slots for {selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
             </h3>
-            <div className="flex items-center gap-2.5 text-xs text-gray-500 flex-wrap">
+            <div className="flex items-center gap-2.5 text-xs text-muted-foreground flex-wrap">
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-green-500 inline-block" />Booked</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-amber-400 inline-block" />Pending</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-blue-500 inline-block" />Open Play</span>
@@ -470,9 +470,9 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
               <tbody>
                 {courts.map(court => (
                   <tr key={court.id} className="border-t">
-                    <td className="sticky left-0 z-10 bg-white px-3 py-2 text-sm font-medium text-gray-800 whitespace-nowrap border-r">
+                    <td className="sticky left-0 z-10 bg-card px-3 py-2 text-sm font-medium text-foreground whitespace-nowrap border-r">
                       <span className="flex items-center gap-1.5">
-                        {court.is_indoor ? <Home className="w-3.5 h-3.5 text-gray-400" /> : <Sun className="w-3.5 h-3.5 text-gray-400" />}
+                        {court.is_indoor ? <Home className="w-3.5 h-3.5 text-muted-foreground/80" /> : <Sun className="w-3.5 h-3.5 text-muted-foreground/80" />}
                         {court.name}
                       </span>
                     </td>
@@ -486,10 +486,10 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                       const mine = bk?.user_id === currentUserId
                       const pending = bk?.status === 'pending'
 
-                      let cls = 'bg-white hover:bg-green-50 cursor-pointer'
+                      let cls = 'bg-card hover:bg-green-50 cursor-pointer'
                       let label = ''
                       let textCls = 'text-transparent'
-                      if (outOfHours || isPast) { cls = 'bg-gray-200 cursor-not-allowed' }
+                      if (outOfHours || isPast) { cls = 'bg-muted cursor-not-allowed' }
                       if (isOpenPlay) {
                         cls = 'bg-blue-500 cursor-not-allowed'
                         label = 'Open Play'; textCls = 'text-white'
@@ -520,7 +520,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
             </table>
           </div>
 
-          <p className="text-xs text-gray-400 mt-2">
+          <p className="text-xs text-muted-foreground/80 mt-2">
             Tap open cells to select, then confirm. Tap your booking to manage it.
           </p>
 
@@ -542,7 +542,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
             <div className="mt-4 flex flex-wrap gap-2">
               {courts.map(c => (
                 <button key={c.id} onClick={() => openDelete(c)}
-                  className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 border rounded-full px-2.5 py-1">
+                  className="flex items-center gap-1 text-xs text-muted-foreground/80 hover:text-red-500 border rounded-full px-2.5 py-1">
                   <Trash2 className="w-3 h-3" />{c.name}
                 </button>
               ))}
@@ -558,18 +558,18 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
           <div className="mt-8 border-t pt-6 space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <h3 className="font-bold text-gray-900">Cancellation policy</h3>
+                <h3 className="font-bold text-foreground">Cancellation policy</h3>
                 {isAdmin && (
                   <button
                     onClick={() => { setPolicyDraft(policy ?? DEFAULT_POLICY); setAddressDraft(address ?? ''); setInfoOpen(true) }}
-                    className="text-gray-400 hover:text-green-600"
+                    className="text-muted-foreground/80 hover:text-green-600"
                     title="Edit policy & address"
                   >
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
-              <ol className="list-decimal pl-5 space-y-1 text-sm text-gray-600">
+              <ol className="list-decimal pl-5 space-y-1 text-sm text-muted-foreground">
                 {(policy ?? DEFAULT_POLICY).split('\n').filter(l => l.trim()).map((line, i) => (
                   <li key={i}>{line.trim()}</li>
                 ))}
@@ -578,17 +578,17 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
 
             {shownAddress && (
               <div>
-                <h3 className="font-bold text-gray-900 mb-3">Getting there</h3>
+                <h3 className="font-bold text-foreground mb-3">Getting there</h3>
                 <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <p className="text-sm text-gray-600 flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+                  <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-muted-foreground/80 shrink-0" />
                     {shownAddress}
                   </p>
                   <a
                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shownAddress)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm border rounded-full px-3 py-1.5 text-gray-700 hover:border-green-400 hover:text-green-700"
+                    className="inline-flex items-center gap-1.5 text-sm border rounded-full px-3 py-1.5 text-foreground/90 hover:border-green-400 hover:text-green-700"
                   >
                     <Navigation className="w-3.5 h-3.5" />
                     Get directions
@@ -615,7 +615,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                 placeholder={DEFAULT_POLICY}
                 className="text-sm"
               />
-              <p className="text-xs text-gray-400">One rule per line — shown as a numbered list.</p>
+              <p className="text-xs text-muted-foreground/80">One rule per line — shown as a numbered list.</p>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="address">Court address</Label>
@@ -624,7 +624,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                 onChange={e => setAddressDraft(e.target.value)}
                 placeholder="e.g. Oakhill Park, Catadman National Highway, Ozamiz City 7200"
               />
-              <p className="text-xs text-gray-400">Used for the &ldquo;Get directions&rdquo; link.</p>
+              <p className="text-xs text-muted-foreground/80">Used for the &ldquo;Get directions&rdquo; link.</p>
             </div>
           </div>
           <DialogFooter>
@@ -639,20 +639,20 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {detail?.court.is_indoor ? <Home className="w-4 h-4 text-gray-400" /> : <Sun className="w-4 h-4 text-gray-400" />}
+              {detail?.court.is_indoor ? <Home className="w-4 h-4 text-muted-foreground/80" /> : <Sun className="w-4 h-4 text-muted-foreground/80" />}
               {detail?.court.name}
             </DialogTitle>
           </DialogHeader>
           {detail && (
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-gray-800">
-                <Clock className="w-4 h-4 text-gray-400" />
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <Clock className="w-4 h-4 text-muted-foreground/80" />
                 {fmtTime(detail.bookings[0].starts_at)} – {fmtHourLong(detailEndHour % 24)}
                 <span className="text-xs text-green-700 bg-green-50 rounded-full px-2 py-0.5 ml-1">
                   {detailHours} hr{detailHours > 1 ? 's' : ''}
                 </span>
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
                 {!detail.mine && ` · booked by ${names[detail.userId] ?? 'a member'}`}
               </p>
@@ -663,7 +663,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                     Are you sure you want to cancel this booking? The slot{detailHours > 1 ? 's' : ''} will be freed for others.
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-muted-foreground/80">
                     {isAdmin && !detail.mine
                       ? 'As an admin you can cancel this booking.'
                       : 'You can cancel up to 2 hours before the start time.'}
@@ -717,7 +717,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="text-sm text-gray-500">This removes the court and all its bookings. This can&apos;t be undone.</p>
+            <p className="text-sm text-muted-foreground">This removes the court and all its bookings. This can&apos;t be undone.</p>
             <div className="space-y-1.5">
               <Label htmlFor="delete-password">Enter your password to confirm</Label>
               <Input

@@ -113,21 +113,21 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
       <div className="w-full max-w-sm my-auto" onClick={e => e.stopPropagation()}>
         {/* On-screen preview (compact). The saved/shared image is the story frame below. */}
-        <div className="bg-slate-900 rounded-2xl p-5 text-white">
+        <div className="bg-zinc-900 rounded-2xl p-5 text-white">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2"><AppLogo className="w-6 h-6" /><span className="font-bold">The Kitchen</span></div>
-            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Open Play</span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">Open Play</span>
           </div>
           <h2 className="text-2xl font-extrabold italic uppercase tracking-tight leading-none">{sess?.name ?? 'Session'}</h2>
           <div className="flex items-center gap-2 mt-2 mb-4">
             <span className="text-[10px] font-bold uppercase tracking-wide text-violet-300 bg-violet-500/20 rounded px-2 py-0.5">{modeName}</span>
-            <span className="text-xs text-slate-400 capitalize">{sess?.format} · {gameCount} games · {standings.length} players</span>
+            <span className="text-xs text-zinc-400 capitalize">{sess?.format} · {gameCount} games · {standings.length} players</span>
           </div>
 
           {loading ? (
-            <p className="text-slate-500 text-sm py-6 text-center">Tallying results…</p>
+            <p className="text-zinc-500 text-sm py-6 text-center">Tallying results…</p>
           ) : standings.length === 0 ? (
-            <p className="text-slate-500 text-sm py-6 text-center">No games were recorded.</p>
+            <p className="text-zinc-500 text-sm py-6 text-center">No games were recorded.</p>
           ) : (
             <>
               {mvp && (
@@ -143,22 +143,22 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
               <div className="space-y-1">
                 {standings.slice(0, 6).map((p, i) => (
                   <div key={p.id} className="flex items-center gap-2.5 text-sm">
-                    <span className="w-4 text-center text-xs font-bold text-slate-500">{i + 1}</span>
+                    <span className="w-4 text-center text-xs font-bold text-zinc-500">{i + 1}</span>
                     <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-semibold shrink-0" style={{ backgroundColor: p.avatar_color }}>{initials(p.display_name)}</span>
-                    <span className="flex-1 truncate text-slate-100">{p.display_name}</span>
-                    <span className="text-xs text-slate-500">{p.wins}–{p.losses}</span>
+                    <span className="flex-1 truncate text-zinc-100">{p.display_name}</span>
+                    <span className="text-xs text-zinc-500">{p.wins}–{p.losses}</span>
                     <span className="font-bold tabular-nums w-9 text-right">{p.pts}</span>
                   </div>
                 ))}
               </div>
             </>
           )}
-          <p className="text-[11px] text-slate-500 text-center mt-4">Saves as a 1080×1920 story image — perfect for Facebook / Instagram Stories.</p>
+          <p className="text-[11px] text-zinc-500 text-center mt-4">Saves as a 1080×1920 story image — perfect for Facebook / Instagram Stories.</p>
         </div>
 
         {/* Actions (not part of the image) */}
         <div className="flex gap-2 mt-3">
-          <Button variant="outline" className="flex-1 bg-white" onClick={saveImage}><Download className="w-4 h-4 mr-1" />Save image</Button>
+          <Button variant="outline" className="flex-1 bg-card" onClick={saveImage}><Download className="w-4 h-4 mr-1" />Save image</Button>
           <Button className="flex-1" onClick={share}><Share2 className="w-4 h-4 mr-1" />Share</Button>
           <Button variant="ghost" size="icon" className="text-white hover:bg-white/10" onClick={onClose}><X className="w-5 h-5" /></Button>
         </div>
@@ -167,7 +167,7 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
       {/* ── Hidden 1080×1920 story frame (the actual exported image) ───────────── */}
       <div aria-hidden style={{ position: 'fixed', left: -99999, top: 0, pointerEvents: 'none' }}>
         <div ref={storyRef} style={{ width: 1080, height: 1920 }}
-          className="flex flex-col justify-between bg-gradient-to-b from-slate-900 to-slate-950 text-white"
+          className="flex flex-col justify-between bg-gradient-to-b from-zinc-900 to-zinc-950 text-white"
           // generous safe margins for Story UI (top/bottom)
         >
           <div style={{ padding: '120px 96px 96px' }} className="flex flex-col h-full">
@@ -182,11 +182,11 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
 
             {/* Title */}
             <div className="mt-[80px]">
-              <div className="text-[26px] uppercase tracking-[0.32em] text-slate-500 font-bold mb-4">Session Recap</div>
+              <div className="text-[26px] uppercase tracking-[0.32em] text-zinc-500 font-bold mb-4">Session Recap</div>
               <h1 className="text-[96px] font-extrabold italic uppercase tracking-tight leading-[0.92]">{sess?.name ?? 'Session'}</h1>
               <div className="flex items-center gap-4 mt-8">
                 <span className="text-[28px] font-bold uppercase tracking-wide text-violet-200 bg-violet-500/25 rounded-xl px-5 py-2">{modeName}</span>
-                <span className="text-[30px] text-slate-400 capitalize">{sess?.format} · {gameCount} games · {standings.length} players</span>
+                <span className="text-[30px] text-zinc-400 capitalize">{sess?.format} · {gameCount} games · {standings.length} players</span>
               </div>
             </div>
 
@@ -210,11 +210,11 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
               <div className="text-[26px] uppercase tracking-[0.3em] text-green-400 font-bold mb-6">Final Standings</div>
               <div className="flex flex-col gap-4">
                 {standings.slice(0, 8).map((p, i) => (
-                  <div key={p.id} className={`flex items-center gap-6 rounded-2xl px-7 py-5 ${i === 0 ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-slate-800/70'}`}>
-                    <span className="w-[44px] text-center text-[34px] font-extrabold text-slate-500">{i + 1}</span>
+                  <div key={p.id} className={`flex items-center gap-6 rounded-2xl px-7 py-5 ${i === 0 ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-zinc-800/70'}`}>
+                    <span className="w-[44px] text-center text-[34px] font-extrabold text-zinc-500">{i + 1}</span>
                     <span className="w-[68px] h-[68px] rounded-full flex items-center justify-center text-white text-[28px] font-bold shrink-0" style={{ backgroundColor: p.avatar_color }}>{initials(p.display_name)}</span>
-                    <span className="flex-1 text-[40px] text-slate-100 font-semibold truncate">{p.display_name}</span>
-                    <span className="text-[30px] text-slate-500 tabular-nums">{p.wins}–{p.losses}</span>
+                    <span className="flex-1 text-[40px] text-zinc-100 font-semibold truncate">{p.display_name}</span>
+                    <span className="text-[30px] text-zinc-500 tabular-nums">{p.wins}–{p.losses}</span>
                     <span className="text-[46px] font-extrabold tabular-nums w-[120px] text-right">{p.pts}</span>
                   </div>
                 ))}
@@ -224,7 +224,7 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
             {/* Footer CTA */}
             <div className="mt-[64px] text-center">
               <div className="text-[40px] font-extrabold">Run your own free Open Play</div>
-              <div className="text-[28px] text-slate-400 mt-2">No sign-up · players join from a link · The Kitchen</div>
+              <div className="text-[28px] text-zinc-400 mt-2">No sign-up · players join from a link · The Kitchen</div>
             </div>
           </div>
         </div>

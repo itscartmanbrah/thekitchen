@@ -86,7 +86,7 @@ export function PublicDivisions({ divisions }: { divisions: PubDivision[] }) {
             className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
               d.id === active.id
                 ? 'border-green-500 bg-green-50 text-green-700 font-medium'
-                : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'
+                : 'border-border text-muted-foreground hover:border-border bg-card'
             }`}
           >
             {d.name}
@@ -104,14 +104,14 @@ export function PublicDivisions({ divisions }: { divisions: PubDivision[] }) {
 
       {active.status === 'registration' ? (
         <div>
-          <p className="text-sm text-gray-500 mb-3">
+          <p className="text-sm text-muted-foreground mb-3">
             Registration is open — {active.entries.length} entered so far.
           </p>
           <div className="space-y-1.5 max-w-md">
             {active.entries.map(e => (
-              <div key={e.id} className="flex items-center gap-2.5 bg-white border rounded-lg px-3 py-2">
+              <div key={e.id} className="flex items-center gap-2.5 bg-card border rounded-lg px-3 py-2">
                 <PlayerAvatar name={e.name} color={e.avatar_color} imageUrl={e.avatar_url} size="sm" />
-                <span className="text-sm font-medium text-gray-800 truncate">{e.name}</span>
+                <span className="text-sm font-medium text-foreground truncate">{e.name}</span>
               </div>
             ))}
           </div>
@@ -119,17 +119,17 @@ export function PublicDivisions({ divisions }: { divisions: PubDivision[] }) {
       ) : active.bracket_type === 'round_robin' ? (
         <div className="space-y-6">
           <div>
-            <p className="text-xs font-semibold text-gray-500 mb-2">Standings</p>
-            <div className="rounded-xl border overflow-hidden bg-white max-w-md">
+            <p className="text-xs font-semibold text-muted-foreground mb-2">Standings</p>
+            <div className="rounded-xl border overflow-hidden bg-card max-w-md">
               {standings.map((s, i) => (
                 <div key={s.entry.id} className={`flex items-center gap-3 px-3 py-2 border-b last:border-b-0 ${
                   active.winner_entry_id === s.entry.id ? 'bg-amber-50' : ''
                 }`}>
-                  <span className="text-xs font-bold text-gray-400 w-5">{i + 1}</span>
+                  <span className="text-xs font-bold text-muted-foreground/80 w-5">{i + 1}</span>
                   <PlayerAvatar name={s.entry.name} color={s.entry.avatar_color} imageUrl={s.entry.avatar_url} size="sm" />
-                  <span className="text-sm font-medium text-gray-800 flex-1 truncate">{s.entry.name}</span>
-                  <span className="text-xs text-gray-500">{s.wins}W–{s.losses}L</span>
-                  <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-green-600' : s.diff < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                  <span className="text-sm font-medium text-foreground flex-1 truncate">{s.entry.name}</span>
+                  <span className="text-xs text-muted-foreground">{s.wins}W–{s.losses}L</span>
+                  <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-green-600' : s.diff < 0 ? 'text-red-500' : 'text-muted-foreground/80'}`}>
                     {s.diff > 0 ? '+' : ''}{s.diff}
                   </span>
                 </div>
@@ -137,18 +137,18 @@ export function PublicDivisions({ divisions }: { divisions: PubDivision[] }) {
             </div>
           </div>
           <div>
-            <p className="text-xs font-semibold text-gray-500 mb-2">Matches</p>
+            <p className="text-xs font-semibold text-muted-foreground mb-2">Matches</p>
             <div className="space-y-1.5 max-w-md">
               {active.matches.map(m => {
                 const e1 = m.entry1_id ? entryMap.get(m.entry1_id) : null
                 const e2 = m.entry2_id ? entryMap.get(m.entry2_id) : null
                 return (
-                  <div key={m.id} className="flex items-center gap-2 bg-white border rounded-lg px-3 py-2">
+                  <div key={m.id} className="flex items-center gap-2 bg-card border rounded-lg px-3 py-2">
                     <span className={`text-sm flex-1 text-right truncate ${m.winner_entry_id === m.entry1_id ? 'font-semibold' : ''}`}>{e1?.name}</span>
                     {m.status === 'completed' ? (
-                      <span className="text-sm font-bold text-gray-700 px-2 shrink-0">{m.score1} – {m.score2}</span>
+                      <span className="text-sm font-bold text-foreground/90 px-2 shrink-0">{m.score1} – {m.score2}</span>
                     ) : (
-                      <span className="text-xs text-gray-400 px-2 shrink-0">vs</span>
+                      <span className="text-xs text-muted-foreground/80 px-2 shrink-0">vs</span>
                     )}
                     <span className={`text-sm flex-1 truncate ${m.winner_entry_id === m.entry2_id ? 'font-semibold' : ''}`}>{e2?.name}</span>
                   </div>

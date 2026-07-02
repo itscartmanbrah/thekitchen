@@ -24,14 +24,14 @@ export default async function PublicTournamentPage({ params }: { params: { code:
     : null
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white">
+    <div className="min-h-screen bg-muted/40">
+      <header className="border-b bg-card">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <AppLogo className="w-7 h-7" />
-            <span className="font-bold text-gray-900">The Kitchen</span>
+            <span className="font-bold text-foreground">The Kitchen</span>
           </Link>
-          <span className="text-xs text-gray-400">Live bracket</span>
+          <span className="text-xs text-muted-foreground/80">Live bracket</span>
         </div>
       </header>
 
@@ -39,11 +39,11 @@ export default async function PublicTournamentPage({ params }: { params: { code:
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-1">
             <Trophy className="w-5 h-5 text-amber-500" />
-            <h1 className="text-xl font-bold text-gray-900">{tournament.name}</h1>
+            <h1 className="text-xl font-bold text-foreground">{tournament.name}</h1>
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             {tournament.league_name}
-            <span className="mx-2 text-gray-300">·</span>
+            <span className="mx-2 text-muted-foreground/50">·</span>
             <span className={tournament.status === 'completed' ? 'text-amber-600 font-medium' : 'text-green-600 font-medium'}>
               {tournament.status === 'completed' ? 'Completed' : 'In progress'}
             </span>
@@ -56,7 +56,7 @@ export default async function PublicTournamentPage({ params }: { params: { code:
           )}
         </div>
 
-        <div className="bg-white rounded-xl border p-4">
+        <div className="bg-card rounded-xl border p-4">
           {hasDivisions ? (
             <PublicDivisions divisions={divisions} />
           ) : (
@@ -64,7 +64,7 @@ export default async function PublicTournamentPage({ params }: { params: { code:
           )}
         </div>
 
-        <p className="text-xs text-gray-400 text-center mt-6">
+        <p className="text-xs text-muted-foreground/80 text-center mt-6">
           Powered by The Kitchen — pickleball league rankings.{' '}
           <Link href="/signup" className="text-green-600 hover:underline">Create your own league</Link>
         </p>

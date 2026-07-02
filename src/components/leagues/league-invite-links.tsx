@@ -21,7 +21,7 @@ function CopyCode({ code }: { code: string }) {
     setCopied(true); setTimeout(() => setCopied(false), 2000)
   }
   return (
-    <button onClick={copy} className="flex items-center gap-1.5 font-mono text-sm font-semibold text-gray-800 hover:text-green-700 transition-colors">
+    <button onClick={copy} className="flex items-center gap-1.5 font-mono text-sm font-semibold text-foreground hover:text-green-700 transition-colors">
       {copied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
       {code}
     </button>
@@ -79,17 +79,17 @@ export function LeagueInviteLinks({ leagueId }: { leagueId: string }) {
   return (
     <div className="space-y-2">
       {links.map(l => (
-        <div key={l.id} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border ${l.is_active ? 'bg-white' : 'bg-gray-50 opacity-60'}`}>
-          <LinkIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+        <div key={l.id} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border ${l.is_active ? 'bg-card' : 'bg-muted/40 opacity-60'}`}>
+          <LinkIcon className="w-3.5 h-3.5 text-muted-foreground/80 shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <CopyCode code={l.code} />
-              {l.label && <span className="text-xs text-gray-500 truncate">{l.label}</span>}
+              {l.label && <span className="text-xs text-muted-foreground truncate">{l.label}</span>}
               <Badge variant={l.is_active ? 'success' : 'outline'} className="text-xs">
                 {l.is_active ? 'Active' : 'Inactive'}
               </Badge>
             </div>
-            <p className="text-xs text-gray-400 mt-0.5">Used {l.used_count}×</p>
+            <p className="text-xs text-muted-foreground/80 mt-0.5">Used {l.used_count}×</p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => toggle(l.id, l.is_active)}>
@@ -103,7 +103,7 @@ export function LeagueInviteLinks({ leagueId }: { leagueId: string }) {
       ))}
 
       {showForm ? (
-        <div className="flex gap-2 items-center p-2 border rounded-lg bg-gray-50">
+        <div className="flex gap-2 items-center p-2 border rounded-lg bg-muted/40">
           <Input
             placeholder="Label (optional, e.g. Spring 2025)"
             value={newLabel}

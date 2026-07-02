@@ -39,12 +39,12 @@ export function LeagueOfficiated({ leagueId, currentUserId }: { leagueId: string
       })
   }, [leagueId, currentUserId])
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading…</div>
+  if (loading) return <div className="text-center py-12 text-muted-foreground">Loading…</div>
 
   if (matches.length === 0) {
     return (
-      <div className="text-center py-16 text-gray-400">
-        <Shield className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+      <div className="text-center py-16 text-muted-foreground/80">
+        <Shield className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
         <p className="text-sm">You have not officiated any matches in this league yet.</p>
       </div>
     )
@@ -57,18 +57,18 @@ export function LeagueOfficiated({ leagueId, currentUserId }: { leagueId: string
     <div>
       {/* Summary */}
       <div className="flex gap-4 mb-5">
-        <div className="bg-gray-50 rounded-xl px-4 py-3 text-center">
-          <p className="text-xl font-bold text-gray-900">{matches.length}</p>
-          <p className="text-xs text-gray-500">Total officiated</p>
+        <div className="bg-muted/40 rounded-xl px-4 py-3 text-center">
+          <p className="text-xl font-bold text-foreground">{matches.length}</p>
+          <p className="text-xs text-muted-foreground">Total officiated</p>
         </div>
         <div className="bg-green-50 rounded-xl px-4 py-3 text-center">
           <p className="text-xl font-bold text-green-700">{completed}</p>
-          <p className="text-xs text-gray-500">Completed</p>
+          <p className="text-xs text-muted-foreground">Completed</p>
         </div>
         {pending > 0 && (
           <div className="bg-orange-50 rounded-xl px-4 py-3 text-center">
             <p className="text-xl font-bold text-orange-600">{pending}</p>
-            <p className="text-xs text-gray-500">Awaiting score</p>
+            <p className="text-xs text-muted-foreground">Awaiting score</p>
           </div>
         )}
       </div>
@@ -96,12 +96,12 @@ export function LeagueOfficiated({ leagueId, currentUserId }: { leagueId: string
                               imageUrl={p.profiles.avatar_url}
                               size="xs"
                             />
-                            <span className="text-sm font-medium text-gray-800">{p.profiles.display_name}</span>
+                            <span className="text-sm font-medium text-foreground">{p.profiles.display_name}</span>
                           </div>
                         ))}
                       </div>
 
-                      <Swords className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                      <Swords className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
 
                       {/* Team 2 */}
                       <div className="flex items-center gap-1">
@@ -113,23 +113,23 @@ export function LeagueOfficiated({ leagueId, currentUserId }: { leagueId: string
                               imageUrl={p.profiles.avatar_url}
                               size="xs"
                             />
-                            <span className="text-sm font-medium text-gray-800">{p.profiles.display_name}</span>
+                            <span className="text-sm font-medium text-foreground">{p.profiles.display_name}</span>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className="text-xs text-gray-400">{FORMAT_LABELS[match.format] ?? match.format}</span>
+                      <span className="text-xs text-muted-foreground/80">{FORMAT_LABELS[match.format] ?? match.format}</span>
                       <span className="text-gray-200 text-xs">·</span>
-                      <span className="text-xs text-gray-400">{timeAgo(match.created_at)}</span>
+                      <span className="text-xs text-muted-foreground/80">{timeAgo(match.created_at)}</span>
                     </div>
                   </div>
 
                   {/* Score / status */}
                   <div className="text-right shrink-0">
                     {isCompleted ? (
-                      <div className="text-sm font-bold text-gray-900">
+                      <div className="text-sm font-bold text-foreground">
                         {match.team1_score} – {match.team2_score}
                       </div>
                     ) : (

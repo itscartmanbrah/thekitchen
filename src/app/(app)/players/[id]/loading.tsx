@@ -19,7 +19,7 @@ export default function PlayerLoading() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-xl border bg-white p-4 space-y-2">
+          <div key={i} className="rounded-xl border bg-card p-4 space-y-2">
             <Skeleton className="h-7 w-16" />
             <Skeleton className="h-3 w-20" />
           </div>
@@ -29,7 +29,7 @@ export default function PlayerLoading() {
       {/* League membership cards */}
       <div className="space-y-4">
         {Array.from({ length: 2 }).map((_, i) => (
-          <div key={i} className="rounded-xl border bg-white overflow-hidden">
+          <div key={i} className="rounded-xl border bg-card overflow-hidden">
             <Skeleton className="h-1.5 w-full rounded-none" />
             <div className="p-4 space-y-3">
               <Skeleton className="h-5 w-44" />

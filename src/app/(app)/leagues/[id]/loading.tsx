@@ -24,7 +24,7 @@ export default function LeagueLoading() {
       {/* Leaderboard-style rows */}
       <div className="space-y-2">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="rounded-xl border bg-white px-4 py-3 flex items-center gap-3">
+          <div key={i} className="rounded-xl border bg-card px-4 py-3 flex items-center gap-3">
             <Skeleton className="h-5 w-8" />
             <Skeleton className="h-8 w-8 rounded-full" />
             <div className="flex-1 space-y-1.5">

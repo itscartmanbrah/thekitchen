@@ -38,9 +38,9 @@ export default function BoardViewPage({ params }: { params: { code: string } }) 
     return () => { clearInterval(poll); clearInterval(tick) }
   }, [fetchData])
 
-  if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">Loading…</div>
+  if (loading) return <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-500">Loading…</div>
   if (!data?.session) {
-    return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500 px-4 text-center">This Open Play session isn&apos;t available.</div>
+    return <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-500 px-4 text-center">This Open Play session isn&apos;t available.</div>
   }
 
   const { session, players, games, on_deck } = data
@@ -66,8 +66,8 @@ export default function BoardViewPage({ params }: { params: { code: string } }) 
   )
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <header className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-slate-800">
+    <div className="min-h-screen bg-zinc-950 text-white">
+      <header className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-zinc-800">
         <div className="flex items-center gap-3">
           <AppLogo className="w-9 h-9" />
           <div>
@@ -75,12 +75,12 @@ export default function BoardViewPage({ params }: { params: { code: string } }) 
               <h1 className="text-2xl sm:text-3xl font-extrabold italic uppercase tracking-tight">{session.name}</h1>
               {session.status === 'active' && <span className="flex items-center gap-1.5 text-sm font-bold text-red-400"><span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />LIVE</span>}
             </div>
-            <p className="text-sm text-slate-400">{session.league_name} · <span className="capitalize">{session.format}</span></p>
+            <p className="text-sm text-zinc-400">{session.league_name} · <span className="capitalize">{session.format}</span></p>
           </div>
         </div>
         <div className="text-right">
           <div className="text-3xl sm:text-4xl font-extrabold tabular-nums">{new Date(now).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</div>
-          <div className="text-xs uppercase tracking-widest text-slate-500">{waiting} waiting</div>
+          <div className="text-xs uppercase tracking-widest text-zinc-500">{waiting} waiting</div>
         </div>
       </header>
 
@@ -92,22 +92,22 @@ export default function BoardViewPage({ params }: { params: { code: string } }) 
             const g = games.find(x => x.court === courtNo)
             const over = g ? (now - new Date(g.started_at).getTime()) / 60000 > 15 : false
             return (
-              <div key={courtNo} className={`rounded-2xl p-5 bg-slate-900 border-l-4 ${over ? 'border-red-500' : g ? 'border-green-500' : 'border-slate-800'}`}>
+              <div key={courtNo} className={`rounded-2xl p-5 bg-zinc-900 border-l-4 ${over ? 'border-red-500' : g ? 'border-green-500' : 'border-zinc-800'}`}>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-xl font-extrabold italic">COURT {courtNo}</span>
                   {g ? (
                     over
                       ? <span className="text-xs uppercase font-bold bg-red-500 rounded px-2 py-1">OT {mmss(g.started_at)}</span>
                       : <span className="text-lg font-bold text-green-400 tabular-nums">{mmss(g.started_at)}</span>
-                  ) : <span className="text-xs uppercase tracking-widest text-slate-600">Open</span>}
+                  ) : <span className="text-xs uppercase tracking-widest text-zinc-600">Open</span>}
                 </div>
                 {g ? (
                   <div className="space-y-3">
                     <Team ids={g.team1} big />
-                    <div className="text-xs font-bold text-slate-600 pl-1">VS</div>
+                    <div className="text-xs font-bold text-zinc-600 pl-1">VS</div>
                     <Team ids={g.team2} big />
                   </div>
-                ) : <div className="text-slate-700 py-6 text-center text-sm">Waiting for the next group</div>}
+                ) : <div className="text-zinc-700 py-6 text-center text-sm">Waiting for the next group</div>}
               </div>
             )
           })}
@@ -116,12 +116,12 @@ export default function BoardViewPage({ params }: { params: { code: string } }) 
         {/* Up next */}
         <div className="text-xs uppercase tracking-[0.3em] text-green-400 font-bold mb-3">Up next</div>
         {on_deck.length === 0 ? (
-          <p className="text-slate-600 text-sm">No groups on deck yet.</p>
+          <p className="text-zinc-600 text-sm">No groups on deck yet.</p>
         ) : (
           <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(240px, 1fr))` }}>
             {on_deck.map((grp, i) => (
-              <div key={grp.id} className="rounded-xl bg-slate-900/70 border border-slate-800 p-4">
-                <div className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-2">Group {i + 1}</div>
+              <div key={grp.id} className="rounded-xl bg-zinc-900/70 border border-zinc-800 p-4">
+                <div className="text-xs uppercase tracking-widest text-zinc-500 font-bold mb-2">Group {i + 1}</div>
                 <div className="space-y-1.5">
                   <Team ids={grp.team1} />
                   <Team ids={grp.team2} />
@@ -132,12 +132,12 @@ export default function BoardViewPage({ params }: { params: { code: string } }) 
         )}
       </main>
 
-      <footer className="px-6 sm:px-10 py-4 flex items-center justify-between gap-4 border-t border-slate-800">
-        <span className="text-xs text-slate-600">Powered by The Kitchen · updates live</span>
+      <footer className="px-6 sm:px-10 py-4 flex items-center justify-between gap-4 border-t border-zinc-800">
+        <span className="text-xs text-zinc-600">Powered by The Kitchen · updates live</span>
         {session.status === 'active' && (
           <div className="flex items-center gap-3">
             <span className="text-sm font-bold uppercase tracking-wide text-green-400">Scan to join →</span>
-            <div className="bg-white p-2 rounded-lg"><QRCodeSVG value={joinUrl} size={84} level="M" /></div>
+            <div className="bg-card p-2 rounded-lg"><QRCodeSVG value={joinUrl} size={84} level="M" /></div>
           </div>
         )}
       </footer>

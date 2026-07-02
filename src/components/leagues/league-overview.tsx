@@ -35,8 +35,8 @@ function relTime(iso: string) {
 
 function Kpi({ label, children, accent }: { label: string; children: React.ReactNode; accent: string }) {
   return (
-    <div className={`rounded-xl bg-slate-900 px-4 py-3.5 shadow-md border-t-[3px] ${accent}`}>
-      <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">{label}</p>
+    <div className={`rounded-xl bg-zinc-900 px-4 py-3.5 shadow-md border-t-[3px] ${accent}`}>
+      <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">{label}</p>
       <div className="text-2xl font-extrabold text-white mt-1">{children}</div>
     </div>
   )
@@ -118,7 +118,7 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
     { table: 'play_sessions', filter: `league_id=eq.${leagueId}` },
   ], () => load(), [leagueId])
 
-  if (loading) return <div className="text-center py-12 text-gray-400 text-sm">Loading overview…</div>
+  if (loading) return <div className="text-center py-12 text-muted-foreground/80 text-sm">Loading overview…</div>
 
   const pb = standing ? getPickleballRating(standing.elo) : null
   const winRate = standing && standing.wins + standing.losses > 0
@@ -133,14 +133,14 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
         <motion.div {...item(0)} className="grid grid-cols-3 gap-3">
           <Kpi label="Your rank" accent="border-green-500">
             #<CountUp value={standing.rank} />
-            <span className="text-sm text-slate-400 font-normal"> of {standing.total}</span>
+            <span className="text-sm text-zinc-400 font-normal"> of {standing.total}</span>
           </Kpi>
           <Kpi label="Your rating" accent="border-violet-500">
             {pb && <CountUp value={parseFloat(pb.rating)} decimals={2} />}
           </Kpi>
           <Kpi label="Win rate" accent="border-amber-500">
-            {winRate !== null ? <CountUp value={winRate} suffix="%" /> : <span className="text-slate-500 text-lg">—</span>}
-            <span className="block text-xs text-slate-400 font-normal">{standing.wins}W · {standing.losses}L</span>
+            {winRate !== null ? <CountUp value={winRate} suffix="%" /> : <span className="text-zinc-500 text-lg">—</span>}
+            <span className="block text-xs text-zinc-400 font-normal">{standing.wins}W · {standing.losses}L</span>
           </Kpi>
         </motion.div>
       )}
@@ -148,10 +148,10 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
       {/* Open Play + Next booking */}
       <div className="grid sm:grid-cols-2 gap-3">
         <motion.button {...item(1)} onClick={() => onNavigate('open-play')}
-          className="text-left rounded-xl border bg-white p-4 hover:border-green-300 transition-colors group">
+          className="text-left rounded-xl border bg-card p-4 hover:border-green-300 transition-colors group">
           <div className="flex items-center justify-between mb-2">
-            <span className="flex items-center gap-2 text-sm font-medium text-gray-700"><Swords className="w-4 h-4 text-green-600" />Open Play</span>
-            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-green-500" />
+            <span className="flex items-center gap-2 text-sm font-medium text-foreground/90"><Swords className="w-4 h-4 text-green-600" />Open Play</span>
+            <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-green-500" />
           </div>
           {openPlay ? (
             <div>
@@ -162,53 +162,53 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
               ) : (
                 <span className="text-xs font-semibold text-blue-600">SCHEDULED {openPlay.starts_at && relTime(openPlay.starts_at)}</span>
               )}
-              <p className="text-sm text-gray-900 mt-1 truncate">{openPlay.name}</p>
+              <p className="text-sm text-foreground mt-1 truncate">{openPlay.name}</p>
             </div>
           ) : (
-            <p className="text-sm text-gray-400">No sessions running. Tap to start one.</p>
+            <p className="text-sm text-muted-foreground/80">No sessions running. Tap to start one.</p>
           )}
         </motion.button>
 
         <motion.button {...item(2)} onClick={() => onNavigate('bookings')}
-          className="text-left rounded-xl border bg-white p-4 hover:border-green-300 transition-colors group">
+          className="text-left rounded-xl border bg-card p-4 hover:border-green-300 transition-colors group">
           <div className="flex items-center justify-between mb-2">
-            <span className="flex items-center gap-2 text-sm font-medium text-gray-700"><CalendarClock className="w-4 h-4 text-green-600" />Your next booking</span>
-            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-green-500" />
+            <span className="flex items-center gap-2 text-sm font-medium text-foreground/90"><CalendarClock className="w-4 h-4 text-green-600" />Your next booking</span>
+            <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-green-500" />
           </div>
           {nextBooking ? (
             <div>
-              <p className="text-sm text-gray-900">{nextBooking.court}</p>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-sm text-foreground">{nextBooking.court}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {new Date(nextBooking.starts_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                <span className="text-gray-400"> · {relTime(nextBooking.starts_at)}</span>
+                <span className="text-muted-foreground/80"> · {relTime(nextBooking.starts_at)}</span>
               </p>
             </div>
           ) : (
-            <p className="text-sm text-gray-400">Nothing booked. Tap to reserve a court.</p>
+            <p className="text-sm text-muted-foreground/80">Nothing booked. Tap to reserve a court.</p>
           )}
         </motion.button>
       </div>
 
       {/* Recent matches */}
-      <motion.div {...item(3)} className="rounded-xl border bg-white p-4">
+      <motion.div {...item(3)} className="rounded-xl border bg-card p-4">
         <div className="flex items-center justify-between mb-3">
-          <span className="flex items-center gap-2 text-sm font-medium text-gray-700"><Trophy className="w-4 h-4 text-green-600" />Recent matches</span>
-          <button onClick={() => onNavigate('matches')} className="text-xs text-gray-400 hover:text-green-600">View all</button>
+          <span className="flex items-center gap-2 text-sm font-medium text-foreground/90"><Trophy className="w-4 h-4 text-green-600" />Recent matches</span>
+          <button onClick={() => onNavigate('matches')} className="text-xs text-muted-foreground/80 hover:text-green-600">View all</button>
         </div>
         {recent.length === 0 ? (
-          <p className="text-sm text-gray-400">No matches played yet.</p>
+          <p className="text-sm text-muted-foreground/80">No matches played yet.</p>
         ) : (
           <div className="space-y-2">
             {recent.map(m => (
               <div key={m.id} className="flex items-center gap-3 text-sm">
-                <span className="text-xs text-gray-400 w-14 shrink-0">{fmtLabels[m.format] ?? m.format}</span>
-                <span className="font-medium text-gray-800">{m.t1}–{m.t2}</span>
+                <span className="text-xs text-muted-foreground/80 w-14 shrink-0">{fmtLabels[m.format] ?? m.format}</span>
+                <span className="font-medium text-foreground">{m.t1}–{m.t2}</span>
                 {m.mine && (
                   <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 ${m.mine === 'W' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
                     {m.mine === 'W' ? 'WON' : 'LOST'}
                   </span>
                 )}
-                <span className="ml-auto text-xs text-gray-400">{relTime(m.when)}</span>
+                <span className="ml-auto text-xs text-muted-foreground/80">{relTime(m.when)}</span>
               </div>
             ))}
           </div>

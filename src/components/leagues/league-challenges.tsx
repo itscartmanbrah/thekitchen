@@ -30,7 +30,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   accepted:           { label: 'Accepted',             color: 'bg-green-100 text-green-700' },
   declined_officiator:{ label: 'Officiator declined',  color: 'bg-red-100 text-red-600' },
   declined_player:    { label: 'Opponent declined',    color: 'bg-red-100 text-red-600' },
-  cancelled:          { label: 'Cancelled',            color: 'bg-gray-100 text-gray-500' },
+  cancelled:          { label: 'Cancelled',            color: 'bg-muted text-muted-foreground' },
 }
 
 function timeAgo(iso: string) {
@@ -81,7 +81,7 @@ export function LeagueChallenges({ leagueId, currentUserId }: { leagueId: string
     }
   }
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading challenges…</div>
+  if (loading) return <div className="text-center py-12 text-muted-foreground">Loading challenges…</div>
 
   // Tabs logic
   const needsAction = challenges.filter(c =>
@@ -106,19 +106,19 @@ export function LeagueChallenges({ leagueId, currentUserId }: { leagueId: string
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex gap-1 p-1 bg-gray-100 rounded-lg mb-5 w-fit">
+      <div className="flex gap-1 p-1 bg-muted rounded-lg mb-5 w-fit">
         {TABS.map(t => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              tab === t.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              tab === t.key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground/90'
             }`}
           >
             {t.label}
             {t.count > 0 && (
               <span className={`text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center ${
-                tab === t.key ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'
+                tab === t.key ? 'bg-green-500 text-white' : 'bg-gray-300 text-muted-foreground'
               }`}>
                 {t.count}
               </span>
@@ -128,14 +128,14 @@ export function LeagueChallenges({ leagueId, currentUserId }: { leagueId: string
       </div>
 
       {displayed.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
-          <Swords className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+        <div className="text-center py-16 text-muted-foreground/80">
+          <Swords className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
           <p className="text-sm">No challenges here yet.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {displayed.map(c => {
-            const cfg    = STATUS_CONFIG[c.status] ?? { label: c.status, color: 'bg-gray-100 text-gray-500' }
+            const cfg    = STATUS_CONFIG[c.status] ?? { label: c.status, color: 'bg-muted text-muted-foreground' }
             const isChallenger = c.challenger.id === currentUserId
             const canCancel    = isChallenger &&
               (c.status === 'pending_officiator' || c.status === 'pending_player')
@@ -151,15 +151,15 @@ export function LeagueChallenges({ leagueId, currentUserId }: { leagueId: string
                       imageUrl={c.challenger.avatar_url}
                       size="sm"
                     />
-                    <span className="text-sm font-medium text-gray-900">{c.challenger.display_name}</span>
-                    <Swords className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                    <span className="text-sm font-medium text-foreground">{c.challenger.display_name}</span>
+                    <Swords className="w-3.5 h-3.5 text-muted-foreground/80 shrink-0" />
                     <PlayerAvatar
                       name={c.challenged.display_name}
                       color={c.challenged.avatar_color}
                       imageUrl={c.challenged.avatar_url}
                       size="sm"
                     />
-                    <span className="text-sm font-medium text-gray-900">{c.challenged.display_name}</span>
+                    <span className="text-sm font-medium text-foreground">{c.challenged.display_name}</span>
                     <div className="ml-auto shrink-0">
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cfg.color}`}>
                         {cfg.label}
@@ -168,11 +168,11 @@ export function LeagueChallenges({ leagueId, currentUserId }: { leagueId: string
                   </div>
 
                   {/* Details row */}
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                    <span className="font-medium text-gray-700">{FORMAT_LABELS[c.format] ?? c.format}</span>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground/90">{FORMAT_LABELS[c.format] ?? c.format}</span>
                     <span>·</span>
                     <span className="flex items-center gap-1">
-                      Officiated by <span className="font-medium text-gray-700 ml-1">{c.officiator.display_name}</span>
+                      Officiated by <span className="font-medium text-foreground/90 ml-1">{c.officiator.display_name}</span>
                     </span>
                     {c.proposed_at && (
                       <>
@@ -189,7 +189,7 @@ export function LeagueChallenges({ leagueId, currentUserId }: { leagueId: string
 
                   {/* Message */}
                   {c.message && (
-                    <p className="mt-2 text-xs text-gray-500 italic border-l-2 border-gray-200 pl-2">
+                    <p className="mt-2 text-xs text-muted-foreground italic border-l-2 border-border pl-2">
                       &ldquo;{c.message}&rdquo;
                     </p>
                   )}
@@ -199,7 +199,7 @@ export function LeagueChallenges({ leagueId, currentUserId }: { leagueId: string
                     <div className="mt-3 flex justify-end">
                       <button
                         onClick={() => cancelChallenge(c.id)}
-                        className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition-colors"
+                        className="flex items-center gap-1 text-xs text-muted-foreground/80 hover:text-red-500 transition-colors"
                       >
                         <Ban className="w-3 h-3" />
                         Cancel challenge

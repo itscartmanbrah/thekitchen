@@ -30,8 +30,8 @@ export default async function LeaguePage({ params }: { params: { id: string } })
         <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl">⏳</span>
         </div>
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Waiting for approval</h1>
-        <p className="text-gray-500 text-sm">Your request to join <strong>{league.name}</strong> is pending. An admin will approve it soon.</p>
+        <h1 className="text-xl font-bold text-foreground mb-2">Waiting for approval</h1>
+        <p className="text-muted-foreground text-sm">Your request to join <strong>{league.name}</strong> is pending. An admin will approve it soon.</p>
       </div>
     )
   }
@@ -43,16 +43,16 @@ export default async function LeaguePage({ params }: { params: { id: string } })
         <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl">🚫</span>
         </div>
-        <h1 className="text-xl font-bold text-gray-900 mb-2">You&apos;ve been banned from this league</h1>
-        <p className="text-gray-500 text-sm">
+        <h1 className="text-xl font-bold text-foreground mb-2">You&apos;ve been banned from this league</h1>
+        <p className="text-muted-foreground text-sm">
           You no longer have access to <strong>{league.name}</strong>.
         </p>
         {(membership as any).ban_reason && (
-          <p className="text-sm text-gray-500 mt-3 bg-gray-50 border rounded-lg px-4 py-3 italic">
+          <p className="text-sm text-muted-foreground mt-3 bg-muted/40 border rounded-lg px-4 py-3 italic">
             &ldquo;{(membership as any).ban_reason}&rdquo;
           </p>
         )}
-        <p className="text-gray-400 text-xs mt-4">If you think this is a mistake, contact a league admin.</p>
+        <p className="text-muted-foreground/80 text-xs mt-4">If you think this is a mistake, contact a league admin.</p>
       </div>
     )
   }
@@ -87,12 +87,12 @@ export default async function LeaguePage({ params }: { params: { id: string } })
 
   return (
     <div>
-      <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-3 transition-colors">
+      <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-3 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Leagues
       </Link>
 
       {/* League header — athletic scoreboard panel */}
-      <div className="relative overflow-hidden rounded-2xl mb-6 shadow-lg bg-slate-900">
+      <div className="relative overflow-hidden rounded-2xl mb-6 shadow-lg bg-zinc-900">
         {(league as any).banner_image_url && (
           <img src={(league as any).banner_image_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" />
         )}
@@ -107,7 +107,7 @@ export default async function LeaguePage({ params }: { params: { id: string } })
                 {roleLabels[membership.role]}
               </span>
               {activeSeason && (
-                <span className="text-[10px] font-bold uppercase tracking-widest rounded px-2 py-0.5 text-slate-900" style={{ backgroundColor: league.banner_color, color: '#fff' }}>
+                <span className="text-[10px] font-bold uppercase tracking-widest rounded px-2 py-0.5 text-zinc-900" style={{ backgroundColor: league.banner_color, color: '#fff' }}>
                   {activeSeason.name}
                 </span>
               )}
