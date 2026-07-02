@@ -41,6 +41,7 @@ interface SessionRow {
   manage_code: string
   allow_self_join: boolean
   auto_stage: boolean
+  max_players: number | null
   partner_rotation: string
   starts_at: string | null
   ends_at: string | null
@@ -54,7 +55,7 @@ interface SP {
   avatar_color: string
   avatar_url?: string | null
   skill: number
-  status: 'queued' | 'playing' | 'resting' | 'left' | 'staged'
+  status: 'queued' | 'playing' | 'resting' | 'left' | 'staged' | 'waitlisted'
   queue_order: number
   queued_since: string
   wins: number
@@ -112,6 +113,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const [format, setFormat] = useState<'singles' | 'doubles'>('doubles')
   const [mode, setMode] = useState<'balanced' | 'americano' | 'mexicano' | 'king' | 'skill' | 'mixed' | 'skill_courts'>('balanced')
   const [rated, setRated] = useState(false)
+  const [maxPlayers, setMaxPlayers] = useState('')   // optional cap; '' = no limit
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
@@ -267,6 +269,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
   const bench = players.filter(p => p.status === 'queued')
     .sort((a, b) => a.games - b.games || new Date(a.queued_since).getTime() - new Date(b.queued_since).getTime())
   const resting = players.filter(p => p.status === 'resting')
+  const waitlist = players.filter(p => p.status === 'waitlisted').sort((a, b) => a.queue_order - b.queue_order)
+  const activeCount = players.filter(p => p.status !== 'left' && p.status !== 'waitlisted').length
   const liveGames = games.filter(g => g.status === 'in_progress').sort((a, b) => (a.court_number ?? 0) - (b.court_number ?? 0))
   const stagedGroups = games.filter(g => g.status === 'staged')
   const perGame = session?.format === 'doubles' ? 4 : 2
@@ -321,8 +325,10 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     })
     if (error) toast({ title: 'Could not create', description: error.message, variant: 'destructive' })
     else {
+      const cap = parseInt(maxPlayers, 10)
+      if (!isNaN(cap) && cap >= 2) await supabase.rpc('set_session_max_players', { p_session_id: newId, p_max: cap })
       toast({ title: startsAt.getTime() > Date.now() ? 'Session scheduled 📅' : 'Session started 🎾' })
-      setSetupName(''); setSelectedCourts([]); setStartDate(''); setStartTime(''); setEndTime(''); setMode('balanced')
+      setSetupName(''); setSelectedCourts([]); setStartDate(''); setStartTime(''); setEndTime(''); setMode('balanced'); setMaxPlayers('')
       setCreating(false)
       await fetchSessions(newId as string)
     }
@@ -684,6 +690,16 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
     else setSession({ ...session, auto_stage: !session.auto_stage })
   }
 
+  async function saveMaxPlayers(raw: string) {
+    if (!session) return
+    const v = raw.trim() === '' ? null : parseInt(raw, 10)
+    if (v !== null && (isNaN(v) || v < 2)) { toast({ title: 'Max players must be 2 or more (or blank for no limit)', variant: 'destructive' }); return }
+    if (v === session.max_players) return
+    const { error } = await supabase.rpc('set_session_max_players', { p_session_id: session.id, p_max: v })
+    if (error) toast({ title: 'Could not update', description: error.message, variant: 'destructive' })
+    else { setSession({ ...session, max_players: v }); await loadState(session.id) }
+  }
+
   async function setPartnerRotation(mode: 'split' | 'keep') {
     if (!session || session.partner_rotation === mode) return
     const { error } = await supabase.rpc('set_session_partner_rotation', { p_session_id: session.id, p_mode: mode })
@@ -904,6 +920,13 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             <StyleExplainer mode={mode} courtCount={selectedCourts.length} />
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor="s-max">Max players <span className="text-gray-400 font-normal">(optional)</span></Label>
+            <Input id="s-max" type="number" min={2} max={200} placeholder="No limit" value={maxPlayers}
+              onChange={e => setMaxPlayers(e.target.value)} />
+            <p className="text-xs text-gray-400">When full, extra check-ins go on a waitlist and are let in automatically as spots free up.</p>
+          </div>
+
           <label className="flex items-start gap-2 cursor-pointer">
             <input type="checkbox" checked={rated} onChange={e => setRated(e.target.checked)} className="mt-0.5" />
             <span className="text-sm text-gray-700">
@@ -1058,6 +1081,14 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             <input type="checkbox" checked={session.auto_stage} onChange={toggleAutoStage} />
             <span><strong>Keep courts busy</strong> — auto-stage the next game On Deck when a court frees (tap to send). Off = strict round-by-round.</span>
           </label>
+          <div className="flex items-center gap-2 text-xs text-gray-600">
+            <span className="font-medium">Max players:</span>
+            <input key={session.id} type="number" min={2} max={200} placeholder="∞" defaultValue={session.max_players ?? ''}
+              onBlur={e => saveMaxPlayers(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+              className="w-16 border border-gray-200 rounded-lg px-2 py-1 text-center" />
+            <span className="text-gray-400">blank = no limit · extra check-ins join the waitlist</span>
+          </div>
           {isKing && session.format === 'doubles' && (
             <div className="flex items-center gap-2 text-xs text-gray-600">
               <span className="font-medium">Partners:</span>
@@ -1075,7 +1106,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         {/* Player totals — 2×2 on phones, 4-across on larger screens */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
           {[
-            { label: 'Checked in', val: players.filter(p => p.status !== 'left').length, accent: 'border-sky-500', color: 'text-white' },
+            { label: 'Checked in', val: session.max_players ? `${activeCount}/${session.max_players}` : activeCount, accent: 'border-sky-500', color: 'text-white' },
             { label: 'Ready', val: bench.length, accent: 'border-green-500', color: 'text-green-400' },
             { label: 'Playing', val: playingCount, accent: 'border-violet-500', color: 'text-white' },
             { label: 'Resting', val: resting.length, accent: 'border-amber-500', color: 'text-white' },
@@ -1355,6 +1386,29 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Waitlist — first in, first promoted when a spot frees */}
+        {waitlist.length > 0 && (
+          <div className="mt-4">
+            <span className="text-[11px] uppercase tracking-[0.18em] text-amber-400 font-bold">Waitlist · {waitlist.length}</span>
+            <div className="space-y-1.5 mt-2">
+              {waitlist.map((p, i) => (
+                <div key={p.id} className="flex items-center gap-2.5 bg-slate-800/60 border border-amber-500/20 rounded-lg px-3 py-2">
+                  <span className="w-5 text-center text-xs font-bold text-amber-400/80">{i + 1}</span>
+                  <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
+                  <span className="text-sm text-slate-300 flex-1 truncate">{p.display_name}{!p.user_id && <span className="text-[10px] text-slate-500 ml-1">guest</span>}</span>
+                  {isOrganizer && (
+                    <>
+                      <button onClick={() => setStatus(p.id, 'queued')} className="text-[11px] text-green-400 hover:underline shrink-0" title="Let them in now (overrides the cap)">Let in</button>
+                      <button onClick={() => setStatus(p.id, 'left')} className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 shrink-0" title="Remove from waitlist"><X className="w-4 h-4" /></button>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-slate-500 mt-1.5">First on the list is checked in automatically when someone leaves.</p>
           </div>
         )}
       </div>

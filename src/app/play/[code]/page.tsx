@@ -21,7 +21,7 @@ interface PubGame {
   id: string; court: number; team1: string[]; team2: string[]; status: string; winner_team: number | null
 }
 interface Payload {
-  session: { id: string; name: string; format: string; court_count: number; status: string; rated: boolean; allow_self_join: boolean; league_name: string; match_mode: string } | null
+  session: { id: string; name: string; format: string; court_count: number; status: string; rated: boolean; allow_self_join: boolean; league_name: string; match_mode: string; max_players: number | null } | null
   players: PubPlayer[]
   games: PubGame[]
 }
@@ -173,6 +173,9 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
   const { session, players, games } = data
   const pMap = new Map(players.map(p => [p.id, p]))
   const queued = players.filter(p => p.status === 'queued').sort((a, b) => a.queue_order - b.queue_order)
+  const waitlist = players.filter(p => p.status === 'waitlisted').sort((a, b) => a.queue_order - b.queue_order)
+  const activeCount = players.filter(p => p.status !== 'waitlisted').length   // 'left' never comes back from the API
+  const isFull = session.max_players != null && activeCount >= session.max_players
   const name = (id: string) => pMap.get(id)?.name ?? '?'
   const color = (id: string) => pMap.get(id)?.avatar_color ?? '#16a34a'
 
@@ -223,6 +226,23 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
         {/* Self check-in */}
         {session.status === 'active' && (() => {
           const me = myId ? players.find(p => p.id === myId) : null
+          if (me && me.status === 'waitlisted') {
+            const wpos = waitlist.findIndex(p => p.id === me.id)
+            return (
+              <>
+              {joinError && <p className="text-xs text-red-600 mb-2">{joinError}</p>}
+              <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span className="text-sm text-amber-800">
+                    Session is full — <strong>{me.name}</strong>, you&apos;re <strong>#{wpos + 1}</strong> on the waitlist. You&apos;ll be checked in automatically when a spot frees.
+                  </span>
+                </div>
+                <Button size="sm" variant="outline" className="shrink-0" onClick={leave}>Leave waitlist</Button>
+              </div>
+              </>
+            )
+          }
           if (me) {
             const pos = queued.findIndex(p => p.id === me.id)
             const resting = me.status === 'resting'
@@ -285,8 +305,9 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                     ))}
                   </div>
                 )}
+                {isFull && <p className="text-xs text-amber-700 mb-2">Session is full ({activeCount}/{session.max_players}) — you&apos;ll join the waitlist and get in automatically when a spot frees.</p>}
                 <Button className="w-full" onClick={joinMember} disabled={joining}>
-                  {joining ? 'Checking in…' : 'Check in'}
+                  {joining ? 'Checking in…' : isFull ? 'Join the waitlist' : 'Check in'}
                 </Button>
                 {joinError && <p className="text-xs text-red-600 mt-1.5">{joinError}</p>}
               </div>
@@ -337,8 +358,9 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                   ))}
                 </div>
               )}
+              {isFull && <p className="text-xs text-amber-700">Session is full ({activeCount}/{session.max_players}) — you&apos;ll join the waitlist and get in automatically when a spot frees.</p>}
               <Button variant="outline" className="w-full" onClick={join} disabled={joining || !joinName.trim()}>
-                {joining ? 'Joining…' : 'Continue as guest'}
+                {joining ? 'Joining…' : isFull ? 'Join the waitlist as guest' : 'Continue as guest'}
               </Button>
               {joinError && <p className="text-xs text-red-600">{joinError}</p>}
             </div>
@@ -404,6 +426,26 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
           ))}
           {queued.length === 0 && <p className="text-sm text-gray-400 py-3 text-center">Nobody waiting right now.</p>}
         </div>
+
+        {/* Waitlist (session at max capacity) */}
+        {waitlist.length > 0 && (
+          <>
+            <p className="text-xs font-semibold text-amber-600 mb-2 mt-6 flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5" />Waitlist ({waitlist.length}) — first in line gets the next free spot
+            </p>
+            <div className="space-y-1.5">
+              {waitlist.map((p, i) => (
+                <div key={p.id} className={`flex items-center gap-2.5 border rounded-lg px-3 py-2 ${p.id === myId ? 'bg-amber-50 border-amber-300' : 'bg-white border-amber-100'}`}>
+                  <span className="text-xs text-amber-500 font-bold w-5">{i + 1}</span>
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-semibold shrink-0"
+                    style={{ backgroundColor: p.avatar_color }}>{initials(p.name)}</span>
+                  <span className="text-sm text-gray-800 flex-1 truncate">{p.name}</span>
+                  {p.id === myId && <span className="text-[10px] font-bold uppercase text-amber-600">You</span>}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         <p className="text-xs text-gray-400 text-center mt-8">
           Powered by The Kitchen.{' '}

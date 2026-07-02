@@ -30,6 +30,7 @@ export default function NewSoloSessionPage() {
   const [courts, setCourts] = useState(2)
   const [format, setFormat] = useState<'doubles' | 'singles'>('doubles')
   const [mode, setMode] = useState<'balanced' | 'king' | 'americano' | 'mexicano' | 'skill' | 'mixed' | 'skill_courts'>('balanced')
+  const [maxPlayers, setMaxPlayers] = useState('')   // optional cap; '' = no limit
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -48,6 +49,8 @@ export default function NewSoloSessionPage() {
       })
       const res = data as { id: string; manage_code: string; share_code: string } | null
       if (cErr || !res) { setError(cErr?.message ?? 'Could not create the session.'); setBusy(false); return }
+      const cap = parseInt(maxPlayers, 10)
+      if (!isNaN(cap) && cap >= 2) await supabase.rpc('set_session_max_players', { p_session_id: res.id, p_max: cap })
       setActiveHost({ manageCode: res.manage_code, shareCode: res.share_code, name: name.trim() })
       router.push(`/play/host/${res.manage_code}`)
     } catch {
@@ -104,6 +107,13 @@ export default function NewSoloSessionPage() {
               ))}
             </div>
             <StyleExplainer mode={mode} courtCount={courts} />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="mx">Max players <span className="text-gray-400 font-normal">(optional)</span></Label>
+            <Input id="mx" type="number" min={2} max={200} placeholder="No limit" value={maxPlayers}
+              onChange={e => setMaxPlayers(e.target.value)} />
+            <p className="text-xs text-gray-400">When full, extra check-ins go on a waitlist and are let in automatically as spots free up.</p>
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
