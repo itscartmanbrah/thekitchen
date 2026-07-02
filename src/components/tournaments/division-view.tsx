@@ -127,7 +127,7 @@ export function DivisionView({
       return {
         id: e.id, user_id: e.user_id, partner_id: e.partner_id, seed: e.seed,
         name: (p1?.display_name ?? 'Unknown') + (p2 ? ` & ${p2.display_name}` : ''),
-        avatar_color: p1?.avatar_color ?? '#16a34a',
+        avatar_color: p1?.avatar_color ?? '#2563eb',
         avatar_url: p1?.avatar_url ?? null,
       }
     }))
@@ -294,7 +294,7 @@ export function DivisionView({
                     <PlayerAvatar name={e.name} color={e.avatar_color} imageUrl={e.avatar_url} size="sm" />
                     <span className="text-sm font-medium text-foreground flex-1 truncate">{e.name}</span>
                     {(e.user_id === currentUserId || e.partner_id === currentUserId) && (
-                      <span className="text-[10px] font-bold text-green-400 bg-green-500/10 rounded-full px-2 py-0.5">YOU</span>
+                      <span className="text-[10px] font-bold text-blue-400 bg-primary/10 rounded-full px-2 py-0.5">YOU</span>
                     )}
                   </div>
                 ))}
@@ -320,7 +320,7 @@ export function DivisionView({
                     <PlayerAvatar name={s.entry.name} color={s.entry.avatar_color} imageUrl={s.entry.avatar_url} size="sm" />
                     <span className="text-sm font-medium text-foreground flex-1 truncate">{s.entry.name}</span>
                     <span className="text-xs text-muted-foreground">{s.wins}W–{s.losses}L</span>
-                    <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-green-400' : s.diff < 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground/80'}`}>
+                    <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-blue-400' : s.diff < 0 ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground/80'}`}>
                       {s.diff > 0 ? '+' : ''}{s.diff}
                     </span>
                   </div>
@@ -351,7 +351,7 @@ export function DivisionView({
                         <span className="text-xs text-muted-foreground/80 px-2 shrink-0">vs</span>
                       )}
                       <span className={`text-sm flex-1 truncate ${m.winner_entry_id === m.entry2_id ? 'font-semibold' : ''}`}>{e2?.name}</span>
-                      {reportable && <span className="text-[10px] text-green-400 font-medium shrink-0">Enter score</span>}
+                      {reportable && <span className="text-[10px] text-blue-400 font-medium shrink-0">Enter score</span>}
                     </div>
                   )
                 })}
@@ -386,7 +386,7 @@ export function DivisionView({
                 key={m.user_id}
                 onClick={() => setPartnerId(m.user_id)}
                 className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg border text-left transition-colors ${
-                  partnerId === m.user_id ? 'border-green-400 bg-green-500/10' : 'border-border hover:border-border'
+                  partnerId === m.user_id ? 'border-green-400 bg-primary/10' : 'border-border hover:border-border'
                 }`}
               >
                 <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} imageUrl={m.profiles.avatar_url} size="sm" />

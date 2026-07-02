@@ -41,9 +41,9 @@ export function EloHistoryChart({ data, startElo = 1000 }: Props) {
         <Line
           type="monotone"
           dataKey="elo"
-          stroke="#16a34a"
+          stroke="#2563eb"
           strokeWidth={2}
-          dot={{ r: 3, fill: '#16a34a', strokeWidth: 0 }}
+          dot={{ r: 3, fill: '#2563eb', strokeWidth: 0 }}
           activeDot={{ r: 5 }}
         />
       </LineChart>

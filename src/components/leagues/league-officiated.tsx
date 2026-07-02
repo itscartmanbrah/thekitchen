@@ -61,8 +61,8 @@ export function LeagueOfficiated({ leagueId, currentUserId }: { leagueId: string
           <p className="text-xl font-bold text-foreground">{matches.length}</p>
           <p className="text-xs text-muted-foreground">Total officiated</p>
         </div>
-        <div className="bg-green-500/10 rounded-xl px-4 py-3 text-center">
-          <p className="text-xl font-bold text-green-700 dark:text-green-300">{completed}</p>
+        <div className="bg-primary/10 rounded-xl px-4 py-3 text-center">
+          <p className="text-xl font-bold text-blue-600 dark:text-blue-300">{completed}</p>
           <p className="text-xs text-muted-foreground">Completed</p>
         </div>
         {pending > 0 && (

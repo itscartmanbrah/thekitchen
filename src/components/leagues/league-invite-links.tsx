@@ -22,7 +22,7 @@ function CopyCode({ code }: { code: string }) {
   }
   return (
     <button onClick={copy} className="flex items-center gap-1.5 font-mono text-sm font-semibold text-foreground hover:text-green-300 transition-colors">
-      {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+      {copied ? <Check className="w-3.5 h-3.5 text-blue-400" /> : <Copy className="w-3.5 h-3.5" />}
       {code}
     </button>
   )

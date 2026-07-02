@@ -794,7 +794,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         <div className="text-center py-16 text-muted-foreground/80">
           <Swords className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
           <p className="text-sm mb-4">No Open Play session running right now.</p>
-          <button onClick={() => setShowHistory(true)} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-green-400">
+          <button onClick={() => setShowHistory(true)} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-blue-400">
             <History className="w-3.5 h-3.5" />View past sessions
           </button>
         </div>
@@ -832,7 +832,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         <h2 className="font-semibold text-foreground mb-1">New Open Play session</h2>
         <p className="text-xs text-muted-foreground/80 mb-4">
           Check players in, auto-balance courts, and rotate the queue.{' '}
-          <Link href="/open-play-guide" className="underline hover:text-green-400">How it works</Link>
+          <Link href="/open-play-guide" className="underline hover:text-blue-400">How it works</Link>
         </p>
         {courts.length === 0 ? (
           <div className="border rounded-xl p-4 bg-amber-500/10 border-amber-500/25 text-sm text-amber-700 dark:text-amber-300">
@@ -854,7 +854,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 return (
                   <button key={c.id} type="button"
                     onClick={() => setSelectedCourts(prev => on ? prev.filter(x => x !== c.id) : [...prev, c.id])}
-                    className={`text-sm px-3 py-1.5 rounded-lg border ${on ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
+                    className={`text-sm px-3 py-1.5 rounded-lg border ${on ? 'border-blue-500 bg-primary/10 text-blue-600 dark:text-blue-300 font-medium' : 'border-border text-muted-foreground'}`}>
                     {c.name}
                   </button>
                 )
@@ -891,7 +891,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             <div className="flex gap-1">
               {(['doubles', 'singles'] as const).map(f => (
                 <button key={f} type="button" onClick={() => setFormat(f)}
-                  className={`flex-1 text-sm py-2 rounded-lg border capitalize ${format === f ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
+                  className={`flex-1 text-sm py-2 rounded-lg border capitalize ${format === f ? 'border-blue-500 bg-primary/10 text-blue-600 dark:text-blue-300 font-medium' : 'border-border text-muted-foreground'}`}>
                   {f}
                 </button>
               ))}
@@ -911,7 +911,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 { k: 'skill_courts', label: 'Skill Courts', desc: 'Each court a level tier' },
               ] as const).map(m => (
                 <button key={m.k} type="button" onClick={() => setMode(m.k)}
-                  className={`text-left px-3 py-2 rounded-lg border ${mode === m.k ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300' : 'border-border text-muted-foreground'}`}>
+                  className={`text-left px-3 py-2 rounded-lg border ${mode === m.k ? 'border-blue-500 bg-primary/10 text-blue-600 dark:text-blue-300' : 'border-border text-muted-foreground'}`}>
                   <span className="block text-sm font-medium">{m.label}</span>
                   <span className="block text-[10px] text-muted-foreground/80">{m.desc}</span>
                 </button>
@@ -968,7 +968,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                       const clash = chosen && booked
                       let cls = 'bg-muted/40'
                       if (op) cls = 'bg-blue-400'
-                      else if (booked) cls = 'bg-green-500'
+                      else if (booked) cls = 'bg-primary'
                       if (chosen) cls = clash ? 'bg-red-500' : 'bg-gray-900'
                       return <td key={h} className={`h-6 border border-white ${cls}`} title={`${c.name} ${((h + 11) % 12) + 1}${h < 12 ? 'am' : 'pm'}${booked ? ' · booked' : op ? ' · open play' : ''}`} />
                     })}
@@ -978,7 +978,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             </table>
           </div>
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-3 flex-wrap">
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-500 inline-block" />Booked</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-primary inline-block" />Booked</span>
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-blue-400 inline-block" />Open Play</span>
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-gray-900 inline-block" />Your session</span>
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-red-500 inline-block" />Clash</span>
@@ -1003,7 +1003,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             const sched = !!s.starts_at && new Date(s.starts_at).getTime() > Date.now()
             return (
               <button key={s.id} onClick={() => { setSession(s); loadState(s.id) }}
-                className={`text-xs px-2.5 py-1 rounded-full border ${active ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium' : 'border-border text-muted-foreground hover:bg-muted/50'}`}>
+                className={`text-xs px-2.5 py-1 rounded-full border ${active ? 'border-blue-500 bg-primary/10 text-blue-600 dark:text-blue-300 font-medium' : 'border-border text-muted-foreground hover:bg-muted/50'}`}>
                 {s.name}{sched && ' · 📅'}
               </button>
             )
@@ -1018,8 +1018,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
       )}
 
       {solo && isAnon && (
-        <div className="mb-4 rounded-xl border border-green-500/25 bg-green-500/10 px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-sm text-green-700 dark:text-green-300">Save this session so you never lose it — and pick up on any device.</p>
+        <div className="mb-4 rounded-xl border border-primary/25 bg-primary/10 px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-sm text-blue-600 dark:text-blue-300">Save this session so you never lose it — and pick up on any device.</p>
           <Button size="sm" onClick={() => setSaveOpen(true)}>Save my session</Button>
         </div>
       )}
@@ -1028,7 +1028,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         <div className="min-w-0">
           <h2 className="font-semibold text-foreground flex items-center gap-2 flex-wrap">
             <span className="truncate">{session.name}</span>
-            {session.rated && <span className="text-[10px] font-bold text-green-700 dark:text-green-300 bg-green-500/15 rounded-full px-2 py-0.5">RATED</span>}
+            {session.rated && <span className="text-[10px] font-bold text-blue-600 dark:text-blue-300 bg-primary/10 rounded-full px-2 py-0.5">RATED</span>}
             {isScheduled && <span className="text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-500/15 rounded-full px-2 py-0.5">SCHEDULED</span>}
             <StyleBadge mode={session.match_mode} courtCount={session.court_count} />
           </h2>
@@ -1093,8 +1093,8 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="font-medium">Partners:</span>
               <div className="inline-flex rounded-lg border border-border overflow-hidden">
-                <button onClick={() => setPartnerRotation('split')} className={`px-2.5 py-1 ${session.partner_rotation !== 'keep' ? 'bg-green-600 text-white font-semibold' : 'text-muted-foreground hover:bg-muted/50'}`}>Split &amp; remix</button>
-                <button onClick={() => setPartnerRotation('keep')} className={`px-2.5 py-1 border-l border-border ${session.partner_rotation === 'keep' ? 'bg-green-600 text-white font-semibold' : 'text-muted-foreground hover:bg-muted/50'}`}>Keep teams together</button>
+                <button onClick={() => setPartnerRotation('split')} className={`px-2.5 py-1 ${session.partner_rotation !== 'keep' ? 'bg-primary text-white font-semibold' : 'text-muted-foreground hover:bg-muted/50'}`}>Split &amp; remix</button>
+                <button onClick={() => setPartnerRotation('keep')} className={`px-2.5 py-1 border-l border-border ${session.partner_rotation === 'keep' ? 'bg-primary text-white font-semibold' : 'text-muted-foreground hover:bg-muted/50'}`}>Keep teams together</button>
               </div>
             </div>
           )}
@@ -1107,7 +1107,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
           {[
             { label: 'Checked in', val: session.max_players ? `${activeCount}/${session.max_players}` : activeCount, accent: 'border-sky-500', color: 'text-white' },
-            { label: 'Ready', val: bench.length, accent: 'border-green-500', color: 'text-green-400' },
+            { label: 'Ready', val: bench.length, accent: 'border-blue-500', color: 'text-blue-400' },
             { label: 'Playing', val: playingCount, accent: 'border-violet-500', color: 'text-white' },
             { label: 'Resting', val: resting.length, accent: 'border-amber-500', color: 'text-white' },
           ].map(s => (
@@ -1119,12 +1119,12 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         </div>
 
         {/* Courts */}
-        <div className="text-[11px] uppercase tracking-[0.18em] text-green-400 font-bold mb-2.5">Courts</div>
+        <div className="text-[11px] uppercase tracking-[0.18em] text-blue-400 font-bold mb-2.5">Courts</div>
         <div className="grid sm:grid-cols-2 gap-2.5 mb-6">
           {Array.from({ length: session.court_count }, (_, i) => i + 1).map(courtNo => {
             const game = liveGames.find(g => g.court_number === courtNo)
             return (
-              <div key={courtNo} className={`bg-zinc-800 border border-zinc-700/60 rounded-xl p-3 border-l-[3px] ${game ? 'border-l-green-500' : 'border-l-zinc-600'}`}>
+              <div key={courtNo} className={`bg-zinc-800 border border-zinc-700/60 rounded-xl p-3 border-l-[3px] ${game ? 'border-l-blue-500' : 'border-l-zinc-600'}`}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-white font-bold italic text-sm">
                     COURT {courtNo}
@@ -1133,7 +1133,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                   </span>
                   {game ? (
                     <LiveTimer from={game.started_at} overtimeMin={OVERTIME_MIN}
-                      className="text-[11px] text-green-400 font-medium tabular-nums"
+                      className="text-[11px] text-blue-400 font-medium tabular-nums"
                       overtimeClassName="text-[9px] uppercase tracking-wide font-bold text-white bg-red-500 rounded px-1.5 py-0.5" />
                   ) : <span className="text-[10px] uppercase tracking-wide text-zinc-600">Open</span>}
                 </div>
@@ -1148,7 +1148,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                               {nameOf(id)}
                               {isOrganizer && (
                                 <button onClick={() => { setSubTarget({ gameId: game.id, outId: id }); toast({ title: 'Pick a bench player to sub in' }) }}
-                                  className="text-zinc-500 hover:text-green-400" title="Substitute"><Repeat className="w-3 h-3" /></button>
+                                  className="text-zinc-500 hover:text-blue-400" title="Substitute"><Repeat className="w-3 h-3" /></button>
                               )}
                             </span>
                           ))}
@@ -1158,7 +1158,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                     })}
                     {isOrganizer && (
                       <button onClick={() => openScore(game)} disabled={busy}
-                        className="mt-1.5 w-full text-[11px] uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 rounded-lg py-1.5">
+                        className="mt-1.5 w-full text-[11px] uppercase tracking-wide font-bold text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg py-1.5">
                         Enter score
                       </button>
                     )}
@@ -1180,10 +1180,10 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
           if (standings.length === 0) return null
           return (
             <div className="mb-6">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-green-400 font-bold mb-2.5">Standings</div>
+              <div className="text-[11px] uppercase tracking-[0.18em] text-blue-400 font-bold mb-2.5">Standings</div>
               <div className="border border-zinc-700/60 rounded-xl overflow-hidden">
                 {standings.map((p, i) => (
-                  <div key={p.id} className={`flex items-center gap-2.5 px-3 py-2 text-sm ${i > 0 ? 'border-t border-zinc-700/60' : ''} ${p.status === 'playing' ? 'bg-green-500/10' : 'bg-zinc-800'}`}>
+                  <div key={p.id} className={`flex items-center gap-2.5 px-3 py-2 text-sm ${i > 0 ? 'border-t border-zinc-700/60' : ''} ${p.status === 'playing' ? 'bg-primary/10' : 'bg-zinc-800'}`}>
                     <span className="w-5 text-center text-xs font-bold text-zinc-500">{i + 1}</span>
                     <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
                     <span className="flex-1 truncate text-zinc-100">{p.display_name}</span>
@@ -1200,9 +1200,9 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
         {isOrganizer && (
           <>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-green-400 font-bold">On Deck</span>
+              <span className="text-[11px] uppercase tracking-[0.18em] text-blue-400 font-bold">On Deck</span>
               <button onClick={() => setAnnounce(a => !a)}
-                className={`rounded-lg p-2.5 flex items-center ${announce ? 'bg-green-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}
+                className={`rounded-lg p-2.5 flex items-center ${announce ? 'bg-primary text-white' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}
                 title={announce ? 'Voice call-outs on' : 'Voice call-outs off'}>
                 {announce ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
               </button>
@@ -1211,12 +1211,12 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
               {isFormat ? (
                 stagedGroups.length > 0 ? (
                   <button onClick={startRound} disabled={busy || freeCourts.length === 0}
-                    className="flex-1 text-xs uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 disabled:opacity-40 rounded-xl py-3 flex items-center justify-center gap-1.5">
+                    className="flex-1 text-xs uppercase tracking-wide font-bold text-primary-foreground bg-primary hover:bg-primary/90 disabled:opacity-40 rounded-xl py-3 flex items-center justify-center gap-1.5">
                     <Play className="w-4 h-4" />Send to {freeCourts.length === 1 ? 'court' : 'open courts'}
                   </button>
                 ) : (
                   <button onClick={fillOpenCourts} disabled={busy || freeCourts.length === 0 || bench.length < perGame}
-                    className="flex-1 text-xs uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 disabled:opacity-40 rounded-xl py-3 flex items-center justify-center gap-1.5"
+                    className="flex-1 text-xs uppercase tracking-wide font-bold text-primary-foreground bg-primary hover:bg-primary/90 disabled:opacity-40 rounded-xl py-3 flex items-center justify-center gap-1.5"
                     title="Build games On Deck for the open courts — review and swap before sending">
                     <Wand2 className="w-4 h-4" />{liveGames.length > 0 ? `Fill open court${freeCourts.length > 1 ? 's' : ''}` : 'Generate round'}
                   </button>
@@ -1224,7 +1224,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
               ) : (
                 <>
                   <button onClick={autoFill} disabled={busy}
-                    className="flex-1 text-xs uppercase tracking-wide font-bold text-white bg-green-600 hover:bg-green-500 rounded-xl py-3 flex items-center justify-center gap-1.5">
+                    className="flex-1 text-xs uppercase tracking-wide font-bold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl py-3 flex items-center justify-center gap-1.5">
                     <Wand2 className="w-4 h-4" />Auto fill
                   </button>
                   <button onClick={pairAll} disabled={busy}
@@ -1239,7 +1239,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
               )}
             </div>
             {pick && (
-              <p className="text-[11px] text-green-700 dark:text-green-300 mb-2">Picked <strong>{pickName()}</strong> — tap another player to swap, or an empty slot to place · <button onClick={() => setPick(null)} className="underline">cancel</button></p>
+              <p className="text-[11px] text-blue-600 dark:text-blue-300 mb-2">Picked <strong>{pickName()}</strong> — tap another player to swap, or an empty slot to place · <button onClick={() => setPick(null)} className="underline">cancel</button></p>
             )}
             {stagedGroups.length === 0 ? (
               <p className="text-[12px] text-zinc-500 mb-6">
@@ -1257,7 +1257,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                   const renderChip = (id: string) => {
                     const picked = pick?.kind === 'slot' && pick.gameId === g.id && pick.pid === id
                     return (
-                      <span key={id} className={`inline-flex items-center gap-0.5 rounded-full pl-3 pr-1 py-1 ${picked ? 'bg-green-500/25 ring-1 ring-green-400' : 'bg-zinc-700'}`}>
+                      <span key={id} className={`inline-flex items-center gap-0.5 rounded-full pl-3 pr-1 py-1 ${picked ? 'bg-primary/20 ring-1 ring-green-400' : 'bg-zinc-700'}`}>
                         <button onClick={() => tapPlayer({ kind: 'slot', gameId: g.id, pid: id })} className="text-[13px] text-zinc-100 leading-none">{nameOf(id)}</button>
                         <button onClick={() => removeFromGroup(g, id)} title="Remove from group"
                           className="w-5 h-5 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-red-500/70 shrink-0"><X className="w-3 h-3" /></button>
@@ -1265,14 +1265,14 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                     )
                   }
                   return (
-                    <div key={g.id} className={`bg-zinc-800 border rounded-xl p-3 ${pick ? 'border-green-500/40' : 'border-zinc-700/60'}`}>
+                    <div key={g.id} className={`bg-zinc-800 border rounded-xl p-3 ${pick ? 'border-primary/40' : 'border-zinc-700/60'}`}>
                       <div className="flex items-center justify-between mb-2.5">
                         <span className="text-[12px] text-zinc-400 font-medium">
                           {label}
                           {isKing && gi === 0 && <span className="ml-1.5 text-[9px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/20 rounded px-1.5 py-0.5">KINGS</span>}
                         </span>
                         <div className="flex items-center gap-1">
-                          <button onClick={() => toggleLock(g)} className={`p-1.5 rounded-lg ${g.locked ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'}`} title={g.locked ? 'Unlock' : 'Lock'}>
+                          <button onClick={() => toggleLock(g)} className={`p-1.5 rounded-lg ${g.locked ? 'text-blue-400' : 'text-zinc-500 hover:text-zinc-300'}`} title={g.locked ? 'Unlock' : 'Lock'}>
                             {g.locked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
                           </button>
                           <button onClick={() => disband(g)} className="p-1.5 rounded-lg text-zinc-500 hover:text-red-500 dark:hover:text-red-400" title="Disband"><Trash2 className="w-4 h-4" /></button>
@@ -1285,7 +1285,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                             {teamIds.map(renderChip)}
                             {Array.from({ length: Math.max(0, teamCap - teamIds.length) }).map((_, k) => (
                               <button key={k} onClick={() => placeInGroup(g)} disabled={!pick}
-                                className={`rounded-full px-3 py-1.5 text-[12px] border border-dashed ${pick ? 'border-green-400 text-green-700 dark:text-green-300 hover:bg-green-500/20' : 'border-zinc-600 text-zinc-500'}`}>
+                                className={`rounded-full px-3 py-1.5 text-[12px] border border-dashed ${pick ? 'border-green-400 text-blue-600 dark:text-blue-300 hover:bg-primary/20' : 'border-zinc-600 text-zinc-500'}`}>
                                 {pick ? 'place here' : 'empty'}
                               </button>
                             ))}
@@ -1300,7 +1300,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                             ? <span className="text-[11px] text-zinc-500">waiting for a court…</span>
                             : freeCourts.map(c => (
                               <button key={c} onClick={() => sendToCourt(g, c)} disabled={busy}
-                                className="text-[11px] uppercase font-bold text-white bg-green-600 hover:bg-green-500 rounded-lg px-3.5 py-1.5">Court {c}</button>
+                                className="text-[11px] uppercase font-bold text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg px-3.5 py-1.5">Court {c}</button>
                             ))}
                         </div>
                       )}
@@ -1314,7 +1314,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
 
         {/* Bench & roster */}
         <div className="flex items-center justify-between mb-2.5">
-          <span className="text-[11px] uppercase tracking-[0.18em] text-green-400 font-bold">Bench {bench.length > 0 && <span className="text-zinc-500">· {bench.length}</span>}</span>
+          <span className="text-[11px] uppercase tracking-[0.18em] text-blue-400 font-bold">Bench {bench.length > 0 && <span className="text-zinc-500">· {bench.length}</span>}</span>
           {isOrganizer && (
             <button onClick={openAdd} className="text-[11px] uppercase tracking-wide font-bold text-zinc-200 bg-zinc-800 hover:bg-zinc-700 rounded-lg px-3 py-2 flex items-center gap-1.5">
               <UserPlus className="w-3.5 h-3.5" />Add player
@@ -1322,20 +1322,20 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
           )}
         </div>
         {subTarget && (
-          <p className="text-[11px] text-green-700 dark:text-green-300 mb-2">Tap a bench player to swap in for <strong>{nameOf(subTarget.outId)}</strong> · <button onClick={() => setSubTarget(null)} className="underline">cancel</button></p>
+          <p className="text-[11px] text-blue-600 dark:text-blue-300 mb-2">Tap a bench player to swap in for <strong>{nameOf(subTarget.outId)}</strong> · <button onClick={() => setSubTarget(null)} className="underline">cancel</button></p>
         )}
         {bench.length > 6 && (
           <div className="relative mb-2">
             <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-1/2 -tranzinc-y-1/2" />
             <input value={benchFilter} onChange={e => setBenchFilter(e.target.value)} placeholder="Search bench…"
-              className="w-full bg-zinc-800 text-zinc-100 placeholder-zinc-500 border border-zinc-700 rounded-lg pl-8 pr-3 py-2 text-sm outline-none focus:ring-1 focus:ring-green-500" />
+              className="w-full bg-zinc-800 text-zinc-100 placeholder-zinc-500 border border-zinc-700 rounded-lg pl-8 pr-3 py-2 text-sm outline-none focus:ring-1 focus:ring-blue-500" />
           </div>
         )}
         <div className="space-y-1.5">
           {bench.filter(p => p.display_name.toLowerCase().includes(benchFilter.toLowerCase())).map(p => {
             const sel = pick?.kind === 'bench' && pick.pid === p.id
             return (
-              <div key={p.id} className={`flex items-center gap-2 rounded-xl pl-3 pr-1.5 py-1.5 ${sel ? 'bg-green-500/15 ring-1 ring-green-500' : 'bg-zinc-800'}`}>
+              <div key={p.id} className={`flex items-center gap-2 rounded-xl pl-3 pr-1.5 py-1.5 ${sel ? 'bg-primary/10 ring-1 ring-blue-500' : 'bg-zinc-800'}`}>
                 <button onClick={() => isOrganizer && benchTap(p.id)} className="flex items-center gap-2.5 flex-1 min-w-0 text-left py-1" disabled={!isOrganizer}>
                   <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
                   <span className="min-w-0">
@@ -1352,7 +1352,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 )}
                 {isOrganizer && session.match_mode === 'mixed' && (
                   <button onClick={() => cycleGender(p)} title="Tap to set M/F"
-                    className={`w-7 h-7 rounded-lg text-[13px] font-bold shrink-0 ${p.gender ? 'bg-green-600 text-white' : 'bg-amber-500/80 text-white'}`}>{p.gender === 'm' ? 'M' : p.gender === 'f' ? 'F' : '?'}</button>
+                    className={`w-7 h-7 rounded-lg text-[13px] font-bold shrink-0 ${p.gender ? 'bg-primary text-white' : 'bg-amber-500/80 text-white'}`}>{p.gender === 'm' ? 'M' : p.gender === 'f' ? 'F' : '?'}</button>
                 )}
                 {isOrganizer && (
                   <DropdownMenu>
@@ -1382,7 +1382,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                 <div key={p.id} className="flex items-center gap-2.5 bg-zinc-800/60 rounded-lg px-3 py-2">
                   <PlayerAvatar name={p.display_name} color={p.avatar_color} imageUrl={p.avatar_url ?? null} size="xs" />
                   <span className="text-sm text-zinc-300 flex-1 truncate">{p.display_name}</span>
-                  {isOrganizer && <button onClick={() => setStatus(p.id, 'queued')} className="text-[11px] text-green-400 hover:underline">Back in</button>}
+                  {isOrganizer && <button onClick={() => setStatus(p.id, 'queued')} className="text-[11px] text-blue-400 hover:underline">Back in</button>}
                 </div>
               ))}
             </div>
@@ -1401,7 +1401,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                   <span className="text-sm text-zinc-300 flex-1 truncate">{p.display_name}{!p.user_id && <span className="text-[10px] text-zinc-500 ml-1">guest</span>}</span>
                   {isOrganizer && (
                     <>
-                      <button onClick={() => setStatus(p.id, 'queued')} className="text-[11px] text-green-400 hover:underline shrink-0" title="Let them in now (overrides the cap)">Let in</button>
+                      <button onClick={() => setStatus(p.id, 'queued')} className="text-[11px] text-blue-400 hover:underline shrink-0" title="Let them in now (overrides the cap)">Let in</button>
                       <button onClick={() => setStatus(p.id, 'left')} className="p-1.5 rounded-lg text-zinc-500 hover:text-red-500 dark:hover:text-red-400 shrink-0" title="Remove from waitlist"><X className="w-4 h-4" /></button>
                     </>
                   )}
@@ -1430,7 +1430,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                       onChange={e => (team === 1 ? setS1 : setS2)(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') submitScore() }}
                       autoFocus={team === 1}
-                      className="w-16 h-12 shrink-0 text-center text-2xl font-bold text-foreground border rounded-lg outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      className="w-16 h-12 shrink-0 text-center text-2xl font-bold text-foreground border rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-green-500/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </div>
                 )
@@ -1500,7 +1500,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                   <span className="text-xs text-muted-foreground">Level</span>
                   {[1, 2, 3, 4, 5].map(n => (
                     <button key={n} type="button" onClick={() => setGuestLevel(n)}
-                      className={`w-7 h-7 rounded-lg text-sm font-semibold ${guestLevel === n ? 'bg-green-600 text-white' : 'bg-muted text-muted-foreground hover:bg-muted'}`}>{n}</button>
+                      className={`w-7 h-7 rounded-lg text-sm font-semibold ${guestLevel === n ? 'bg-primary text-white' : 'bg-muted text-muted-foreground hover:bg-muted'}`}>{n}</button>
                   ))}
                 </div>
               )}
@@ -1509,7 +1509,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                   <span className="text-xs text-muted-foreground">Gender</span>
                   {(['m', 'f'] as const).map(g => (
                     <button key={g} type="button" onClick={() => setGuestGender(g)}
-                      className={`px-3 h-7 rounded-lg text-sm font-semibold ${guestGender === g ? 'bg-green-600 text-white' : 'bg-muted text-muted-foreground hover:bg-muted'}`}>{g === 'm' ? 'Man' : 'Woman'}</button>
+                      className={`px-3 h-7 rounded-lg text-sm font-semibold ${guestGender === g ? 'bg-primary text-white' : 'bg-muted text-muted-foreground hover:bg-muted'}`}>{g === 'm' ? 'Man' : 'Woman'}</button>
                   ))}
                 </div>
               )}
@@ -1520,7 +1520,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label>Regulars</Label>
-                  <button onClick={addAllRegulars} disabled={busy} className="text-xs font-medium text-green-700 dark:text-green-300 hover:underline">Add all</button>
+                  <button onClick={addAllRegulars} disabled={busy} className="text-xs font-medium text-blue-600 dark:text-blue-300 hover:underline">Add all</button>
                 </div>
                 <div className="space-y-1 max-h-40 overflow-y-auto pr-1">
                   {regulars.map(r => {
@@ -1531,7 +1531,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
                         <span className="text-sm flex-1 truncate">{r.name}</span>
                         <button onClick={() => removeRegular(r.id)} className="text-muted-foreground/50 hover:text-red-500 dark:hover:text-red-400" title="Forget"><X className="w-3.5 h-3.5" /></button>
                         <button onClick={() => addRegularToSession(r.name, r.skill)} disabled={inSession}
-                          className={`text-xs font-medium rounded px-2 py-1 ${inSession ? 'text-muted-foreground/50' : 'text-green-700 dark:text-green-300 bg-green-500/10 hover:bg-green-500/15'}`}>
+                          className={`text-xs font-medium rounded px-2 py-1 ${inSession ? 'text-muted-foreground/50' : 'text-blue-600 dark:text-blue-300 bg-primary/10 hover:bg-primary/10'}`}>
                           {inSession ? 'In' : 'Add'}
                         </button>
                       </div>
@@ -1545,7 +1545,7 @@ export function LeagueOpenPlay({ leagueId, isOrganizer, solo = false }: { league
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label>League members</Label>
-                <button onClick={addAllMembers} disabled={busy} className="text-xs font-medium text-green-700 dark:text-green-300 hover:underline">Add all</button>
+                <button onClick={addAllMembers} disabled={busy} className="text-xs font-medium text-blue-600 dark:text-blue-300 hover:underline">Add all</button>
               </div>
               <div className="space-y-1 max-h-60 overflow-y-auto pr-1">
                 {members.filter(m => !players.some(p => p.user_id === m.user_id && p.status !== 'left')).map(m => (

@@ -177,7 +177,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
   const activeCount = players.filter(p => p.status !== 'waitlisted').length   // 'left' never comes back from the API
   const isFull = session.max_players != null && activeCount >= session.max_players
   const name = (id: string) => pMap.get(id)?.name ?? '?'
-  const color = (id: string) => pMap.get(id)?.avatar_color ?? '#16a34a'
+  const color = (id: string) => pMap.get(id)?.avatar_color ?? '#2563eb'
 
   const Avatar = ({ id }: { id: string }) => (
     <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-semibold shrink-0"
@@ -215,7 +215,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
         <div className="mb-5">
           <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
             {session.name}
-            {session.rated && <span className="text-[10px] font-bold text-green-700 dark:text-green-300 bg-green-500/15 rounded-full px-2 py-0.5">RATED</span>}
+            {session.rated && <span className="text-[10px] font-bold text-blue-600 dark:text-blue-300 bg-primary/10 rounded-full px-2 py-0.5">RATED</span>}
           </h1>
           <p className="text-sm text-muted-foreground">
             {session.league_name} · <span className="capitalize">{session.format}</span>
@@ -249,10 +249,10 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
             return (
               <>
               {joinError && <p className="text-xs text-red-600 dark:text-red-400 mb-2">{joinError}</p>}
-              <div className={`mb-6 rounded-xl border px-4 py-3 flex items-center justify-between gap-3 ${resting ? 'border-amber-500/25 bg-amber-500/10' : 'border-green-500/25 bg-green-500/10'}`}>
+              <div className={`mb-6 rounded-xl border px-4 py-3 flex items-center justify-between gap-3 ${resting ? 'border-amber-500/25 bg-amber-500/10' : 'border-primary/25 bg-primary/10'}`}>
                 <div className="flex items-center gap-2 min-w-0">
                   {resting ? <Pause className="w-4 h-4 text-amber-400 shrink-0" /> : <Check className="w-4 h-4 text-primary shrink-0" />}
-                  <span className={`text-sm truncate ${resting ? 'text-amber-700 dark:text-amber-300' : 'text-green-700 dark:text-green-300'}`}>
+                  <span className={`text-sm truncate ${resting ? 'text-amber-700 dark:text-amber-300' : 'text-blue-600 dark:text-blue-300'}`}>
                     {resting
                       ? <>Resting — <strong>{me.name}</strong>, you&apos;ll sit out until you&apos;re back.</>
                       : <>Checked in as <strong>{me.name}</strong>{me.status === 'playing' ? ' — on a court now!' : pos >= 0 ? ` — #${pos + 1} in the queue` : ''}</>}
@@ -370,7 +370,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
 
         {/* Convert joined guests into accounts */}
         {myId && !signedIn && (
-          <div className="mb-6 rounded-xl border border-green-500/25 bg-gradient-to-br from-green-50 to-white px-4 py-4">
+          <div className="mb-6 rounded-xl border border-primary/25 bg-gradient-to-br from-green-50 to-white px-4 py-4">
             <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
               <Trophy className="w-4 h-4 text-primary" />Make it count
             </p>
@@ -416,7 +416,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
         </p>
         <div className="space-y-1.5">
           {queued.map((p, i) => (
-            <div key={p.id} className={`flex items-center gap-2.5 border rounded-lg px-3 py-2 ${p.id === myId ? 'bg-green-500/10 border-green-500/40' : 'bg-card'}`}>
+            <div key={p.id} className={`flex items-center gap-2.5 border rounded-lg px-3 py-2 ${p.id === myId ? 'bg-primary/10 border-primary/40' : 'bg-card'}`}>
               <span className="text-xs text-muted-foreground/80 w-5">{i + 1}</span>
               <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-semibold shrink-0"
                 style={{ backgroundColor: p.avatar_color }}>{initials(p.name)}</span>

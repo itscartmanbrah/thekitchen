@@ -46,7 +46,7 @@ export default function BoardViewPage({ params }: { params: { code: string } }) 
   const { session, players, games, on_deck } = data
   const pMap = new Map(players.map(p => [p.id, p]))
   const name = (id: string) => pMap.get(id)?.name ?? '?'
-  const color = (id: string) => pMap.get(id)?.avatar_color ?? '#16a34a'
+  const color = (id: string) => pMap.get(id)?.avatar_color ?? '#2563eb'
   const waiting = players.filter(p => p.status === 'queued').length
   const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/play/${params.code}` : ''
 
@@ -86,19 +86,19 @@ export default function BoardViewPage({ params }: { params: { code: string } }) 
 
       <main className="px-6 sm:px-10 py-6">
         {/* Courts */}
-        <div className="text-xs uppercase tracking-[0.3em] text-green-400 font-bold mb-3">On the courts</div>
+        <div className="text-xs uppercase tracking-[0.3em] text-blue-400 font-bold mb-3">On the courts</div>
         <div className="grid gap-4 mb-10" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(280px, 1fr))` }}>
           {Array.from({ length: session.court_count }, (_, i) => i + 1).map(courtNo => {
             const g = games.find(x => x.court === courtNo)
             const over = g ? (now - new Date(g.started_at).getTime()) / 60000 > 15 : false
             return (
-              <div key={courtNo} className={`rounded-2xl p-5 bg-zinc-900 border-l-4 ${over ? 'border-red-500' : g ? 'border-green-500' : 'border-zinc-800'}`}>
+              <div key={courtNo} className={`rounded-2xl p-5 bg-zinc-900 border-l-4 ${over ? 'border-red-500' : g ? 'border-blue-500' : 'border-zinc-800'}`}>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-xl font-extrabold italic">COURT {courtNo}</span>
                   {g ? (
                     over
                       ? <span className="text-xs uppercase font-bold bg-red-500 rounded px-2 py-1">OT {mmss(g.started_at)}</span>
-                      : <span className="text-lg font-bold text-green-400 tabular-nums">{mmss(g.started_at)}</span>
+                      : <span className="text-lg font-bold text-blue-400 tabular-nums">{mmss(g.started_at)}</span>
                   ) : <span className="text-xs uppercase tracking-widest text-zinc-600">Open</span>}
                 </div>
                 {g ? (
@@ -114,7 +114,7 @@ export default function BoardViewPage({ params }: { params: { code: string } }) 
         </div>
 
         {/* Up next */}
-        <div className="text-xs uppercase tracking-[0.3em] text-green-400 font-bold mb-3">Up next</div>
+        <div className="text-xs uppercase tracking-[0.3em] text-blue-400 font-bold mb-3">Up next</div>
         {on_deck.length === 0 ? (
           <p className="text-zinc-600 text-sm">No groups on deck yet.</p>
         ) : (
@@ -136,7 +136,7 @@ export default function BoardViewPage({ params }: { params: { code: string } }) 
         <span className="text-xs text-zinc-600">Powered by The Kitchen · updates live</span>
         {session.status === 'active' && (
           <div className="flex items-center gap-3">
-            <span className="text-sm font-bold uppercase tracking-wide text-green-400">Scan to join →</span>
+            <span className="text-sm font-bold uppercase tracking-wide text-blue-400">Scan to join →</span>
             <div className="bg-card p-2 rounded-lg"><QRCodeSVG value={joinUrl} size={84} level="M" /></div>
           </div>
         )}

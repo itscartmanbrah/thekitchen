@@ -69,7 +69,7 @@ export default async function DashboardPage() {
 
       {(!memberships || memberships.length === 0) ? (
         <div className="text-center py-20">
-          <div className="w-16 h-16 bg-green-500/15 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <Trophy className="w-8 h-8 text-primary" />
           </div>
           <h2 className="text-xl font-semibold text-foreground mb-2">No leagues yet</h2>
@@ -142,7 +142,7 @@ export default async function DashboardPage() {
                     </div>
                     <p className="text-xs text-muted-foreground/80 mt-0.5 capitalize">{s.format} · {s.court_count} court{s.court_count > 1 ? 's' : ''}</p>
                   </div>
-                  <span className="inline-flex items-center gap-1 text-green-700 dark:text-green-300 text-sm font-medium shrink-0"><Play className="w-3.5 h-3.5" />Resume</span>
+                  <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-300 text-sm font-medium shrink-0"><Play className="w-3.5 h-3.5" />Resume</span>
                 </div>
               </Link>
             ))}
@@ -165,7 +165,7 @@ export default async function DashboardPage() {
                         {s.league_name ?? 'Standalone'} · {s.my_status === 'playing' ? 'on a court now' : s.my_status === 'resting' ? 'resting' : 'in the queue'}
                       </p>
                     </div>
-                    <span className="inline-flex items-center gap-1 text-green-700 dark:text-green-300 text-sm font-medium shrink-0"><Play className="w-3.5 h-3.5" />View</span>
+                    <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-300 text-sm font-medium shrink-0"><Play className="w-3.5 h-3.5" />View</span>
                   </div>
                 </Link>
               ))}

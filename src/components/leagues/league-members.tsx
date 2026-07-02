@@ -175,7 +175,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
                 {!isMe && (
                   <button
                     onClick={() => setChallengeTarget({ id: m.user_id, name: m.profiles.display_name })}
-                    className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-green-400 hover:text-green-300 hover:bg-green-500/20 transition-colors shrink-0"
+                    className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-green-400 hover:text-green-300 hover:bg-primary/20 transition-colors shrink-0"
                   >
                     <Swords className="w-3 h-3" />
                     Challenge
@@ -257,7 +257,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
                     </div>
                     <button
                       onClick={() => unbanMember(b.id, b.profiles.display_name)}
-                      className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-green-400 hover:text-green-300 hover:bg-green-500/20 transition-colors shrink-0"
+                      className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-green-400 hover:text-green-300 hover:bg-primary/20 transition-colors shrink-0"
                     >
                       <ShieldCheck className="w-3 h-3" />
                       Unban

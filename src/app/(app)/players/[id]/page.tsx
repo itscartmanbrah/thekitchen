@@ -169,7 +169,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
 
       {/* ── Hero card ── */}
       <Card className="mb-6 overflow-hidden">
-        <div className="h-2" style={{ backgroundColor: rankedMemberships[0]?.leagues?.banner_color ?? '#16a34a' }} />
+        <div className="h-2" style={{ backgroundColor: rankedMemberships[0]?.leagues?.banner_color ?? '#2563eb' }} />
         <CardContent className="pt-6 pb-6">
           <div className="flex items-start gap-5">
             <PlayerAvatar name={profile.display_name} color={profile.avatar_color} imageUrl={(profile as any).avatar_url} size="lg" />
@@ -199,7 +199,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                 <p className="text-xs text-muted-foreground">Leagues</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-green-400">{totalWins}</p>
+                <p className="text-lg font-bold text-blue-400">{totalWins}</p>
                 <p className="text-xs text-muted-foreground">Wins</p>
               </div>
               <div>
@@ -214,8 +214,8 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
               <p className="text-lg font-bold text-foreground">{rankedMemberships.length}</p>
               <p className="text-xs text-muted-foreground">Leagues</p>
             </div>
-            <div className="bg-green-500/10 rounded-lg py-2">
-              <p className="text-lg font-bold text-green-400">{totalWins}</p>
+            <div className="bg-primary/10 rounded-lg py-2">
+              <p className="text-lg font-bold text-blue-400">{totalWins}</p>
               <p className="text-xs text-muted-foreground">Wins</p>
             </div>
             <div className="bg-muted/40 rounded-lg py-2">
@@ -234,7 +234,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
             <div className="flex items-center gap-3">
               {/* My side */}
               <div className="flex-1 text-center">
-                <p className="text-3xl font-bold text-green-400">{h2h.myWins}</p>
+                <p className="text-3xl font-bold text-blue-400">{h2h.myWins}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">You</p>
               </div>
 
@@ -242,7 +242,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
               <div className="flex-[2] space-y-1.5">
                 <div className="flex rounded-full overflow-hidden h-3 bg-muted">
                   <div
-                    className="bg-green-500 transition-all"
+                    className="bg-primary transition-all"
                     style={{ width: `${Math.round((h2h.myWins / h2h.total) * 100)}%` }}
                   />
                   <div
@@ -285,7 +285,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
 
             return (
               <Card key={m.id} className="overflow-hidden">
-                <div className="h-1.5" style={{ backgroundColor: m.leagues?.banner_color ?? '#16a34a' }} />
+                <div className="h-1.5" style={{ backgroundColor: m.leagues?.banner_color ?? '#2563eb' }} />
                 <CardContent className="py-4 px-4">
 
                   {/* Stats row */}
@@ -320,7 +320,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                       <p className="text-xl font-bold text-foreground">{formatElo(m.elo_rating)}</p>
                       <p className="text-xs text-muted-foreground/80">ELO</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        <span className="text-green-400 font-medium">{m.wins}W</span>
+                        <span className="text-blue-400 font-medium">{m.wins}W</span>
                         {' – '}
                         <span className="text-muted-foreground">{m.losses}L</span>
                         {mWR !== null && <span className="ml-1 text-muted-foreground/80">({mWR}%)</span>}

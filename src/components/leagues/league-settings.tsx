@@ -171,7 +171,7 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
                   </button>
                 </div>
               ) : (
-                <label className="flex items-center gap-3 p-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-green-400 hover:bg-green-500/20 transition-colors">
+                <label className="flex items-center gap-3 p-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-green-400 hover:bg-primary/20 transition-colors">
                   <ImagePlus className="w-5 h-5 text-muted-foreground/80" />
                   <div>
                     <p className="text-sm font-medium text-foreground/90">

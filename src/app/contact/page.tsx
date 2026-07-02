@@ -39,9 +39,9 @@ export default function ContactPage() {
               <div className="space-y-3 pt-1">
                 <a
                   href="mailto:dowadowadidadowadi@gmail.com"
-                  className="flex items-center gap-3 p-3 bg-card rounded-lg border hover:border-foreground/25 hover:bg-green-500/20 transition-colors group"
+                  className="flex items-center gap-3 p-3 bg-card rounded-lg border hover:border-foreground/25 hover:bg-primary/20 transition-colors group"
                 >
-                  <div className="w-8 h-8 bg-green-500/15 rounded-lg flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
                     <Mail className="w-4 h-4 text-primary" />
                   </div>
                   <div className="min-w-0">
@@ -54,9 +54,9 @@ export default function ContactPage() {
 
                 <a
                   href="tel:+639215143152"
-                  className="flex items-center gap-3 p-3 bg-card rounded-lg border hover:border-foreground/25 hover:bg-green-500/20 transition-colors group"
+                  className="flex items-center gap-3 p-3 bg-card rounded-lg border hover:border-foreground/25 hover:bg-primary/20 transition-colors group"
                 >
-                  <div className="w-8 h-8 bg-green-500/15 rounded-lg flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
                     <Phone className="w-4 h-4 text-primary" />
                   </div>
                   <div>

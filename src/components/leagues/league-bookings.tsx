@@ -122,7 +122,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
         id: r.id, court_id: r.court_id, user_id: r.user_id, starts_at: r.starts_at, ends_at: r.ends_at,
         court_name: r.courts?.name ?? 'Court', is_indoor: false, contact_phone: null,
         display_name: full || p?.display_name || 'Unknown',
-        avatar_color: p?.avatar_color ?? '#16a34a', avatar_url: p?.avatar_url ?? null,
+        avatar_color: p?.avatar_color ?? '#2563eb', avatar_url: p?.avatar_url ?? null,
       }
     }))
   }
@@ -174,7 +174,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
         court_name: r.courts?.name ?? 'Court', is_indoor: r.courts?.is_indoor ?? false,
         contact_phone: r.courts?.contact_phone ?? null, status: r.status,
         display_name: fullName || p?.display_name || 'Unknown',
-        avatar_color: p?.avatar_color ?? '#16a34a', avatar_url: p?.avatar_url ?? null,
+        avatar_color: p?.avatar_color ?? '#2563eb', avatar_url: p?.avatar_url ?? null,
       }
     }))
     setLoading(false)
@@ -239,7 +239,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold text-foreground flex items-center gap-2">
-          <CalendarClock className="w-4 h-4 text-green-400" />
+          <CalendarClock className="w-4 h-4 text-blue-400" />
           {isAdmin ? 'Court bookings' : 'My bookings'}
         </h2>
         <div className="flex gap-1 p-1 bg-muted rounded-lg">
@@ -312,7 +312,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
                             <Clock className="w-3.5 h-3.5 text-muted-foreground/80" />
                             {fmtTime(s.start)}–{fmtTime(s.end)}
                           </div>
-                          <span className="text-[11px] font-semibold text-green-700 dark:text-green-300 bg-green-500/10 rounded-full px-2 py-0.5 shrink-0">
+                          <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-300 bg-primary/10 rounded-full px-2 py-0.5 shrink-0">
                             {hours} hr{hours > 1 ? 's' : ''}
                           </span>
                           <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground shrink-0">
@@ -437,7 +437,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
               {contactTarget.contact_phone ? (
                 <a
                   href={`tel:${contactTarget.contact_phone.replace(/[^\d+]/g, '')}`}
-                  className="inline-flex items-center gap-1.5 font-medium text-green-700 dark:text-green-300 underline"
+                  className="inline-flex items-center gap-1.5 font-medium text-blue-600 dark:text-blue-300 underline"
                 >
                   <Phone className="w-4 h-4" />
                   {contactTarget.contact_phone}

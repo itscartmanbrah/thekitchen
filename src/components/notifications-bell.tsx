@@ -28,16 +28,16 @@ function timeAgo(iso: string) {
 }
 
 function NotifIcon({ type }: { type: string }) {
-  if (type === 'match_scheduled')    return <Swords className="w-4 h-4 text-green-400" />
+  if (type === 'match_scheduled')    return <Swords className="w-4 h-4 text-blue-400" />
   if (type === 'match_result')       return <Trophy className="w-4 h-4 text-yellow-500" />
   if (type === 'league_announcement') return <Megaphone className="w-4 h-4 text-blue-500" />
-  if (type === 'league_invite')      return <Bell className="w-4 h-4 text-green-500" />
+  if (type === 'league_invite')      return <Bell className="w-4 h-4 text-blue-400" />
   if (type === 'challenge_officiate') return <Swords className="w-4 h-4 text-orange-500" />
   if (type === 'challenge_received') return <Swords className="w-4 h-4 text-red-600 dark:text-red-400" />
-  if (type === 'court_booking')      return <CalendarClock className="w-4 h-4 text-green-400" />
+  if (type === 'court_booking')      return <CalendarClock className="w-4 h-4 text-blue-400" />
   if (type === 'court_cancellation') return <CalendarClock className="w-4 h-4 text-red-600 dark:text-red-400" />
   if (type === 'booking_request')    return <CalendarClock className="w-4 h-4 text-blue-500" />
-  if (type === 'booking_approved')   return <CheckCircle className="w-4 h-4 text-green-400" />
+  if (type === 'booking_approved')   return <CheckCircle className="w-4 h-4 text-blue-400" />
   if (type === 'booking_rejected')   return <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
   return <Bell className="w-4 h-4 text-muted-foreground/80" />
 }
@@ -339,7 +339,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
             <div className="flex items-center gap-2">
               {notifications.length > 0 && (
                 <>
-                  <button onClick={markAllRead} className="text-xs text-muted-foreground/80 hover:text-green-400 flex items-center gap-1">
+                  <button onClick={markAllRead} className="text-xs text-muted-foreground/80 hover:text-blue-400 flex items-center gap-1">
                     <Check className="w-3 h-3" /> Mark all read
                   </button>
                   <span className="text-gray-200">|</span>
@@ -373,7 +373,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
                       {n.title}
                     </p>
                     {!n.read && n.type !== 'league_invite' && (
-                      <span className="w-2 h-2 bg-green-500 rounded-full shrink-0 mt-1" />
+                      <span className="w-2 h-2 bg-primary rounded-full shrink-0 mt-1" />
                     )}
                   </div>
                   {n.body && <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{n.body}</p>}
@@ -385,7 +385,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
                       <button
                         onClick={() => acceptInvite(n)}
                         disabled={!!inviteLoading[n.id]}
-                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
                       >
                         <CheckCircle className="w-3 h-3" />
                         {inviteLoading[n.id] === 'accept' ? 'Accepting…' : 'Accept'}
@@ -429,7 +429,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
                       <button
                         onClick={() => acceptChallenge(n)}
                         disabled={!!challengeLoading[n.id]}
-                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
                       >
                         <CheckCircle className="w-3 h-3" />
                         {challengeLoading[n.id] === 'accept' ? 'Accepting…' : 'Accept challenge'}

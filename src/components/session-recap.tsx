@@ -177,7 +177,7 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
                 <AppLogo className="w-[72px] h-[72px]" />
                 <span className="text-[48px] font-extrabold tracking-tight">The Kitchen</span>
               </div>
-              <span className="text-[24px] uppercase tracking-[0.3em] text-green-400 font-bold">Open Play</span>
+              <span className="text-[24px] uppercase tracking-[0.3em] text-blue-400 font-bold">Open Play</span>
             </div>
 
             {/* Title */}
@@ -207,7 +207,7 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
 
             {/* Standings */}
             <div className="mt-[64px] flex-1">
-              <div className="text-[26px] uppercase tracking-[0.3em] text-green-400 font-bold mb-6">Final Standings</div>
+              <div className="text-[26px] uppercase tracking-[0.3em] text-blue-400 font-bold mb-6">Final Standings</div>
               <div className="flex flex-col gap-4">
                 {standings.slice(0, 8).map((p, i) => (
                   <div key={p.id} className={`flex items-center gap-6 rounded-2xl px-7 py-5 ${i === 0 ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-zinc-800/70'}`}>

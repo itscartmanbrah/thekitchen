@@ -173,7 +173,7 @@ export function LeagueStats({ leagueId }: { leagueId: string }) {
       )}
 
       {stats.topWinRate && (
-        <StatCard icon={<Trophy className="w-4 h-4 text-green-500" />} label="Best win rate">
+        <StatCard icon={<Trophy className="w-4 h-4 text-blue-400" />} label="Best win rate">
           <div className="flex items-center gap-2">
             <Link href={`/players/${stats.topWinRate.userId}`}>
               <PlayerAvatar name={stats.topWinRate.name} color={stats.topWinRate.color} imageUrl={stats.topWinRate.avatarUrl} size="sm" />

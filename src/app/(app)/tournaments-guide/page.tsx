@@ -24,7 +24,7 @@ function Section({ title, icon, children }: {
 function Step({ number, title, children }: { number: number; title: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-4">
-      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-500/15 text-green-700 dark:text-green-300 flex items-center justify-center text-xs font-bold mt-0.5">
+      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-blue-600 dark:text-blue-300 flex items-center justify-center text-xs font-bold mt-0.5">
         {number}
       </div>
       <div className="flex-1">
@@ -94,7 +94,7 @@ export default function TournamentsGuidePage() {
       </Section>
 
       {/* ── Step by step ── */}
-      <Section title="How the bracket is built — step by step" icon={<GitFork className="w-4 h-4 text-green-500" />}>
+      <Section title="How the bracket is built — step by step" icon={<GitFork className="w-4 h-4 text-blue-400" />}>
         <div className="space-y-6">
 
           <Step number={1} title="Players are seeded by ELO">
@@ -158,7 +158,7 @@ export default function TournamentsGuidePage() {
               automatically. Every tournament game is also recorded as a{' '}
               <strong className="text-foreground">real league match</strong> — it updates your ELO, win/loss
               record, and form exactly like any other game.{' '}
-              <Link href="/elo" className="text-green-400 underline hover:text-green-300">
+              <Link href="/elo" className="text-blue-400 underline hover:text-green-300">
                 See how ELO is calculated
               </Link>.
             </p>

@@ -153,7 +153,7 @@ export function LeagueWaitlist({ leagueId }: { leagueId: string }) {
               <Button
                 size="sm"
                 variant="outline"
-                className="h-8 gap-1 text-green-700 dark:text-green-300 border-green-500/40 hover:bg-green-500/20"
+                className="h-8 gap-1 text-blue-600 dark:text-blue-300 border-primary/40 hover:bg-primary/20"
                 onClick={() => approve(m)}
                 disabled={loading[m.id]}
               >

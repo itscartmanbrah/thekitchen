@@ -27,12 +27,12 @@ export function ResumeSessionBanner() {
     <div className="bg-zinc-900 text-white">
       <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
         <span className="text-sm truncate">
-          <span className="text-green-400 font-semibold">Open Play running</span>
+          <span className="text-blue-400 font-semibold">Open Play running</span>
           <span className="text-zinc-300"> · {host.name}</span>
         </span>
         <div className="flex items-center gap-1.5 shrink-0">
           <Link href={`/play/host/${host.manageCode}`}
-            className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-zinc-950 text-xs font-bold rounded-lg px-3 py-1.5">
+            className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-zinc-950 text-xs font-bold rounded-lg px-3 py-1.5">
             <Play className="w-3.5 h-3.5" />Resume
           </Link>
           <button onClick={() => { clearActiveHost(); setHost(null) }} className="text-zinc-400 hover:text-white p-1" title="Dismiss"><X className="w-4 h-4" /></button>

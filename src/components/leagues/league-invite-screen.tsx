@@ -140,7 +140,7 @@ export function LeagueInviteScreen({ league, membershipId, userId }: Props) {
         <Button
           onClick={accept}
           disabled={loading !== null}
-          className="gap-2 bg-green-600 hover:bg-green-700"
+          className="gap-2 bg-primary hover:bg-primary/90"
         >
           <CheckCircle className="w-4 h-4" />
           {loading === 'accept' ? 'Accepting…' : 'Accept invitation'}

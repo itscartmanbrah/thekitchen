@@ -27,7 +27,7 @@ function Section({ title, icon, children }: {
 function Step({ number, title, children }: { number: number; title: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-4">
-      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-500/15 text-green-700 dark:text-green-300 flex items-center justify-center text-xs font-bold mt-0.5">
+      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-blue-600 dark:text-blue-300 flex items-center justify-center text-xs font-bold mt-0.5">
         {number}
       </div>
       <div className="flex-1">
@@ -40,7 +40,7 @@ function Step({ number, title, children }: { number: number; title: string; chil
 
 function CodeBlock({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-gray-950 text-green-400 rounded-lg px-4 py-3 font-mono text-xs leading-relaxed overflow-x-auto my-2 break-words whitespace-pre-wrap">
+    <div className="bg-gray-950 text-blue-400 rounded-lg px-4 py-3 font-mono text-xs leading-relaxed overflow-x-auto my-2 break-words whitespace-pre-wrap">
       {children}
     </div>
   )
@@ -87,8 +87,8 @@ export default function EloPage() {
       {/* ── Header ── */}
       <div className="mb-7">
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-8 h-8 bg-green-500/15 rounded-lg flex items-center justify-center">
-            <TrendingUp className="w-4 h-4 text-green-400" />
+          <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+            <TrendingUp className="w-4 h-4 text-blue-400" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">How Rankings Work</h1>
         </div>
@@ -114,14 +114,14 @@ export default function EloPage() {
             On top of that, <strong className="text-foreground">winning by a bigger margin earns more points</strong> than
             scraping through. A 11–0 blowout moves more than an 11–9 squeaker.
           </p>
-          <div className="bg-green-500/10 border border-green-500/25 rounded-lg px-4 py-3 text-xs text-green-700 dark:text-green-300">
+          <div className="bg-primary/10 border border-primary/25 rounded-lg px-4 py-3 text-xs text-blue-600 dark:text-blue-300">
             Rankings are <strong>per league</strong> — your points in one league have no effect on another league.
           </div>
         </div>
       </Section>
 
       {/* ── Step by step ── */}
-      <Section title="How a match is calculated — step by step" icon={<TrendingUp className="w-4 h-4 text-green-500" />}>
+      <Section title="How a match is calculated — step by step" icon={<TrendingUp className="w-4 h-4 text-blue-400" />}>
         <div className="space-y-6">
 
           <Step number={1} title="Before the match: work out who is expected to win">
@@ -197,9 +197,9 @@ export default function EloPage() {
               <p><span className="text-muted-foreground/80">Step 2 —</span> Multiplier = 1 + (6 ÷ 11) × 0.5 = <strong>1.27×</strong></p>
               <p><span className="text-muted-foreground/80">Step 3 —</span> Points change = 32 × 1.27 × (1.0 − 0.50) = <strong>≈ +20 pts</strong></p>
               <div className="mt-2 pt-2 border-t border-border grid grid-cols-2 gap-2">
-                <div className="bg-green-500/15 rounded px-3 py-2 text-center">
-                  <p className="text-green-700 dark:text-green-300 font-semibold">Winner</p>
-                  <p className="text-green-700 dark:text-green-300">1,000 → <strong>1,020</strong></p>
+                <div className="bg-primary/10 rounded px-3 py-2 text-center">
+                  <p className="text-blue-600 dark:text-blue-300 font-semibold">Winner</p>
+                  <p className="text-blue-600 dark:text-blue-300">1,000 → <strong>1,020</strong></p>
                 </div>
                 <div className="bg-red-500/10 rounded px-3 py-2 text-center">
                   <p className="text-red-600 dark:text-red-400 font-semibold">Loser</p>

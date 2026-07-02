@@ -64,7 +64,7 @@ export function PlayHeader({ right }: { right?: ReactNode }) {
                   {profile.avatar_url ? (
                     <img src={profile.avatar_url} alt={profile.display_name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white text-sm font-semibold" style={{ backgroundColor: profile.avatar_color ?? '#16a34a' }}>
+                    <div className="w-full h-full flex items-center justify-center text-white text-sm font-semibold" style={{ backgroundColor: profile.avatar_color ?? '#2563eb' }}>
                       {getInitials(profile.display_name)}
                     </div>
                   )}

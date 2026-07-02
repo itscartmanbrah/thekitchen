@@ -154,7 +154,7 @@ export function ChallengeDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Swords className="w-4 h-4 text-green-400" />
+            <Swords className="w-4 h-4 text-blue-400" />
             Challenge {challengedName}
           </DialogTitle>
         </DialogHeader>
@@ -171,7 +171,7 @@ export function ChallengeDialog({
                   onClick={() => setFormat(opt.value)}
                   className={`flex-1 text-sm py-2 rounded-lg border transition-colors ${
                     format === opt.value
-                      ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium'
+                      ? 'border-blue-500 bg-primary/10 text-blue-600 dark:text-blue-300 font-medium'
                       : 'border-border text-muted-foreground hover:border-border'
                   }`}
                 >
@@ -198,7 +198,7 @@ export function ChallengeDialog({
                     onClick={() => setOfficiatorId(m.user_id)}
                     className={`w-full flex items-center gap-3 p-2.5 rounded-lg border text-left transition-colors ${
                       officiatorId === m.user_id
-                        ? 'border-green-500 bg-green-500/10'
+                        ? 'border-blue-500 bg-primary/10'
                         : 'border-border hover:border-border'
                     }`}
                   >
@@ -213,7 +213,7 @@ export function ChallengeDialog({
                       <p className="text-xs text-muted-foreground capitalize">{m.role.replace('_', ' ')}</p>
                     </div>
                     {officiatorId === m.user_id && (
-                      <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                      <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center shrink-0">
                         <div className="w-2 h-2 rounded-full bg-card" />
                       </div>
                     )}

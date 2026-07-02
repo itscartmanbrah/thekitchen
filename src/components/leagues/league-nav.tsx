@@ -129,7 +129,7 @@ export function LeagueNav(props: NavProps) {
               }`}
             >
               {on && <motion.div layoutId="grp-pill" className="absolute inset-0 bg-zinc-900 rounded-lg shadow-sm" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />}
-              <Icon className={`w-4 h-4 relative z-10 ${on ? 'text-green-400' : ''}`} />
+              <Icon className={`w-4 h-4 relative z-10 ${on ? 'text-blue-400' : ''}`} />
               <span className="relative z-10">{g.label}</span>
             </button>
           )
@@ -145,7 +145,7 @@ export function LeagueNav(props: NavProps) {
                     activeGroup.gear ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-900'
                   }`}
                 >
-                  <Settings className={`w-4 h-4 ${activeGroup.gear ? 'text-green-400' : ''}`} />
+                  <Settings className={`w-4 h-4 ${activeGroup.gear ? 'text-blue-400' : ''}`} />
                   <span className="hidden sm:inline">Manage</span>
                   {pendingCount > 0 && (
                     <span className="bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">{pendingCount}</span>
@@ -177,7 +177,7 @@ export function LeagueNav(props: NavProps) {
                 key={s.key}
                 onClick={() => go(s.key)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wide whitespace-nowrap transition-colors border-b-2 ${
-                  on ? 'border-green-500 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-700'
+                  on ? 'border-blue-500 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-700'
                 }`}
               >
                 {s.label}

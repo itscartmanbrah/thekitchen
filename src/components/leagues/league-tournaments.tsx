@@ -141,7 +141,7 @@ export function LeagueTournaments({
       return {
         user_id: p.user_id, seed: p.seed,
         display_name: prof?.display_name ?? 'Unknown player',
-        avatar_color: prof?.avatar_color ?? '#16a34a',
+        avatar_color: prof?.avatar_color ?? '#2563eb',
         avatar_url: prof?.avatar_url ?? null,
       }
     }))
@@ -260,7 +260,7 @@ export function LeagueTournaments({
             </h2>
             <p className="text-xs text-muted-foreground/80 mt-0.5">
               Seeded by ELO within each division.{' '}
-              <Link href="/tournaments-guide" className="underline hover:text-green-400">Learn how brackets work</Link>
+              <Link href="/tournaments-guide" className="underline hover:text-blue-400">Learn how brackets work</Link>
             </p>
           </div>
         )}
@@ -299,13 +299,13 @@ export function LeagueTournaments({
             {divisions.map(d => (
               <Card
                 key={d.id}
-                className="cursor-pointer hover:border-green-500/40 transition-colors"
+                className="cursor-pointer hover:border-primary/40 transition-colors"
                 onClick={() => setSelectedDivision(d)}
               >
                 <CardContent className="py-3 px-4 flex items-center gap-3">
                   <Trophy className={`w-4 h-4 shrink-0 ${
                     d.status === 'completed' ? 'text-amber-500' :
-                    d.status === 'active' ? 'text-green-400' : 'text-muted-foreground/80'
+                    d.status === 'active' ? 'text-blue-400' : 'text-muted-foreground/80'
                   }`} />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{d.name}</p>
@@ -317,7 +317,7 @@ export function LeagueTournaments({
                   </span>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
                     d.status === 'registration' ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300' :
-                    d.status === 'active' ? 'bg-green-500/15 text-green-700 dark:text-green-300' : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                    d.status === 'active' ? 'bg-primary/10 text-blue-600 dark:text-blue-300' : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
                   }`}>
                     {d.status === 'registration' ? 'Registration open' : d.status === 'active' ? 'In progress' : 'Completed'}
                   </span>
@@ -374,7 +374,7 @@ export function LeagueTournaments({
           <p className="text-sm text-muted-foreground">
             {tournaments.length} tournament{tournaments.length !== 1 ? 's' : ''}
           </p>
-          <Link href="/tournaments-guide" className="text-xs text-muted-foreground/80 hover:text-green-400 underline">
+          <Link href="/tournaments-guide" className="text-xs text-muted-foreground/80 hover:text-blue-400 underline">
             How do brackets &amp; seeding work?
           </Link>
         </div>
@@ -393,9 +393,9 @@ export function LeagueTournaments({
       ) : (
         <div className="space-y-2">
           {tournaments.map(t => (
-            <Card key={t.id} className="cursor-pointer hover:border-green-500/40 transition-colors" onClick={() => openTournament(t)}>
+            <Card key={t.id} className="cursor-pointer hover:border-primary/40 transition-colors" onClick={() => openTournament(t)}>
               <CardContent className="py-3 px-4 flex items-center gap-3">
-                <Trophy className={`w-4 h-4 shrink-0 ${t.status === 'completed' ? 'text-amber-500' : 'text-green-400'}`} />
+                <Trophy className={`w-4 h-4 shrink-0 ${t.status === 'completed' ? 'text-amber-500' : 'text-blue-400'}`} />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{t.name}</p>
                   <p className="text-xs text-muted-foreground/80">
@@ -403,7 +403,7 @@ export function LeagueTournaments({
                   </p>
                 </div>
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                  t.status === 'active' ? 'bg-green-500/15 text-green-700 dark:text-green-300' :
+                  t.status === 'active' ? 'bg-primary/10 text-blue-600 dark:text-blue-300' :
                   t.status === 'completed' ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300' : 'bg-muted text-muted-foreground'
                 }`}>
                   {t.status === 'active' ? 'In progress' : t.status === 'completed' ? 'Completed' : 'Cancelled'}
@@ -475,7 +475,7 @@ export function LeagueTournaments({
                       onClick={() => togglePreset(preset)}
                       className={`text-xs px-2.5 py-1.5 rounded-full border transition-colors ${
                         active
-                          ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium'
+                          ? 'border-blue-500 bg-primary/10 text-blue-600 dark:text-blue-300 font-medium'
                           : 'border-border text-muted-foreground hover:border-border'
                       }`}
                     >

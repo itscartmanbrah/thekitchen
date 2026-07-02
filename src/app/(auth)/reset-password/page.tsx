@@ -78,7 +78,7 @@ export default function ResetPasswordPage() {
             <CardContent>
               <div className="text-center py-6 text-muted-foreground/80 text-sm">
                 If this page stays loading, your link may have expired.{' '}
-                <a href="/forgot-password" className="text-green-400 hover:underline">Request a new one.</a>
+                <a href="/forgot-password" className="text-blue-400 hover:underline">Request a new one.</a>
               </div>
             </CardContent>
           ) : (

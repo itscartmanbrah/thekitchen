@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
 
           {sent ? (
             <CardContent className="space-y-4">
-              <div className="bg-green-500/10 border border-green-500/25 rounded-lg px-4 py-3 text-sm text-green-700 dark:text-green-300">
+              <div className="bg-primary/10 border border-primary/25 rounded-lg px-4 py-3 text-sm text-blue-600 dark:text-blue-300">
                 We sent a password reset link to <strong>{email}</strong>. Check your spam folder if it doesn&apos;t arrive within a minute.
               </div>
             </CardContent>

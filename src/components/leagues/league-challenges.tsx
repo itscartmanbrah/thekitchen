@@ -27,7 +27,7 @@ const FORMAT_LABELS: Record<string, string> = {
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending_officiator: { label: 'Awaiting officiator',  color: 'bg-orange-100 text-orange-700' },
   pending_player:     { label: 'Awaiting opponent',    color: 'bg-blue-500/15 text-blue-700 dark:text-blue-300' },
-  accepted:           { label: 'Accepted',             color: 'bg-green-500/15 text-green-700 dark:text-green-300' },
+  accepted:           { label: 'Accepted',             color: 'bg-primary/10 text-blue-600 dark:text-blue-300' },
   declined_officiator:{ label: 'Officiator declined',  color: 'bg-red-500/15 text-red-600 dark:text-red-400' },
   declined_player:    { label: 'Opponent declined',    color: 'bg-red-500/15 text-red-600 dark:text-red-400' },
   cancelled:          { label: 'Cancelled',            color: 'bg-muted text-muted-foreground' },
@@ -118,7 +118,7 @@ export function LeagueChallenges({ leagueId, currentUserId }: { leagueId: string
             {t.label}
             {t.count > 0 && (
               <span className={`text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center ${
-                tab === t.key ? 'bg-green-500 text-white' : 'bg-gray-300 text-muted-foreground'
+                tab === t.key ? 'bg-primary text-white' : 'bg-gray-300 text-muted-foreground'
               }`}>
                 {t.count}
               </span>

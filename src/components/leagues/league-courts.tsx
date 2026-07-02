@@ -273,11 +273,11 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
           </div>
           <div className="flex gap-2">
             <button onClick={() => setIsIndoor(false)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${!isIndoor ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${!isIndoor ? 'border-blue-500 bg-primary/10 text-blue-600 dark:text-blue-300 font-medium' : 'border-border text-muted-foreground'}`}>
               <Sun className="w-4 h-4" />Outdoor
             </button>
             <button onClick={() => setIsIndoor(true)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${isIndoor ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${isIndoor ? 'border-blue-500 bg-primary/10 text-blue-600 dark:text-blue-300 font-medium' : 'border-border text-muted-foreground'}`}>
               <Home className="w-4 h-4" />Indoor
             </button>
           </div>
@@ -430,7 +430,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                     className={`h-8 rounded-full text-xs flex items-center justify-center transition-colors ${
                       isSel ? 'bg-gray-900 text-white font-semibold'
                         : past ? 'text-muted-foreground/50 cursor-not-allowed'
-                        : 'text-foreground/90 hover:bg-green-500/20'
+                        : 'text-foreground/90 hover:bg-primary/20'
                     }`}
                   >
                     {d.getDate()}
@@ -448,7 +448,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
               Select slots for {selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
             </h3>
             <div className="flex items-center gap-2.5 text-xs text-muted-foreground flex-wrap">
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-green-500 inline-block" />Booked</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-primary inline-block" />Booked</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-amber-400 inline-block" />Pending</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-blue-500 inline-block" />Open Play</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-gray-900 inline-block" />Selected</span>
@@ -486,7 +486,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                       const mine = bk?.user_id === currentUserId
                       const pending = bk?.status === 'pending'
 
-                      let cls = 'bg-card hover:bg-green-500/20 cursor-pointer'
+                      let cls = 'bg-card hover:bg-primary/20 cursor-pointer'
                       let label = ''
                       let textCls = 'text-transparent'
                       if (outOfHours || isPast) { cls = 'bg-muted cursor-not-allowed' }
@@ -496,7 +496,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                       } else if (bk) {
                         cls = pending
                           ? `bg-amber-400 ${(mine || isAdmin) ? 'cursor-pointer hover:bg-amber-500' : 'cursor-default'}`
-                          : `bg-green-500 ${(mine || isAdmin) ? 'cursor-pointer hover:bg-green-600' : 'cursor-default'}`
+                          : `bg-primary ${(mine || isAdmin) ? 'cursor-pointer hover:bg-primary' : 'cursor-default'}`
                         label = mine ? (pending ? 'Pending' : 'You') : isAdmin ? (names[bk.user_id]?.split(' ')[0] ?? '•') : ''
                         textCls = 'text-white'
                       } else if (sel) {
@@ -525,8 +525,8 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
           </p>
 
           {selected.length > 0 && (
-            <div className="mt-3 flex items-center justify-between gap-3 bg-green-500/10 border border-green-500/25 rounded-lg px-4 py-2.5">
-              <span className="text-sm text-green-700 dark:text-green-300 font-medium">
+            <div className="mt-3 flex items-center justify-between gap-3 bg-primary/10 border border-primary/25 rounded-lg px-4 py-2.5">
+              <span className="text-sm text-blue-600 dark:text-blue-300 font-medium">
                 {selected.length} slot{selected.length > 1 ? 's' : ''} selected
               </span>
               <div className="flex gap-2">
@@ -562,7 +562,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                 {isAdmin && (
                   <button
                     onClick={() => { setPolicyDraft(policy ?? DEFAULT_POLICY); setAddressDraft(address ?? ''); setInfoOpen(true) }}
-                    className="text-muted-foreground/80 hover:text-green-400"
+                    className="text-muted-foreground/80 hover:text-blue-400"
                     title="Edit policy & address"
                   >
                     <Pencil className="w-3.5 h-3.5" />
@@ -648,7 +648,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
               <div className="flex items-center gap-2 text-sm text-foreground">
                 <Clock className="w-4 h-4 text-muted-foreground/80" />
                 {fmtTime(detail.bookings[0].starts_at)} – {fmtHourLong(detailEndHour % 24)}
-                <span className="text-xs text-green-700 dark:text-green-300 bg-green-500/10 rounded-full px-2 py-0.5 ml-1">
+                <span className="text-xs text-blue-600 dark:text-blue-300 bg-primary/10 rounded-full px-2 py-0.5 ml-1">
                   {detailHours} hr{detailHours > 1 ? 's' : ''}
                 </span>
               </div>

@@ -44,7 +44,7 @@ export default async function PublicTournamentPage({ params }: { params: { code:
           <p className="text-sm text-muted-foreground">
             {tournament.league_name}
             <span className="mx-2 text-muted-foreground/50">·</span>
-            <span className={tournament.status === 'completed' ? 'text-amber-400 font-medium' : 'text-green-400 font-medium'}>
+            <span className={tournament.status === 'completed' ? 'text-amber-400 font-medium' : 'text-blue-400 font-medium'}>
               {tournament.status === 'completed' ? 'Completed' : 'In progress'}
             </span>
           </p>
@@ -66,7 +66,7 @@ export default async function PublicTournamentPage({ params }: { params: { code:
 
         <p className="text-xs text-muted-foreground/80 text-center mt-6">
           Powered by The Kitchen — pickleball league rankings.{' '}
-          <Link href="/signup" className="text-green-400 hover:underline">Create your own league</Link>
+          <Link href="/signup" className="text-blue-400 hover:underline">Create your own league</Link>
         </p>
       </main>
     </div>

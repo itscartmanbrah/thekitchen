@@ -145,7 +145,7 @@ export default function MyBookingsPage() {
     <div className="max-w-2xl">
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <CalendarClock className="w-5 h-5 text-green-400" />
+          <CalendarClock className="w-5 h-5 text-blue-400" />
           My court bookings
         </h1>
         <div className="flex gap-1 p-1 bg-muted rounded-lg">
@@ -185,7 +185,7 @@ export default function MyBookingsPage() {
                           <Clock className="w-3.5 h-3.5 text-muted-foreground/80" />
                           {fmtTime(s.start)}–{fmtTime(s.end)}
                         </div>
-                        <span className="text-[11px] font-semibold text-green-700 dark:text-green-300 bg-green-500/10 rounded-full px-2 py-0.5 shrink-0">
+                        <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-300 bg-primary/10 rounded-full px-2 py-0.5 shrink-0">
                           {hours} hr{hours > 1 ? 's' : ''}
                         </span>
                         <div className="flex-1 min-w-0">
@@ -261,7 +261,7 @@ export default function MyBookingsPage() {
               {contactTarget.contact_phone ? (
                 <a
                   href={`tel:${contactTarget.contact_phone.replace(/[^\d+]/g, '')}`}
-                  className="inline-flex items-center gap-1.5 font-medium text-green-700 dark:text-green-300 underline"
+                  className="inline-flex items-center gap-1.5 font-medium text-blue-600 dark:text-blue-300 underline"
                 >
                   <Phone className="w-4 h-4" />
                   {contactTarget.contact_phone}

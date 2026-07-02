@@ -20,7 +20,7 @@ export function CopyInviteButton({ inviteCode, onLight }: { inviteCode: string; 
       onClick={handleCopy}
       className={`gap-2 ${onLight ? 'bg-white/15 border-white/40 text-white hover:bg-white/25 hover:text-white backdrop-blur-sm' : ''}`}
     >
-      {copied ? <Check className={`w-3.5 h-3.5 ${onLight ? 'text-white' : 'text-green-400'}`} /> : <Copy className="w-3.5 h-3.5" />}
+      {copied ? <Check className={`w-3.5 h-3.5 ${onLight ? 'text-white' : 'text-blue-400'}`} /> : <Copy className="w-3.5 h-3.5" />}
       <span className="font-mono tracking-widest">{inviteCode}</span>
     </Button>
   )

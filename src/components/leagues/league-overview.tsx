@@ -131,7 +131,7 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
       {/* KPI cards */}
       {standing && (
         <motion.div {...item(0)} className="grid grid-cols-3 gap-3">
-          <Kpi label="Your rank" accent="border-green-500">
+          <Kpi label="Your rank" accent="border-blue-500">
             #<CountUp value={standing.rank} />
             <span className="text-sm text-zinc-400 font-normal"> of {standing.total}</span>
           </Kpi>
@@ -148,10 +148,10 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
       {/* Open Play + Next booking */}
       <div className="grid sm:grid-cols-2 gap-3">
         <motion.button {...item(1)} onClick={() => onNavigate('open-play')}
-          className="text-left rounded-xl border bg-card p-4 hover:border-green-500/40 transition-colors group">
+          className="text-left rounded-xl border bg-card p-4 hover:border-primary/40 transition-colors group">
           <div className="flex items-center justify-between mb-2">
-            <span className="flex items-center gap-2 text-sm font-medium text-foreground/90"><Swords className="w-4 h-4 text-green-400" />Open Play</span>
-            <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-green-500" />
+            <span className="flex items-center gap-2 text-sm font-medium text-foreground/90"><Swords className="w-4 h-4 text-blue-400" />Open Play</span>
+            <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-blue-400" />
           </div>
           {openPlay ? (
             <div>
@@ -170,10 +170,10 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
         </motion.button>
 
         <motion.button {...item(2)} onClick={() => onNavigate('bookings')}
-          className="text-left rounded-xl border bg-card p-4 hover:border-green-500/40 transition-colors group">
+          className="text-left rounded-xl border bg-card p-4 hover:border-primary/40 transition-colors group">
           <div className="flex items-center justify-between mb-2">
-            <span className="flex items-center gap-2 text-sm font-medium text-foreground/90"><CalendarClock className="w-4 h-4 text-green-400" />Your next booking</span>
-            <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-green-500" />
+            <span className="flex items-center gap-2 text-sm font-medium text-foreground/90"><CalendarClock className="w-4 h-4 text-blue-400" />Your next booking</span>
+            <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-blue-400" />
           </div>
           {nextBooking ? (
             <div>
@@ -192,8 +192,8 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
       {/* Recent matches */}
       <motion.div {...item(3)} className="rounded-xl border bg-card p-4">
         <div className="flex items-center justify-between mb-3">
-          <span className="flex items-center gap-2 text-sm font-medium text-foreground/90"><Trophy className="w-4 h-4 text-green-400" />Recent matches</span>
-          <button onClick={() => onNavigate('matches')} className="text-xs text-muted-foreground/80 hover:text-green-400">View all</button>
+          <span className="flex items-center gap-2 text-sm font-medium text-foreground/90"><Trophy className="w-4 h-4 text-blue-400" />Recent matches</span>
+          <button onClick={() => onNavigate('matches')} className="text-xs text-muted-foreground/80 hover:text-blue-400">View all</button>
         </div>
         {recent.length === 0 ? (
           <p className="text-sm text-muted-foreground/80">No matches played yet.</p>
@@ -204,7 +204,7 @@ export function LeagueOverview({ leagueId, currentUserId, isAdmin, onNavigate }:
                 <span className="text-xs text-muted-foreground/80 w-14 shrink-0">{fmtLabels[m.format] ?? m.format}</span>
                 <span className="font-medium text-foreground">{m.t1}–{m.t2}</span>
                 {m.mine && (
-                  <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 ${m.mine === 'W' ? 'bg-green-500/15 text-green-700 dark:text-green-300' : 'bg-red-500/15 text-red-600 dark:text-red-400'}`}>
+                  <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 ${m.mine === 'W' ? 'bg-primary/10 text-blue-600 dark:text-blue-300' : 'bg-red-500/15 text-red-600 dark:text-red-400'}`}>
                     {m.mine === 'W' ? 'WON' : 'LOST'}
                   </span>
                 )}

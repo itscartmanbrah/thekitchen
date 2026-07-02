@@ -48,7 +48,7 @@ function FormDots({ results }: { results: ('W' | 'L')[] }) {
         <span
           key={i}
           title={r === 'W' ? 'Win' : 'Loss'}
-          className={`w-2 h-2 rounded-full ${r === 'W' ? 'bg-green-500' : 'bg-red-400'}`}
+          className={`w-2 h-2 rounded-full ${r === 'W' ? 'bg-primary' : 'bg-red-400'}`}
         />
       ))}
     </div>
@@ -232,7 +232,7 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
               const isMe = r.user_id === currentUserId
               const winRate = r.wins + r.losses > 0 ? Math.round((r.wins / (r.wins + r.losses)) * 100) : null
               return (
-                <Card key={r.user_id} className={isMe ? 'border-green-500/40 bg-green-50/50' : ''}>
+                <Card key={r.user_id} className={isMe ? 'border-primary/40 bg-green-50/50' : ''}>
                   <CardContent className="py-3 px-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 text-center shrink-0">
@@ -307,7 +307,7 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
               <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Top rating</p>
               <div className="text-2xl font-extrabold text-white mt-1"><CountUp value={parseFloat(topPb.rating)} decimals={2} /></div>
             </div>
-            <div className="rounded-xl bg-zinc-900 px-4 py-3.5 shadow-md border-t-[3px] border-green-500">
+            <div className="rounded-xl bg-zinc-900 px-4 py-3.5 shadow-md border-t-[3px] border-blue-500">
               <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Your rank</p>
               <div className="text-2xl font-extrabold text-white mt-1">
                 {myIdx >= 0 ? <>#<CountUp value={myIdx + 1} /></> : <span className="text-lg text-zinc-500">—</span>}

@@ -178,7 +178,7 @@ export default function ProfilePage() {
               : null
             return (
               <Card key={m.id} className="overflow-hidden">
-                <div className="h-1" style={{ backgroundColor: m.leagues?.banner_color ?? '#16a34a' }} />
+                <div className="h-1" style={{ backgroundColor: m.leagues?.banner_color ?? '#2563eb' }} />
                 <CardContent className="py-3 px-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
@@ -196,7 +196,7 @@ export default function ProfilePage() {
                     <div className="text-right shrink-0">
                       <p className="text-lg font-bold text-foreground">{formatElo(m.elo_rating)}</p>
                       <p className="text-xs text-muted-foreground">
-                        <span className="text-green-400 font-medium">{m.wins}W</span>
+                        <span className="text-blue-400 font-medium">{m.wins}W</span>
                         {' – '}
                         {m.losses}L
                         {mWR !== null && <span className="ml-1 text-muted-foreground/80">({mWR}%)</span>}

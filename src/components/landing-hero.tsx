@@ -17,7 +17,7 @@ export function LandingHero() {
       <style>{`
         @keyframes tk-shine { 0% { background-position: 200% center } 100% { background-position: -200% center } }
         .tk-shiny {
-          background: linear-gradient(90deg, #16a34a 0%, #16a34a 35%, #86efac 50%, #16a34a 65%, #16a34a 100%);
+          background: linear-gradient(90deg, #2563eb 0%, #2563eb 35%, #86efac 50%, #2563eb 65%, #2563eb 100%);
           background-size: 200% auto;
           -webkit-background-clip: text; background-clip: text;
           -webkit-text-fill-color: transparent; color: transparent;
@@ -25,7 +25,7 @@ export function LandingHero() {
         }
       `}</style>
 
-      <motion.div {...up(0)} className="inline-flex items-center gap-2 bg-green-500/15 text-green-700 dark:text-green-300 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
+      <motion.div {...up(0)} className="inline-flex items-center gap-2 bg-primary/10 text-blue-600 dark:text-blue-300 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
         <Zap className="w-4 h-4" />
         ELO-powered pickleball rankings
       </motion.div>

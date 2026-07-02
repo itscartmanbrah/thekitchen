@@ -16,7 +16,7 @@ function Feature({
   return (
     <div className="rounded-xl border bg-card p-5">
       <div className="flex items-center gap-2.5 mb-3">
-        <div className="w-9 h-9 rounded-lg bg-green-500/15 flex items-center justify-center shrink-0">{icon}</div>
+        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">{icon}</div>
         <h2 className="font-bold text-foreground">{title}</h2>
       </div>
       <div className="text-sm text-muted-foreground leading-relaxed space-y-2">{children}</div>
@@ -27,7 +27,7 @@ function Feature({
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
     <div className="flex gap-3">
-      <div className="w-6 h-6 rounded-full bg-green-500/15 text-green-700 dark:text-green-300 flex items-center justify-center text-xs font-bold shrink-0">{n}</div>
+      <div className="w-6 h-6 rounded-full bg-primary/10 text-blue-600 dark:text-blue-300 flex items-center justify-center text-xs font-bold shrink-0">{n}</div>
       <p className="text-sm text-muted-foreground leading-relaxed flex-1">{children}</p>
     </div>
   )

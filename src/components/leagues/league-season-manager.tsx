@@ -190,13 +190,13 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
 
       {/* Active season card */}
       {activeSeason ? (
-        <Card className="border-green-500/25 bg-green-50/40">
+        <Card className="border-primary/25 bg-green-50/40">
           <CardContent className="py-4 px-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-semibold text-foreground">{activeSeason.name}</span>
-                  <span className="text-xs bg-green-500/15 text-green-700 dark:text-green-300 font-medium px-2 py-0.5 rounded-full">Active</span>
+                  <span className="text-xs bg-primary/10 text-blue-600 dark:text-blue-300 font-medium px-2 py-0.5 rounded-full">Active</span>
                 </div>
                 <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
@@ -298,15 +298,15 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
                   onClick={() => setResetType(opt.value as any)}
                   className={`w-full text-left rounded-lg border p-3 transition-colors ${
                     resetType === opt.value
-                      ? 'border-green-500 bg-green-500/10'
+                      ? 'border-blue-500 bg-primary/10'
                       : 'border-border hover:border-border'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-0.5">
                     <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                      resetType === opt.value ? 'border-green-500' : 'border-border'
+                      resetType === opt.value ? 'border-blue-500' : 'border-border'
                     }`}>
-                      {resetType === opt.value && <div className="w-1.5 h-1.5 rounded-full bg-green-500" />}
+                      {resetType === opt.value && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
                     </div>
                     <span className="text-sm font-medium text-foreground">{opt.label}</span>
                   </div>
