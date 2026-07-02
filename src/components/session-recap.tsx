@@ -115,12 +115,12 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
         {/* On-screen preview (compact). The saved/shared image is the story frame below. */}
         <div className="bg-zinc-900 rounded-2xl p-5 text-white">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2"><AppLogo className="w-6 h-6" /><span className="font-bold">The Kitchen</span></div>
+            <div className="flex items-center gap-2"><AppLogo className="w-6 h-6" onDark /><span className="font-bold">The Kitchen</span></div>
             <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">Open Play</span>
           </div>
           <h2 className="text-2xl font-extrabold italic uppercase tracking-tight leading-none">{sess?.name ?? 'Session'}</h2>
           <div className="flex items-center gap-2 mt-2 mb-4">
-            <span className="text-[10px] font-bold uppercase tracking-wide text-violet-700 dark:text-violet-300 bg-violet-500/20 rounded px-2 py-0.5">{modeName}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wide text-violet-300 bg-violet-500/20 rounded px-2 py-0.5">{modeName}</span>
             <span className="text-xs text-zinc-400 capitalize">{sess?.format} · {gameCount} games · {standings.length} players</span>
           </div>
 
@@ -132,9 +132,9 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
             <>
               {mvp && (
                 <div className="rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/30 p-3 mb-3 flex items-center gap-3">
-                  <Crown className="w-6 h-6 text-amber-700 dark:text-amber-300 shrink-0" />
+                  <Crown className="w-6 h-6 text-amber-300 shrink-0" />
                   <div className="min-w-0">
-                    <div className="text-[10px] uppercase tracking-widest text-amber-700 dark:text-amber-300 font-bold">MVP</div>
+                    <div className="text-[10px] uppercase tracking-widest text-amber-300 font-bold">MVP</div>
                     <div className="font-bold truncate">{mvp.display_name}</div>
                   </div>
                   <div className="ml-auto text-right shrink-0"><div className="text-xl font-extrabold">{mvp.pts}</div><div className="text-[10px] text-amber-200/70">pts</div></div>
@@ -174,7 +174,7 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <AppLogo className="w-[72px] h-[72px]" />
+                <AppLogo className="w-[72px] h-[72px]" onDark />
                 <span className="text-[48px] font-extrabold tracking-tight">The Kitchen</span>
               </div>
               <span className="text-[24px] uppercase tracking-[0.3em] text-blue-400 font-bold">Open Play</span>
@@ -193,9 +193,9 @@ export function SessionRecap({ sessionId, onClose }: { sessionId: string; onClos
             {/* MVP */}
             {mvp && (
               <div className="mt-[72px] rounded-3xl bg-gradient-to-br from-amber-500/25 to-amber-600/10 border-2 border-amber-500/40 px-10 py-8 flex items-center gap-7">
-                <Crown className="w-[80px] h-[80px] text-amber-700 dark:text-amber-300 shrink-0" />
+                <Crown className="w-[80px] h-[80px] text-amber-300 shrink-0" />
                 <div className="min-w-0">
-                  <div className="text-[26px] uppercase tracking-[0.3em] text-amber-700 dark:text-amber-300 font-bold">MVP</div>
+                  <div className="text-[26px] uppercase tracking-[0.3em] text-amber-300 font-bold">MVP</div>
                   <div className="text-[58px] font-extrabold leading-tight truncate">{mvp.display_name}</div>
                 </div>
                 <div className="ml-auto text-right shrink-0">

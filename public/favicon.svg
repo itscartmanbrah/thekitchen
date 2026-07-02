@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>The Kitchen — favicon (auto light/dark)</title>
+  <style>
+    .accent { fill: #2563eb; }
+    .ink { fill: #09090b; }
+    @media (prefers-color-scheme: dark) {
+      .accent { fill: #3b82f6; }
+      .ink { fill: #ffffff; }
+    }
+  </style>
+  <circle cx="25" cy="12.5" r="4.5" class="accent"></circle>
+  <circle cx="32" cy="10.5" r="5.5" class="accent"></circle>
+  <circle cx="39" cy="12.5" r="4.5" class="accent"></circle>
+  <rect x="20.5" y="11" width="23" height="6.5" rx="2" class="accent"></rect>
+  <rect x="24" y="19.5" width="16" height="4" rx="2" class="accent"></rect>
+  <rect x="21.5" y="26" width="21" height="25" rx="8.5" class="ink"></rect>
+  <rect x="29.5" y="49.5" width="5" height="10" rx="2.5" class="ink"></rect>
+</svg>

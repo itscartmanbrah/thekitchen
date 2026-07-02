@@ -69,11 +69,11 @@ export default function BoardViewPage({ params }: { params: { code: string } }) 
     <div className="min-h-screen bg-zinc-950 text-white">
       <header className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-zinc-800">
         <div className="flex items-center gap-3">
-          <AppLogo className="w-9 h-9" />
+          <AppLogo className="w-9 h-9" onDark />
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl sm:text-3xl font-extrabold italic uppercase tracking-tight">{session.name}</h1>
-              {session.status === 'active' && <span className="flex items-center gap-1.5 text-sm font-bold text-red-600 dark:text-red-400"><span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />LIVE</span>}
+              {session.status === 'active' && <span className="flex items-center gap-1.5 text-sm font-bold text-red-400"><span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />LIVE</span>}
             </div>
             <p className="text-sm text-zinc-400">{session.league_name} · <span className="capitalize">{session.format}</span></p>
           </div>
