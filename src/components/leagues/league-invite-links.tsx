@@ -21,8 +21,8 @@ function CopyCode({ code }: { code: string }) {
     setCopied(true); setTimeout(() => setCopied(false), 2000)
   }
   return (
-    <button onClick={copy} className="flex items-center gap-1.5 font-mono text-sm font-semibold text-foreground hover:text-green-700 transition-colors">
-      {copied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
+    <button onClick={copy} className="flex items-center gap-1.5 font-mono text-sm font-semibold text-foreground hover:text-green-300 transition-colors">
+      {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
       {code}
     </button>
   )
@@ -95,7 +95,7 @@ export function LeagueInviteLinks({ leagueId }: { leagueId: string }) {
             <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => toggle(l.id, l.is_active)}>
               {l.is_active ? 'Disable' : 'Enable'}
             </Button>
-            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-red-400 hover:text-red-600" onClick={() => remove(l.id)}>
+            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-red-400 hover:text-red-400" onClick={() => remove(l.id)}>
               <Trash2 className="w-3.5 h-3.5" />
             </Button>
           </div>

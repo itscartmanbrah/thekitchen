@@ -27,7 +27,7 @@ export default async function LeaguePage({ params }: { params: { id: string } })
   if ((membership as any).status === 'pending') {
     return (
       <div className="max-w-md mx-auto text-center py-24">
-        <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-14 h-14 bg-amber-500/15 rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl">⏳</span>
         </div>
         <h1 className="text-xl font-bold text-foreground mb-2">Waiting for approval</h1>
@@ -40,7 +40,7 @@ export default async function LeaguePage({ params }: { params: { id: string } })
   if ((membership as any).status === 'banned') {
     return (
       <div className="max-w-md mx-auto text-center py-24">
-        <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-14 h-14 bg-red-500/15 rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl">🚫</span>
         </div>
         <h1 className="text-xl font-bold text-foreground mb-2">You&apos;ve been banned from this league</h1>

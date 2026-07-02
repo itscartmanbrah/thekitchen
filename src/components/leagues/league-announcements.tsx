@@ -56,11 +56,11 @@ export function LeagueAnnouncements({ leagueId, isAdmin }: { leagueId: string; i
   return (
     <div className="mb-5">
       {items.map(a => (
-        <div key={a.id} className="flex gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 mb-2">
-          <Megaphone className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-900 flex-1 leading-relaxed">{a.content}</p>
+        <div key={a.id} className="flex gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2.5 mb-2">
+          <Megaphone className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+          <p className="text-sm text-amber-200 flex-1 leading-relaxed">{a.content}</p>
           {isAdmin && (
-            <button onClick={() => remove(a.id)} className="text-amber-400 hover:text-amber-600 shrink-0">
+            <button onClick={() => remove(a.id)} className="text-amber-400 hover:text-amber-400 shrink-0">
               <X className="w-3.5 h-3.5" />
             </button>
           )}

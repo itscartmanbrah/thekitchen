@@ -26,10 +26,10 @@ const FORMAT_LABELS: Record<string, string> = {
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending_officiator: { label: 'Awaiting officiator',  color: 'bg-orange-100 text-orange-700' },
-  pending_player:     { label: 'Awaiting opponent',    color: 'bg-blue-100 text-blue-700' },
-  accepted:           { label: 'Accepted',             color: 'bg-green-100 text-green-700' },
-  declined_officiator:{ label: 'Officiator declined',  color: 'bg-red-100 text-red-600' },
-  declined_player:    { label: 'Opponent declined',    color: 'bg-red-100 text-red-600' },
+  pending_player:     { label: 'Awaiting opponent',    color: 'bg-blue-500/15 text-blue-300' },
+  accepted:           { label: 'Accepted',             color: 'bg-green-500/15 text-green-300' },
+  declined_officiator:{ label: 'Officiator declined',  color: 'bg-red-500/15 text-red-400' },
+  declined_player:    { label: 'Opponent declined',    color: 'bg-red-500/15 text-red-400' },
   cancelled:          { label: 'Cancelled',            color: 'bg-muted text-muted-foreground' },
 }
 
@@ -199,7 +199,7 @@ export function LeagueChallenges({ leagueId, currentUserId }: { leagueId: string
                     <div className="mt-3 flex justify-end">
                       <button
                         onClick={() => cancelChallenge(c.id)}
-                        className="flex items-center gap-1 text-xs text-muted-foreground/80 hover:text-red-500 transition-colors"
+                        className="flex items-center gap-1 text-xs text-muted-foreground/80 hover:text-red-400 transition-colors"
                       >
                         <Ban className="w-3 h-3" />
                         Cancel challenge

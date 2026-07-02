@@ -154,7 +154,7 @@ export function ChallengeDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Swords className="w-4 h-4 text-green-600" />
+            <Swords className="w-4 h-4 text-green-400" />
             Challenge {challengedName}
           </DialogTitle>
         </DialogHeader>
@@ -171,7 +171,7 @@ export function ChallengeDialog({
                   onClick={() => setFormat(opt.value)}
                   className={`flex-1 text-sm py-2 rounded-lg border transition-colors ${
                     format === opt.value
-                      ? 'border-green-500 bg-green-50 text-green-700 font-medium'
+                      ? 'border-green-500 bg-green-500/10 text-green-300 font-medium'
                       : 'border-border text-muted-foreground hover:border-border'
                   }`}
                 >
@@ -184,10 +184,10 @@ export function ChallengeDialog({
           {/* Officiator picker */}
           <div className="space-y-1.5">
             <Label>
-              Officiator <span className="text-red-500">*</span>
+              Officiator <span className="text-red-400">*</span>
             </Label>
             {eligible.length === 0 ? (
-              <p className="text-sm text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+              <p className="text-sm text-amber-400 bg-amber-500/10 rounded-lg px-3 py-2">
                 No eligible officiators in this league. An admin or officiator (other than you and your opponent) is required.
               </p>
             ) : (
@@ -198,7 +198,7 @@ export function ChallengeDialog({
                     onClick={() => setOfficiatorId(m.user_id)}
                     className={`w-full flex items-center gap-3 p-2.5 rounded-lg border text-left transition-colors ${
                       officiatorId === m.user_id
-                        ? 'border-green-500 bg-green-50'
+                        ? 'border-green-500 bg-green-500/10'
                         : 'border-border hover:border-border'
                     }`}
                   >
@@ -236,7 +236,7 @@ export function ChallengeDialog({
               className="w-full text-sm border rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-300 bg-card"
             />
             {hasConflict && (
-              <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
+              <p className="text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2">
                 {conflict.challenger && conflict.challenged
                   ? 'You and your opponent both'
                   : conflict.challenger ? 'You' : `${challengedName}`}

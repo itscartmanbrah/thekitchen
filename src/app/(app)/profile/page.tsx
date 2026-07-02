@@ -196,7 +196,7 @@ export default function ProfilePage() {
                     <div className="text-right shrink-0">
                       <p className="text-lg font-bold text-foreground">{formatElo(m.elo_rating)}</p>
                       <p className="text-xs text-muted-foreground">
-                        <span className="text-green-600 font-medium">{m.wins}W</span>
+                        <span className="text-green-400 font-medium">{m.wins}W</span>
                         {' – '}
                         {m.losses}L
                         {mWR !== null && <span className="ml-1 text-muted-foreground/80">({mWR}%)</span>}

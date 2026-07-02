@@ -73,7 +73,7 @@ export function Navbar({ profile }: { profile: Profile | null }) {
                   <Link href="/help">Help &amp; guides</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+                <DropdownMenuItem onClick={handleSignOut} className="text-red-400">
                   Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>

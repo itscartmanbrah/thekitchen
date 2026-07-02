@@ -85,7 +85,7 @@ export function PublicDivisions({ divisions }: { divisions: PubDivision[] }) {
             onClick={() => setActiveId(d.id)}
             className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
               d.id === active.id
-                ? 'border-green-500 bg-green-50 text-green-700 font-medium'
+                ? 'border-green-500 bg-green-500/10 text-green-300 font-medium'
                 : 'border-border text-muted-foreground hover:border-border bg-card'
             }`}
           >
@@ -96,9 +96,9 @@ export function PublicDivisions({ divisions }: { divisions: PubDivision[] }) {
       </div>
 
       {winner && (
-        <div className="mb-4 inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
+        <div className="mb-4 inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-1.5">
           <span className="text-lg">🏆</span>
-          <span className="text-sm font-semibold text-amber-800">{winner.name} wins {active.name}!</span>
+          <span className="text-sm font-semibold text-amber-300">{winner.name} wins {active.name}!</span>
         </div>
       )}
 
@@ -123,13 +123,13 @@ export function PublicDivisions({ divisions }: { divisions: PubDivision[] }) {
             <div className="rounded-xl border overflow-hidden bg-card max-w-md">
               {standings.map((s, i) => (
                 <div key={s.entry.id} className={`flex items-center gap-3 px-3 py-2 border-b last:border-b-0 ${
-                  active.winner_entry_id === s.entry.id ? 'bg-amber-50' : ''
+                  active.winner_entry_id === s.entry.id ? 'bg-amber-500/10' : ''
                 }`}>
                   <span className="text-xs font-bold text-muted-foreground/80 w-5">{i + 1}</span>
                   <PlayerAvatar name={s.entry.name} color={s.entry.avatar_color} imageUrl={s.entry.avatar_url} size="sm" />
                   <span className="text-sm font-medium text-foreground flex-1 truncate">{s.entry.name}</span>
                   <span className="text-xs text-muted-foreground">{s.wins}W–{s.losses}L</span>
-                  <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-green-600' : s.diff < 0 ? 'text-red-500' : 'text-muted-foreground/80'}`}>
+                  <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-green-400' : s.diff < 0 ? 'text-red-400' : 'text-muted-foreground/80'}`}>
                     {s.diff > 0 ? '+' : ''}{s.diff}
                   </span>
                 </div>

@@ -54,7 +54,7 @@ export function InstallAppButton() {
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Smartphone className="w-4 h-4 text-green-600" />
+              <Smartphone className="w-4 h-4 text-green-400" />
               Install The Kitchen
             </DialogTitle>
           </DialogHeader>

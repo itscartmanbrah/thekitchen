@@ -232,7 +232,7 @@ export function LeagueLeaderboard({ leagueId, currentUserId, activeSeason }: {
               const isMe = r.user_id === currentUserId
               const winRate = r.wins + r.losses > 0 ? Math.round((r.wins / (r.wins + r.losses)) * 100) : null
               return (
-                <Card key={r.user_id} className={isMe ? 'border-green-300 bg-green-50/50' : ''}>
+                <Card key={r.user_id} className={isMe ? 'border-green-500/40 bg-green-50/50' : ''}>
                   <CardContent className="py-3 px-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 text-center shrink-0">

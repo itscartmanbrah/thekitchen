@@ -69,7 +69,7 @@ export default async function DashboardPage() {
 
       {(!memberships || memberships.length === 0) ? (
         <div className="text-center py-20">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-green-500/15 rounded-full flex items-center justify-center mx-auto mb-4">
             <Trophy className="w-8 h-8 text-primary" />
           </div>
           <h2 className="text-xl font-semibold text-foreground mb-2">No leagues yet</h2>
@@ -125,7 +125,7 @@ export default async function DashboardPage() {
             <h2 className="text-xl font-bold text-foreground flex items-center gap-2"><Swords className="w-5 h-5 text-primary" />Open Play</h2>
             <p className="text-muted-foreground text-sm mt-0.5">Run a drop-in session — no league or court needed.</p>
           </div>
-          <Link href="/play/new" className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium rounded-lg px-4 py-2">
+          <Link href="/play/new" className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium rounded-lg px-4 py-2">
             <Plus className="w-4 h-4" />Start a session
           </Link>
         </div>
@@ -138,11 +138,11 @@ export default async function DashboardPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-foreground truncate">{s.name}</span>
-                      <span className="text-[10px] font-bold uppercase text-violet-700 bg-violet-100 rounded-full px-2 py-0.5">{soloModeLabel[s.match_mode] ?? s.match_mode}</span>
+                      <span className="text-[10px] font-bold uppercase text-violet-300 bg-violet-500/15 rounded-full px-2 py-0.5">{soloModeLabel[s.match_mode] ?? s.match_mode}</span>
                     </div>
                     <p className="text-xs text-muted-foreground/80 mt-0.5 capitalize">{s.format} · {s.court_count} court{s.court_count > 1 ? 's' : ''}</p>
                   </div>
-                  <span className="inline-flex items-center gap-1 text-green-700 text-sm font-medium shrink-0"><Play className="w-3.5 h-3.5" />Resume</span>
+                  <span className="inline-flex items-center gap-1 text-green-300 text-sm font-medium shrink-0"><Play className="w-3.5 h-3.5" />Resume</span>
                 </div>
               </Link>
             ))}
@@ -159,13 +159,13 @@ export default async function DashboardPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-foreground truncate">{s.name}</span>
-                        <span className="text-[10px] font-bold uppercase text-violet-700 bg-violet-100 rounded-full px-2 py-0.5">{soloModeLabel[s.match_mode] ?? s.match_mode}</span>
+                        <span className="text-[10px] font-bold uppercase text-violet-300 bg-violet-500/15 rounded-full px-2 py-0.5">{soloModeLabel[s.match_mode] ?? s.match_mode}</span>
                       </div>
                       <p className="text-xs text-muted-foreground/80 mt-0.5">
                         {s.league_name ?? 'Standalone'} · {s.my_status === 'playing' ? 'on a court now' : s.my_status === 'resting' ? 'resting' : 'in the queue'}
                       </p>
                     </div>
-                    <span className="inline-flex items-center gap-1 text-green-700 text-sm font-medium shrink-0"><Play className="w-3.5 h-3.5" />View</span>
+                    <span className="inline-flex items-center gap-1 text-green-300 text-sm font-medium shrink-0"><Play className="w-3.5 h-3.5" />View</span>
                   </div>
                 </Link>
               ))}

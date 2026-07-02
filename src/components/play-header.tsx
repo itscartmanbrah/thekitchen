@@ -78,7 +78,7 @@ export function PlayHeader({ right }: { right?: ReactNode }) {
                 <DropdownMenuItem asChild><Link href="/play/host">My Open Play</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="text-red-600">Sign out</DropdownMenuItem>
+                <DropdownMenuItem onClick={signOut} className="text-red-400">Sign out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (

@@ -41,7 +41,7 @@ function Slot({
   isBye: boolean
 }) {
   return (
-    <div className={`flex items-center gap-2 px-2.5 py-1.5 ${isWinner ? 'bg-green-50' : ''}`}>
+    <div className={`flex items-center gap-2 px-2.5 py-1.5 ${isWinner ? 'bg-green-500/10' : ''}`}>
       {player ? (
         <>
           <span className="text-[10px] text-muted-foreground/80 w-4 text-right shrink-0">{seed}</span>
@@ -50,7 +50,7 @@ function Slot({
             {player.display_name}
           </span>
           {score !== null && (
-            <span className={`text-xs font-bold shrink-0 ${isWinner ? 'text-green-700' : 'text-muted-foreground/80'}`}>
+            <span className={`text-xs font-bold shrink-0 ${isWinner ? 'text-green-300' : 'text-muted-foreground/80'}`}>
               {score}
             </span>
           )}
@@ -95,7 +95,7 @@ export function TournamentBracket({
                   key={m.id}
                   className={`rounded-lg border bg-card divide-y ${
                     m.status === 'completed' ? 'border-border' :
-                    m.status === 'ready' ? 'border-green-300 shadow-sm' : 'border-border'
+                    m.status === 'ready' ? 'border-green-500/40 shadow-sm' : 'border-border'
                   } ${reportable ? 'cursor-pointer hover:border-green-500 transition-colors' : ''}`}
                   onClick={() => reportable && onReport(m)}
                   title={reportable ? 'Click to enter score' : undefined}
@@ -103,7 +103,7 @@ export function TournamentBracket({
                   <Slot player={p1} seed={p1?.seed} score={m.score1} isWinner={!!m.winner_id && m.winner_id === m.player1_id} isBye={m.status === 'bye'} />
                   <Slot player={p2} seed={p2?.seed} score={m.score2} isWinner={!!m.winner_id && m.winner_id === m.player2_id} isBye={m.status === 'bye'} />
                   {reportable && (
-                    <p className="text-[10px] text-center text-green-600 font-medium py-0.5 bg-green-50/50">Enter score</p>
+                    <p className="text-[10px] text-center text-green-400 font-medium py-0.5 bg-green-50/50">Enter score</p>
                   )}
                 </div>
               )

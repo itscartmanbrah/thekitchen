@@ -215,11 +215,11 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
         <div className="mb-5">
           <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
             {session.name}
-            {session.rated && <span className="text-[10px] font-bold text-green-700 bg-green-100 rounded-full px-2 py-0.5">RATED</span>}
+            {session.rated && <span className="text-[10px] font-bold text-green-300 bg-green-500/15 rounded-full px-2 py-0.5">RATED</span>}
           </h1>
           <p className="text-sm text-muted-foreground">
             {session.league_name} · <span className="capitalize">{session.format}</span>
-            {session.status === 'ended' && <span className="ml-2 text-amber-600 font-medium">Session ended</span>}
+            {session.status === 'ended' && <span className="ml-2 text-amber-400 font-medium">Session ended</span>}
           </p>
         </div>
 
@@ -230,11 +230,11 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
             const wpos = waitlist.findIndex(p => p.id === me.id)
             return (
               <>
-              {joinError && <p className="text-xs text-red-600 mb-2">{joinError}</p>}
-              <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-center justify-between gap-3">
+              {joinError && <p className="text-xs text-red-400 mb-2">{joinError}</p>}
+              <div className="mb-6 rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 min-w-0">
-                  <Clock className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span className="text-sm text-amber-800">
+                  <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="text-sm text-amber-300">
                     Session is full — <strong>{me.name}</strong>, you&apos;re <strong>#{wpos + 1}</strong> on the waitlist. You&apos;ll be checked in automatically when a spot frees.
                   </span>
                 </div>
@@ -248,11 +248,11 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
             const resting = me.status === 'resting'
             return (
               <>
-              {joinError && <p className="text-xs text-red-600 mb-2">{joinError}</p>}
-              <div className={`mb-6 rounded-xl border px-4 py-3 flex items-center justify-between gap-3 ${resting ? 'border-amber-200 bg-amber-50' : 'border-green-200 bg-green-50'}`}>
+              {joinError && <p className="text-xs text-red-400 mb-2">{joinError}</p>}
+              <div className={`mb-6 rounded-xl border px-4 py-3 flex items-center justify-between gap-3 ${resting ? 'border-amber-500/25 bg-amber-500/10' : 'border-green-500/25 bg-green-500/10'}`}>
                 <div className="flex items-center gap-2 min-w-0">
-                  {resting ? <Pause className="w-4 h-4 text-amber-600 shrink-0" /> : <Check className="w-4 h-4 text-primary shrink-0" />}
-                  <span className={`text-sm truncate ${resting ? 'text-amber-800' : 'text-green-800'}`}>
+                  {resting ? <Pause className="w-4 h-4 text-amber-400 shrink-0" /> : <Check className="w-4 h-4 text-primary shrink-0" />}
+                  <span className={`text-sm truncate ${resting ? 'text-amber-300' : 'text-green-300'}`}>
                     {resting
                       ? <>Resting — <strong>{me.name}</strong>, you&apos;ll sit out until you&apos;re back.</>
                       : <>Checked in as <strong>{me.name}</strong>{me.status === 'playing' ? ' — on a court now!' : pos >= 0 ? ` — #${pos + 1} in the queue` : ''}</>}
@@ -267,7 +267,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
                       <DropdownMenuItem onClick={rest} disabled={me.status === 'playing'}><Pause className="w-4 h-4 mr-2" />Rest — back in a few games</DropdownMenuItem>
-                      <DropdownMenuItem onClick={leave} disabled={me.status === 'playing'} className="text-red-600 focus:text-red-600"><LogOut className="w-4 h-4 mr-2" />Leave the session</DropdownMenuItem>
+                      <DropdownMenuItem onClick={leave} disabled={me.status === 'playing'} className="text-red-400 focus:text-red-400"><LogOut className="w-4 h-4 mr-2" />Leave the session</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
@@ -290,7 +290,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                     <span className="text-xs text-muted-foreground">I am a</span>
                     {(['m', 'f'] as const).map(g => (
                       <button key={g} type="button" onClick={() => { setJoinGender(g); setJoinError('') }}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold border ${joinGender === g ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'}`}>
+                        className={`px-3 py-1.5 rounded-lg text-sm font-semibold border ${joinGender === g ? 'border-primary bg-primary text-primary-foreground' : 'border-border text-muted-foreground'}`}>
                         {g === 'm' ? 'Man' : 'Woman'}
                       </button>
                     ))}
@@ -301,15 +301,15 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                     <span className="text-xs text-muted-foreground">My level</span>
                     {[1, 2, 3, 4, 5].map(n => (
                       <button key={n} type="button" onClick={() => { setJoinLevel(n); setJoinError('') }}
-                        className={`w-8 h-8 rounded-lg text-sm font-semibold border ${joinLevel === n ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'}`}>{n}</button>
+                        className={`w-8 h-8 rounded-lg text-sm font-semibold border ${joinLevel === n ? 'border-primary bg-primary text-primary-foreground' : 'border-border text-muted-foreground'}`}>{n}</button>
                     ))}
                   </div>
                 )}
-                {isFull && <p className="text-xs text-amber-700 mb-2">Session is full ({activeCount}/{session.max_players}) — you&apos;ll join the waitlist and get in automatically when a spot frees.</p>}
+                {isFull && <p className="text-xs text-amber-300 mb-2">Session is full ({activeCount}/{session.max_players}) — you&apos;ll join the waitlist and get in automatically when a spot frees.</p>}
                 <Button className="w-full" onClick={joinMember} disabled={joining}>
                   {joining ? 'Checking in…' : isFull ? 'Join the waitlist' : 'Check in'}
                 </Button>
-                {joinError && <p className="text-xs text-red-600 mt-1.5">{joinError}</p>}
+                {joinError && <p className="text-xs text-red-400 mt-1.5">{joinError}</p>}
               </div>
             )
           }
@@ -341,7 +341,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                   <span className="text-xs text-muted-foreground">I am a</span>
                   {(['m', 'f'] as const).map(g => (
                     <button key={g} type="button" onClick={() => { setJoinGender(g); setJoinError('') }}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold border ${joinGender === g ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'}`}>
+                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold border ${joinGender === g ? 'border-primary bg-primary text-primary-foreground' : 'border-border text-muted-foreground'}`}>
                       {g === 'm' ? 'Man' : 'Woman'}
                     </button>
                   ))}
@@ -352,17 +352,17 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
                   <span className="text-xs text-muted-foreground">My level</span>
                   {[1, 2, 3, 4, 5].map(n => (
                     <button key={n} type="button" onClick={() => { setJoinLevel(n); setJoinError('') }}
-                      className={`w-8 h-8 rounded-lg text-sm font-semibold border ${joinLevel === n ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'}`}>
+                      className={`w-8 h-8 rounded-lg text-sm font-semibold border ${joinLevel === n ? 'border-primary bg-primary text-primary-foreground' : 'border-border text-muted-foreground'}`}>
                       {n}
                     </button>
                   ))}
                 </div>
               )}
-              {isFull && <p className="text-xs text-amber-700">Session is full ({activeCount}/{session.max_players}) — you&apos;ll join the waitlist and get in automatically when a spot frees.</p>}
+              {isFull && <p className="text-xs text-amber-300">Session is full ({activeCount}/{session.max_players}) — you&apos;ll join the waitlist and get in automatically when a spot frees.</p>}
               <Button variant="outline" className="w-full" onClick={join} disabled={joining || !joinName.trim()}>
                 {joining ? 'Joining…' : isFull ? 'Join the waitlist as guest' : 'Continue as guest'}
               </Button>
-              {joinError && <p className="text-xs text-red-600">{joinError}</p>}
+              {joinError && <p className="text-xs text-red-400">{joinError}</p>}
             </div>
             )
           }
@@ -370,7 +370,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
 
         {/* Convert joined guests into accounts */}
         {myId && !signedIn && (
-          <div className="mb-6 rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-white px-4 py-4">
+          <div className="mb-6 rounded-xl border border-green-500/25 bg-gradient-to-br from-green-50 to-white px-4 py-4">
             <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
               <Trophy className="w-4 h-4 text-primary" />Make it count
             </p>
@@ -416,7 +416,7 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
         </p>
         <div className="space-y-1.5">
           {queued.map((p, i) => (
-            <div key={p.id} className={`flex items-center gap-2.5 border rounded-lg px-3 py-2 ${p.id === myId ? 'bg-green-50 border-green-300' : 'bg-card'}`}>
+            <div key={p.id} className={`flex items-center gap-2.5 border rounded-lg px-3 py-2 ${p.id === myId ? 'bg-green-500/10 border-green-500/40' : 'bg-card'}`}>
               <span className="text-xs text-muted-foreground/80 w-5">{i + 1}</span>
               <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-semibold shrink-0"
                 style={{ backgroundColor: p.avatar_color }}>{initials(p.name)}</span>
@@ -430,17 +430,17 @@ export default function PublicPlayPage({ params }: { params: { code: string } })
         {/* Waitlist (session at max capacity) */}
         {waitlist.length > 0 && (
           <>
-            <p className="text-xs font-semibold text-amber-600 mb-2 mt-6 flex items-center gap-1">
+            <p className="text-xs font-semibold text-amber-400 mb-2 mt-6 flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />Waitlist ({waitlist.length}) — first in line gets the next free spot
             </p>
             <div className="space-y-1.5">
               {waitlist.map((p, i) => (
-                <div key={p.id} className={`flex items-center gap-2.5 border rounded-lg px-3 py-2 ${p.id === myId ? 'bg-amber-50 border-amber-300' : 'bg-card border-amber-100'}`}>
+                <div key={p.id} className={`flex items-center gap-2.5 border rounded-lg px-3 py-2 ${p.id === myId ? 'bg-amber-500/10 border-amber-500/40' : 'bg-card border-amber-100'}`}>
                   <span className="text-xs text-amber-500 font-bold w-5">{i + 1}</span>
                   <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-semibold shrink-0"
                     style={{ backgroundColor: p.avatar_color }}>{initials(p.name)}</span>
                   <span className="text-sm text-foreground flex-1 truncate">{p.name}</span>
-                  {p.id === myId && <span className="text-[10px] font-bold uppercase text-amber-600">You</span>}
+                  {p.id === myId && <span className="text-[10px] font-bold uppercase text-amber-400">You</span>}
                 </div>
               ))}
             </div>

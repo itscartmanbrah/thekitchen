@@ -25,7 +25,7 @@ export function LandingHero() {
         }
       `}</style>
 
-      <motion.div {...up(0)} className="inline-flex items-center gap-2 bg-green-100 text-green-800 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
+      <motion.div {...up(0)} className="inline-flex items-center gap-2 bg-green-500/15 text-green-300 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
         <Zap className="w-4 h-4" />
         ELO-powered pickleball rankings
       </motion.div>

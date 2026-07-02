@@ -24,7 +24,7 @@ function Section({ title, icon, children }: {
 function Step({ number, title, children }: { number: number; title: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-4">
-      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold mt-0.5">
+      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-500/15 text-green-300 flex items-center justify-center text-xs font-bold mt-0.5">
         {number}
       </div>
       <div className="flex-1">
@@ -61,8 +61,8 @@ export default function TournamentsGuidePage() {
       {/* ── Header ── */}
       <div className="mb-7">
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-            <Trophy className="w-4 h-4 text-amber-600" />
+          <div className="w-8 h-8 bg-amber-500/15 rounded-lg flex items-center justify-center">
+            <Trophy className="w-4 h-4 text-amber-400" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">How Tournaments Work</h1>
         </div>
@@ -86,7 +86,7 @@ export default function TournamentsGuidePage() {
             ELO at the moment the tournament is created</strong>. The #1 seed is the highest-rated
             entrant, #2 the next, and so on.
           </p>
-          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-xs text-amber-800">
+          <div className="bg-amber-500/10 border border-amber-500/25 rounded-lg px-4 py-3 text-xs text-amber-300">
             Seeding rewards your league performance — climb the leaderboard and you earn an
             easier early draw in the next tournament.
           </div>
@@ -158,7 +158,7 @@ export default function TournamentsGuidePage() {
               automatically. Every tournament game is also recorded as a{' '}
               <strong className="text-foreground">real league match</strong> — it updates your ELO, win/loss
               record, and form exactly like any other game.{' '}
-              <Link href="/elo" className="text-green-600 underline hover:text-green-700">
+              <Link href="/elo" className="text-green-400 underline hover:text-green-300">
                 See how ELO is calculated
               </Link>.
             </p>
@@ -189,7 +189,7 @@ export default function TournamentsGuidePage() {
             you pick your partner when you register, and your team is seeded by your combined
             doubles rating.
           </p>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-xs text-blue-800">
+          <div className="bg-blue-500/10 border border-blue-500/25 rounded-lg px-4 py-3 text-xs text-blue-300">
             Small divisions can run as <strong>round robin</strong> instead of a knockout bracket —
             everyone plays everyone, and the best record (then best point difference) wins.
           </div>

@@ -249,9 +249,9 @@ export function DivisionView({
         </h3>
         <p className="text-xs text-muted-foreground/80 mt-0.5">{divisionRuleSummary(div as any)}</p>
         {winner && (
-          <div className="mt-2 inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
+          <div className="mt-2 inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-1.5">
             <span className="text-lg">🏆</span>
-            <span className="text-sm font-semibold text-amber-800">{winner.name} wins!</span>
+            <span className="text-sm font-semibold text-amber-300">{winner.name} wins!</span>
           </div>
         )}
       </div>
@@ -267,7 +267,7 @@ export function DivisionView({
                   {needsPartner ? 'Register with partner' : 'Register'}
                 </Button>
                 {eligibilityReason && (
-                  <span className="text-xs text-amber-600 bg-amber-50 rounded-lg px-2.5 py-1.5">{eligibilityReason}</span>
+                  <span className="text-xs text-amber-400 bg-amber-500/10 rounded-lg px-2.5 py-1.5">{eligibilityReason}</span>
                 )}
               </>
             ) : (
@@ -294,7 +294,7 @@ export function DivisionView({
                     <PlayerAvatar name={e.name} color={e.avatar_color} imageUrl={e.avatar_url} size="sm" />
                     <span className="text-sm font-medium text-foreground flex-1 truncate">{e.name}</span>
                     {(e.user_id === currentUserId || e.partner_id === currentUserId) && (
-                      <span className="text-[10px] font-bold text-green-600 bg-green-50 rounded-full px-2 py-0.5">YOU</span>
+                      <span className="text-[10px] font-bold text-green-400 bg-green-500/10 rounded-full px-2 py-0.5">YOU</span>
                     )}
                   </div>
                 ))}
@@ -314,13 +314,13 @@ export function DivisionView({
               <div className="rounded-xl border overflow-hidden bg-card">
                 {standings.map((s, i) => (
                   <div key={s.entry.id} className={`flex items-center gap-3 px-3 py-2 border-b last:border-b-0 ${
-                    div.winner_entry_id === s.entry.id ? 'bg-amber-50' : ''
+                    div.winner_entry_id === s.entry.id ? 'bg-amber-500/10' : ''
                   }`}>
                     <span className="text-xs font-bold text-muted-foreground/80 w-5">{i + 1}</span>
                     <PlayerAvatar name={s.entry.name} color={s.entry.avatar_color} imageUrl={s.entry.avatar_url} size="sm" />
                     <span className="text-sm font-medium text-foreground flex-1 truncate">{s.entry.name}</span>
                     <span className="text-xs text-muted-foreground">{s.wins}W–{s.losses}L</span>
-                    <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-green-600' : s.diff < 0 ? 'text-red-500' : 'text-muted-foreground/80'}`}>
+                    <span className={`text-xs font-mono w-12 text-right ${s.diff > 0 ? 'text-green-400' : s.diff < 0 ? 'text-red-400' : 'text-muted-foreground/80'}`}>
                       {s.diff > 0 ? '+' : ''}{s.diff}
                     </span>
                   </div>
@@ -351,7 +351,7 @@ export function DivisionView({
                         <span className="text-xs text-muted-foreground/80 px-2 shrink-0">vs</span>
                       )}
                       <span className={`text-sm flex-1 truncate ${m.winner_entry_id === m.entry2_id ? 'font-semibold' : ''}`}>{e2?.name}</span>
-                      {reportable && <span className="text-[10px] text-green-600 font-medium shrink-0">Enter score</span>}
+                      {reportable && <span className="text-[10px] text-green-400 font-medium shrink-0">Enter score</span>}
                     </div>
                   )
                 })}
@@ -386,7 +386,7 @@ export function DivisionView({
                 key={m.user_id}
                 onClick={() => setPartnerId(m.user_id)}
                 className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg border text-left transition-colors ${
-                  partnerId === m.user_id ? 'border-green-400 bg-green-50' : 'border-border hover:border-border'
+                  partnerId === m.user_id ? 'border-green-400 bg-green-500/10' : 'border-border hover:border-border'
                 }`}
               >
                 <PlayerAvatar name={m.profiles.display_name} color={m.profiles.avatar_color} imageUrl={m.profiles.avatar_url} size="sm" />

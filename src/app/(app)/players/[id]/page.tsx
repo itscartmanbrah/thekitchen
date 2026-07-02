@@ -199,7 +199,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                 <p className="text-xs text-muted-foreground">Leagues</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-green-600">{totalWins}</p>
+                <p className="text-lg font-bold text-green-400">{totalWins}</p>
                 <p className="text-xs text-muted-foreground">Wins</p>
               </div>
               <div>
@@ -214,8 +214,8 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
               <p className="text-lg font-bold text-foreground">{rankedMemberships.length}</p>
               <p className="text-xs text-muted-foreground">Leagues</p>
             </div>
-            <div className="bg-green-50 rounded-lg py-2">
-              <p className="text-lg font-bold text-green-600">{totalWins}</p>
+            <div className="bg-green-500/10 rounded-lg py-2">
+              <p className="text-lg font-bold text-green-400">{totalWins}</p>
               <p className="text-xs text-muted-foreground">Wins</p>
             </div>
             <div className="bg-muted/40 rounded-lg py-2">
@@ -234,7 +234,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
             <div className="flex items-center gap-3">
               {/* My side */}
               <div className="flex-1 text-center">
-                <p className="text-3xl font-bold text-green-600">{h2h.myWins}</p>
+                <p className="text-3xl font-bold text-green-400">{h2h.myWins}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">You</p>
               </div>
 
@@ -320,7 +320,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                       <p className="text-xl font-bold text-foreground">{formatElo(m.elo_rating)}</p>
                       <p className="text-xs text-muted-foreground/80">ELO</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        <span className="text-green-600 font-medium">{m.wins}W</span>
+                        <span className="text-green-400 font-medium">{m.wins}W</span>
                         {' – '}
                         <span className="text-muted-foreground">{m.losses}L</span>
                         {mWR !== null && <span className="ml-1 text-muted-foreground/80">({mWR}%)</span>}
@@ -338,9 +338,9 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
                       <span className="text-[10px] uppercase tracking-wide text-muted-foreground/80 font-medium">Doubles</span>
                       <span className="text-xs font-bold text-foreground">{formatElo(m.doubles_elo ?? m.elo_rating)}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1">
-                      <span className="text-[10px] uppercase tracking-wide text-amber-600 font-medium">Career high</span>
-                      <span className="text-xs font-bold text-amber-700">{formatElo(m.career_high_elo ?? m.elo_rating)}</span>
+                    <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/25 rounded-lg px-2.5 py-1">
+                      <span className="text-[10px] uppercase tracking-wide text-amber-400 font-medium">Career high</span>
+                      <span className="text-xs font-bold text-amber-300">{formatElo(m.career_high_elo ?? m.elo_rating)}</span>
                     </div>
                   </div>
 

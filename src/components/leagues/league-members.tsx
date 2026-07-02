@@ -175,7 +175,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
                 {!isMe && (
                   <button
                     onClick={() => setChallengeTarget({ id: m.user_id, name: m.profiles.display_name })}
-                    className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-green-400 hover:text-green-700 hover:bg-green-50 transition-colors shrink-0"
+                    className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-green-400 hover:text-green-300 hover:bg-green-500/20 transition-colors shrink-0"
                   >
                     <Swords className="w-3 h-3" />
                     Challenge
@@ -209,13 +209,13 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
                         </>
                       )}
                       <DropdownMenuItem
-                        className="text-red-600"
+                        className="text-red-400"
                         onClick={() => removeMember(m.id, m.user_id)}
                       >
                         Remove from league
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        className="text-red-700"
+                        className="text-red-300"
                         onClick={() => { setBanTarget({ id: m.id, name: m.profiles.display_name }); setBanReason('') }}
                       >
                         <ShieldBan className="w-4 h-4 mr-2" />
@@ -257,7 +257,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
                     </div>
                     <button
                       onClick={() => unbanMember(b.id, b.profiles.display_name)}
-                      className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-green-400 hover:text-green-700 hover:bg-green-50 transition-colors shrink-0"
+                      className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-green-400 hover:text-green-300 hover:bg-green-500/20 transition-colors shrink-0"
                     >
                       <ShieldCheck className="w-3 h-3" />
                       Unban
@@ -274,7 +274,7 @@ export function LeagueMembers({ leagueId, currentUserId, isAdmin, isHeadAdmin }:
       <Dialog open={!!banTarget} onOpenChange={v => { if (!v) { setBanTarget(null); setBanReason('') } }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-700">
+            <DialogTitle className="flex items-center gap-2 text-red-300">
               <ShieldBan className="w-4 h-4" />
               Ban {banTarget?.name}?
             </DialogTitle>

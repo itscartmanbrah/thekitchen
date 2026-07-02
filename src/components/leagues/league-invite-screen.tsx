@@ -149,7 +149,7 @@ export function LeagueInviteScreen({ league, membershipId, userId }: Props) {
           onClick={decline}
           disabled={loading !== null}
           variant="outline"
-          className="gap-2 text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+          className="gap-2 text-red-400 border-red-500/25 hover:bg-red-500/10 hover:text-red-400"
         >
           <XCircle className="w-4 h-4" />
           {loading === 'decline' ? 'Declining…' : 'Decline'}

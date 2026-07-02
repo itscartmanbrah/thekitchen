@@ -93,8 +93,8 @@ export function LeagueOpenPlayHistory({ leagueId, createdBy, onBack }: { leagueI
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-foreground truncate">{s.name}</span>
-                      <span className="text-[10px] font-bold uppercase text-violet-700 bg-violet-100 rounded-full px-2 py-0.5">{modeLabel[s.match_mode] ?? s.match_mode}</span>
-                      {s.rated && <span className="text-[10px] font-bold text-green-700 bg-green-100 rounded-full px-2 py-0.5">RATED</span>}
+                      <span className="text-[10px] font-bold uppercase text-violet-300 bg-violet-500/15 rounded-full px-2 py-0.5">{modeLabel[s.match_mode] ?? s.match_mode}</span>
+                      {s.rated && <span className="text-[10px] font-bold text-green-300 bg-green-500/15 rounded-full px-2 py-0.5">RATED</span>}
                     </div>
                     <p className="text-xs text-muted-foreground/80 mt-0.5 capitalize">{fmtDate(s.started_at)} · {s.format} · {s.court_count} courts</p>
                   </div>

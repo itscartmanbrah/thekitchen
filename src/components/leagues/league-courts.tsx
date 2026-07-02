@@ -273,11 +273,11 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
           </div>
           <div className="flex gap-2">
             <button onClick={() => setIsIndoor(false)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${!isIndoor ? 'border-green-500 bg-green-50 text-green-700 font-medium' : 'border-border text-muted-foreground'}`}>
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${!isIndoor ? 'border-green-500 bg-green-500/10 text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
               <Sun className="w-4 h-4" />Outdoor
             </button>
             <button onClick={() => setIsIndoor(true)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${isIndoor ? 'border-green-500 bg-green-50 text-green-700 font-medium' : 'border-border text-muted-foreground'}`}>
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm ${isIndoor ? 'border-green-500 bg-green-500/10 text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>
               <Home className="w-4 h-4" />Indoor
             </button>
           </div>
@@ -430,7 +430,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                     className={`h-8 rounded-full text-xs flex items-center justify-center transition-colors ${
                       isSel ? 'bg-gray-900 text-white font-semibold'
                         : past ? 'text-muted-foreground/50 cursor-not-allowed'
-                        : 'text-foreground/90 hover:bg-green-50'
+                        : 'text-foreground/90 hover:bg-green-500/20'
                     }`}
                   >
                     {d.getDate()}
@@ -486,7 +486,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                       const mine = bk?.user_id === currentUserId
                       const pending = bk?.status === 'pending'
 
-                      let cls = 'bg-card hover:bg-green-50 cursor-pointer'
+                      let cls = 'bg-card hover:bg-green-500/20 cursor-pointer'
                       let label = ''
                       let textCls = 'text-transparent'
                       if (outOfHours || isPast) { cls = 'bg-muted cursor-not-allowed' }
@@ -525,8 +525,8 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
           </p>
 
           {selected.length > 0 && (
-            <div className="mt-3 flex items-center justify-between gap-3 bg-green-50 border border-green-200 rounded-lg px-4 py-2.5">
-              <span className="text-sm text-green-800 font-medium">
+            <div className="mt-3 flex items-center justify-between gap-3 bg-green-500/10 border border-green-500/25 rounded-lg px-4 py-2.5">
+              <span className="text-sm text-green-300 font-medium">
                 {selected.length} slot{selected.length > 1 ? 's' : ''} selected
               </span>
               <div className="flex gap-2">
@@ -542,7 +542,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
             <div className="mt-4 flex flex-wrap gap-2">
               {courts.map(c => (
                 <button key={c.id} onClick={() => openDelete(c)}
-                  className="flex items-center gap-1 text-xs text-muted-foreground/80 hover:text-red-500 border rounded-full px-2.5 py-1">
+                  className="flex items-center gap-1 text-xs text-muted-foreground/80 hover:text-red-400 border rounded-full px-2.5 py-1">
                   <Trash2 className="w-3 h-3" />{c.name}
                 </button>
               ))}
@@ -562,7 +562,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                 {isAdmin && (
                   <button
                     onClick={() => { setPolicyDraft(policy ?? DEFAULT_POLICY); setAddressDraft(address ?? ''); setInfoOpen(true) }}
-                    className="text-muted-foreground/80 hover:text-green-600"
+                    className="text-muted-foreground/80 hover:text-green-400"
                     title="Edit policy & address"
                   >
                     <Pencil className="w-3.5 h-3.5" />
@@ -588,7 +588,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shownAddress)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm border rounded-full px-3 py-1.5 text-foreground/90 hover:border-green-400 hover:text-green-700"
+                    className="inline-flex items-center gap-1.5 text-sm border rounded-full px-3 py-1.5 text-foreground/90 hover:border-green-400 hover:text-green-300"
                   >
                     <Navigation className="w-3.5 h-3.5" />
                     Get directions
@@ -648,7 +648,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
               <div className="flex items-center gap-2 text-sm text-foreground">
                 <Clock className="w-4 h-4 text-muted-foreground/80" />
                 {fmtTime(detail.bookings[0].starts_at)} – {fmtHourLong(detailEndHour % 24)}
-                <span className="text-xs text-green-700 bg-green-50 rounded-full px-2 py-0.5 ml-1">
+                <span className="text-xs text-green-300 bg-green-500/10 rounded-full px-2 py-0.5 ml-1">
                   {detailHours} hr{detailHours > 1 ? 's' : ''}
                 </span>
               </div>
@@ -659,7 +659,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
 
               {canCancel ? (
                 confirmCancel ? (
-                  <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2.5 text-sm text-red-800">
+                  <div className="rounded-lg bg-red-500/10 border border-red-500/25 px-3 py-2.5 text-sm text-red-300">
                     Are you sure you want to cancel this booking? The slot{detailHours > 1 ? 's' : ''} will be freed for others.
                   </div>
                 ) : (
@@ -670,12 +670,12 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                   </p>
                 )
               ) : (
-                <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-800 space-y-2">
+                <div className="rounded-lg bg-amber-500/10 border border-amber-500/25 px-3 py-2.5 text-xs text-amber-300 space-y-2">
                   <p>Cancellations close 2 hours before the start time. To cancel now, please contact the court admin.</p>
                   {detail.court.contact_phone ? (
                     <a
                       href={`tel:${detail.court.contact_phone.replace(/[^\d+]/g, '')}`}
-                      className="inline-flex items-center gap-1.5 font-medium text-amber-900 underline"
+                      className="inline-flex items-center gap-1.5 font-medium text-amber-200 underline"
                     >
                       <Phone className="w-3.5 h-3.5" />
                       {detail.court.contact_phone}
@@ -712,7 +712,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
       <Dialog open={!!deleteTarget} onOpenChange={v => { if (!v) setDeleteTarget(null) }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-700">
+            <DialogTitle className="flex items-center gap-2 text-red-300">
               <Trash2 className="w-4 h-4" />Delete &ldquo;{deleteTarget?.name}&rdquo;?
             </DialogTitle>
           </DialogHeader>
@@ -728,7 +728,7 @@ export function LeagueCourts({ leagueId, currentUserId, isAdmin }: Props) {
                 onChange={e => { setDeletePassword(e.target.value); setDeleteError('') }}
                 onKeyDown={e => { if (e.key === 'Enter') deleteCourt() }}
               />
-              {deleteError && <p className="text-xs text-red-600">{deleteError}</p>}
+              {deleteError && <p className="text-xs text-red-400">{deleteError}</p>}
             </div>
           </div>
           <DialogFooter>

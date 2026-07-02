@@ -44,14 +44,14 @@ export default async function PublicTournamentPage({ params }: { params: { code:
           <p className="text-sm text-muted-foreground">
             {tournament.league_name}
             <span className="mx-2 text-muted-foreground/50">·</span>
-            <span className={tournament.status === 'completed' ? 'text-amber-600 font-medium' : 'text-green-600 font-medium'}>
+            <span className={tournament.status === 'completed' ? 'text-amber-400 font-medium' : 'text-green-400 font-medium'}>
               {tournament.status === 'completed' ? 'Completed' : 'In progress'}
             </span>
           </p>
           {!hasDivisions && winner && (
-            <div className="mt-3 inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
+            <div className="mt-3 inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-1.5">
               <span className="text-lg">🏆</span>
-              <span className="text-sm font-semibold text-amber-800">{winner.display_name} wins!</span>
+              <span className="text-sm font-semibold text-amber-300">{winner.display_name} wins!</span>
             </div>
           )}
         </div>
@@ -66,7 +66,7 @@ export default async function PublicTournamentPage({ params }: { params: { code:
 
         <p className="text-xs text-muted-foreground/80 text-center mt-6">
           Powered by The Kitchen — pickleball league rankings.{' '}
-          <Link href="/signup" className="text-green-600 hover:underline">Create your own league</Link>
+          <Link href="/signup" className="text-green-400 hover:underline">Create your own league</Link>
         </p>
       </main>
     </div>

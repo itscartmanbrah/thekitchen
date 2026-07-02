@@ -16,7 +16,7 @@ function Section({ title, icon, children }: { title: string; icon: React.ReactNo
 function Step({ number, title, children }: { number: number; title: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-4">
-      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold mt-0.5">{number}</div>
+      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-500/15 text-green-300 flex items-center justify-center text-xs font-bold mt-0.5">{number}</div>
       <div className="flex-1">
         <p className="font-semibold text-sm text-foreground mb-1">{title}</p>
         <div className="text-sm text-muted-foreground leading-relaxed space-y-2">{children}</div>
@@ -38,8 +38,8 @@ export default function OpenPlayGuidePage() {
     <div className="max-w-2xl">
       <div className="mb-7">
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-            <Users className="w-4 h-4 text-green-600" />
+          <div className="w-8 h-8 bg-green-500/15 rounded-lg flex items-center justify-center">
+            <Users className="w-4 h-4 text-green-400" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">How Open Play Works</h1>
         </div>
@@ -53,7 +53,7 @@ export default function OpenPlayGuidePage() {
       <Section title="The big idea" icon={<Info className="w-4 h-4 text-blue-500" />}>
         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
           <p>An organiser starts a session, players check in, and The Kitchen builds <strong className="text-foreground">balanced courts</strong> from a first-come, first-served queue. After each game, the players rotate to the back of the queue and the next group comes on.</p>
-          <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-xs text-green-800">
+          <div className="bg-green-500/10 border border-green-500/25 rounded-lg px-4 py-3 text-xs text-green-300">
             In a <strong>Rated</strong> session, games between league members update their ELO — so open play actually moves your ranking. Casual sessions and any game involving a guest are just for fun.
           </div>
         </div>
@@ -102,7 +102,7 @@ export default function OpenPlayGuidePage() {
             <li><strong className="text-foreground">Every player</strong> in that game is a league member (no guests)</li>
           </ul>
           <p>Open-play games count as a standard win for rating purposes (there&apos;s no point score to enter). Curious how the maths works?{' '}
-            <Link href="/elo" className="text-green-600 underline hover:text-green-700">See How ELO Works</Link>.
+            <Link href="/elo" className="text-green-400 underline hover:text-green-300">See How ELO Works</Link>.
           </p>
         </div>
       </Section>

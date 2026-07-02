@@ -239,7 +239,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold text-foreground flex items-center gap-2">
-          <CalendarClock className="w-4 h-4 text-green-600" />
+          <CalendarClock className="w-4 h-4 text-green-400" />
           {isAdmin ? 'Court bookings' : 'My bookings'}
         </h2>
         <div className="flex gap-1 p-1 bg-muted rounded-lg">
@@ -260,12 +260,12 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
       {/* Pending requests (admins approve/reject) */}
       {isAdmin && pendingSessions.length > 0 && (
         <div className="mb-6">
-          <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-2">
+          <p className="text-xs font-semibold text-blue-300 uppercase tracking-wide mb-2">
             Booking requests ({pendingSessions.length})
           </p>
           <div className="space-y-1.5">
             {pendingSessions.map(s => (
-              <div key={s.id} className="bg-blue-50/60 border border-blue-200 rounded-lg px-3 py-2.5 flex items-center gap-3 flex-wrap">
+              <div key={s.id} className="bg-blue-50/60 border border-blue-500/25 rounded-lg px-3 py-2.5 flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-1.5 text-sm font-medium text-foreground/90 w-32 shrink-0">
                   <Clock className="w-3.5 h-3.5 text-muted-foreground/80" />{fmtTime(s.start)}–{fmtTime(s.end)}
                 </div>
@@ -279,7 +279,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
                 </div>
                 <div className="flex gap-1.5 shrink-0">
                   <Button size="sm" className="h-7 px-2.5 text-xs" onClick={() => approveRequest(s)}>Approve</Button>
-                  <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs text-red-500" onClick={() => { setRejectTarget(s); setRejectReason('') }}>Decline</Button>
+                  <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs text-red-400" onClick={() => { setRejectTarget(s); setRejectReason('') }}>Decline</Button>
                 </div>
               </div>
             ))}
@@ -312,7 +312,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
                             <Clock className="w-3.5 h-3.5 text-muted-foreground/80" />
                             {fmtTime(s.start)}–{fmtTime(s.end)}
                           </div>
-                          <span className="text-[11px] font-semibold text-green-700 bg-green-50 rounded-full px-2 py-0.5 shrink-0">
+                          <span className="text-[11px] font-semibold text-green-300 bg-green-500/10 rounded-full px-2 py-0.5 shrink-0">
                             {hours} hr{hours > 1 ? 's' : ''}
                           </span>
                           <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground shrink-0">
@@ -323,7 +323,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
                             <PlayerAvatar name={s.display_name} color={s.avatar_color} imageUrl={s.avatar_url} size="xs" />
                             <span className="text-sm text-foreground truncate">{s.display_name}</span>
                             {s.status === 'pending' && (
-                              <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded-full px-2 py-0.5 shrink-0">Awaiting approval</span>
+                              <span className="text-[10px] font-semibold text-amber-300 bg-amber-500/15 rounded-full px-2 py-0.5 shrink-0">Awaiting approval</span>
                             )}
                           </div>
                           {hours > 1 && (isOpen
@@ -333,7 +333,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
                         {scope === 'upcoming' && (
                           <Button
                             size="sm" variant="ghost"
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50 h-7 px-2 text-xs shrink-0"
+                            className="text-red-400 hover:text-red-400 hover:bg-red-500/10 h-7 px-2 text-xs shrink-0"
                             onClick={() => onCancelClick(s)}
                           >
                             Cancel
@@ -354,7 +354,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
                                   key={b.id}
                                   onClick={() => onHourClick(s, b)}
                                   title="Cancel this hour"
-                                  className="group text-[11px] font-medium text-muted-foreground bg-card border rounded-md px-2 py-1 hover:border-red-300 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                  className="group text-[11px] font-medium text-muted-foreground bg-card border rounded-md px-2 py-1 hover:border-red-300 hover:bg-red-500/10 hover:text-red-400 transition-colors"
                                 >
                                   {fmtHourChip(b.starts_at)}
                                   <span className="text-red-400 ml-1 opacity-0 group-hover:opacity-100">✕</span>
@@ -437,7 +437,7 @@ export function LeagueBookings({ leagueId, currentUserId, isAdmin }: { leagueId:
               {contactTarget.contact_phone ? (
                 <a
                   href={`tel:${contactTarget.contact_phone.replace(/[^\d+]/g, '')}`}
-                  className="inline-flex items-center gap-1.5 font-medium text-green-700 underline"
+                  className="inline-flex items-center gap-1.5 font-medium text-green-300 underline"
                 >
                   <Phone className="w-4 h-4" />
                   {contactTarget.contact_phone}

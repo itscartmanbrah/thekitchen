@@ -89,7 +89,7 @@ export default function NewSoloSessionPage() {
               <div className="flex gap-1">
                 {(['doubles', 'singles'] as const).map(f => (
                   <button key={f} type="button" onClick={() => setFormat(f)}
-                    className={`flex-1 text-sm py-2 rounded-lg border capitalize ${format === f ? 'border-primary bg-green-50 text-green-700 font-medium' : 'border-border text-muted-foreground'}`}>{f}</button>
+                    className={`flex-1 text-sm py-2 rounded-lg border capitalize ${format === f ? 'border-primary bg-green-500/10 text-green-300 font-medium' : 'border-border text-muted-foreground'}`}>{f}</button>
                 ))}
               </div>
             </div>
@@ -100,7 +100,7 @@ export default function NewSoloSessionPage() {
             <div className="grid grid-cols-2 gap-1.5">
               {playStyles.map(m => (
                 <button key={m.k} type="button" onClick={() => setMode(m.k)}
-                  className={`text-left px-3 py-2 rounded-lg border ${mode === m.k ? 'border-primary bg-green-50 text-green-700' : 'border-border text-muted-foreground'}`}>
+                  className={`text-left px-3 py-2 rounded-lg border ${mode === m.k ? 'border-primary bg-green-500/10 text-green-300' : 'border-border text-muted-foreground'}`}>
                   <span className="block text-sm font-medium">{m.label}</span>
                   <span className="block text-[10px] text-muted-foreground/80">{m.desc}</span>
                 </button>
@@ -116,7 +116,7 @@ export default function NewSoloSessionPage() {
             <p className="text-xs text-muted-foreground/80">When full, extra check-ins go on a waitlist and are let in automatically as spots free up.</p>
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-400">{error}</p>}
 
           <Button onClick={start} disabled={busy} className="w-full">{busy ? 'Starting…' : 'Start session →'}</Button>
           <p className="text-[11px] text-muted-foreground/80 text-center">Standalone sessions don’t track ELO. Want ratings &amp; history? <Link href="/signup" className="text-primary hover:underline">Create a free league</Link>.</p>

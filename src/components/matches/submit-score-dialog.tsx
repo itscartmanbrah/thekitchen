@@ -97,7 +97,7 @@ export function SubmitScoreDialog({ match, onSubmitted }: Props) {
           <DialogTitle>Submit score</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-xs text-blue-700">
+          <div className="bg-blue-500/10 border border-blue-100 rounded-lg px-3 py-2 text-xs text-blue-300">
             Playing to <strong>{match.max_points ?? 11}</strong> — must win by at least 2 points.
           </div>
           <div className="grid grid-cols-2 gap-3 xs:gap-4">

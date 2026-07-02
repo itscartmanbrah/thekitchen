@@ -190,13 +190,13 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
 
       {/* Active season card */}
       {activeSeason ? (
-        <Card className="border-green-200 bg-green-50/40">
+        <Card className="border-green-500/25 bg-green-50/40">
           <CardContent className="py-4 px-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-semibold text-foreground">{activeSeason.name}</span>
-                  <span className="text-xs bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded-full">Active</span>
+                  <span className="text-xs bg-green-500/15 text-green-300 font-medium px-2 py-0.5 rounded-full">Active</span>
                 </div>
                 <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
@@ -212,7 +212,7 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
               <Button
                 size="sm"
                 variant="outline"
-                className="text-red-500 border-red-200 hover:bg-red-50 shrink-0"
+                className="text-red-400 border-red-500/25 hover:bg-red-500/10 shrink-0"
                 onClick={() => setShowEnd(true)}
               >
                 End season
@@ -298,7 +298,7 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
                   onClick={() => setResetType(opt.value as any)}
                   className={`w-full text-left rounded-lg border p-3 transition-colors ${
                     resetType === opt.value
-                      ? 'border-green-500 bg-green-50'
+                      ? 'border-green-500 bg-green-500/10'
                       : 'border-border hover:border-border'
                   }`}
                 >
@@ -315,7 +315,7 @@ export function LeagueSeasonManager({ leagueId, currentUserId }: Props) {
                 </button>
               ))}
             </div>
-            <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+            <p className="text-xs text-amber-400 bg-amber-500/10 rounded-lg px-3 py-2">
               ⚠️ This cannot be undone. Make sure all match scores have been submitted before ending the season.
             </p>
           </div>

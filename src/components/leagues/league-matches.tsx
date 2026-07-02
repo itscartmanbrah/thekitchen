@@ -41,12 +41,12 @@ const statusVariants: Record<string, 'default' | 'secondary' | 'outline' | 'succ
 function EloDelta({ delta }: { delta: number }) {
   if (delta === 0) return <span className="text-xs text-muted-foreground/80">±0</span>
   if (delta > 0) return (
-    <span className="text-xs text-green-600 font-medium flex items-center gap-0.5">
+    <span className="text-xs text-green-400 font-medium flex items-center gap-0.5">
       <TrendingUp className="w-3 h-3" />+{delta}
     </span>
   )
   return (
-    <span className="text-xs text-red-500 font-medium flex items-center gap-0.5">
+    <span className="text-xs text-red-400 font-medium flex items-center gap-0.5">
       <TrendingDown className="w-3 h-3" />{delta}
     </span>
   )
@@ -274,11 +274,11 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                       <div className="flex items-center gap-2 mx-1">
                         {match.status === 'completed' ? (
                           <div className="flex items-center gap-1 font-bold text-lg">
-                            <span className={match.team1_score > match.team2_score ? 'text-green-600' : 'text-muted-foreground/80'}>
+                            <span className={match.team1_score > match.team2_score ? 'text-green-400' : 'text-muted-foreground/80'}>
                               {match.team1_score}
                             </span>
                             <span className="text-muted-foreground/50 font-normal">–</span>
-                            <span className={match.team2_score > match.team1_score ? 'text-green-600' : 'text-muted-foreground/80'}>
+                            <span className={match.team2_score > match.team1_score ? 'text-green-400' : 'text-muted-foreground/80'}>
                               {match.team2_score}
                             </span>
                           </div>
@@ -315,7 +315,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                       {canDelete && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-600 hover:bg-red-50 px-2">
+                            <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-400 hover:bg-red-500/10 px-2">
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           </AlertDialogTrigger>
@@ -383,7 +383,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                           return (
                             <div
                               key={teamIdx}
-                              className={`rounded-lg border p-3 bg-card ${isCompleted ? (won ? 'border-green-200' : 'border-border') : 'border-border'}`}
+                              className={`rounded-lg border p-3 bg-card ${isCompleted ? (won ? 'border-green-500/25' : 'border-border') : 'border-border'}`}
                             >
                               <p className="text-xs font-semibold text-muted-foreground/80 uppercase mb-2">
                                 Team {teamIdx + 1}{isCompleted && (won ? ' · 🏆 Winner' : ' · Runner-up')}
@@ -396,7 +396,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                                     <Link key={p.id} href={`/players/${p.user_id}`} className="flex items-center gap-2 group">
                                       <PlayerAvatar name={p.profiles.display_name} color={p.profiles.avatar_color} imageUrl={p.profiles.avatar_url} size="sm" />
                                       <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-medium text-foreground group-hover:text-green-700 truncate">
+                                        <p className="text-xs font-medium text-foreground group-hover:text-green-300 truncate">
                                           {p.profiles.display_name}
                                         </p>
                                         <div className="flex items-center gap-1.5 flex-wrap">
@@ -412,7 +412,7 @@ export function LeagueMatches({ leagueId, currentUserId, isAdmin }: Props) {
                                 })}
                               </div>
                               {isCompleted && (
-                                <div className={`mt-2 pt-2 border-t text-center text-2xl font-bold ${won ? 'text-green-600 border-green-100' : 'text-muted-foreground/80 border-border'}`}>
+                                <div className={`mt-2 pt-2 border-t text-center text-2xl font-bold ${won ? 'text-green-400 border-green-100' : 'text-muted-foreground/80 border-border'}`}>
                                   {score}
                                 </div>
                               )}

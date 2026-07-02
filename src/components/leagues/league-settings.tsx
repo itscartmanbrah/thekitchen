@@ -171,7 +171,7 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
                   </button>
                 </div>
               ) : (
-                <label className="flex items-center gap-3 p-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-green-400 hover:bg-green-50 transition-colors">
+                <label className="flex items-center gap-3 p-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-green-400 hover:bg-green-500/20 transition-colors">
                   <ImagePlus className="w-5 h-5 text-muted-foreground/80" />
                   <div>
                     <p className="text-sm font-medium text-foreground/90">
@@ -195,9 +195,9 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
       </Card>
 
       {isHeadAdmin && (
-        <Card className="border-red-200">
+        <Card className="border-red-500/25">
           <CardHeader>
-            <CardTitle className="text-base text-red-600">Danger zone</CardTitle>
+            <CardTitle className="text-base text-red-400">Danger zone</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">Permanently delete this league and all its data. This cannot be undone.</p>
@@ -212,7 +212,7 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
       <Dialog open={showDeleteDialog} onOpenChange={open => { setShowDeleteDialog(open); setDeletePassword(''); setDeleteError('') }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-red-600">Delete {league.name}?</DialogTitle>
+            <DialogTitle className="text-red-400">Delete {league.name}?</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
@@ -228,7 +228,7 @@ export function LeagueSettings({ league, isHeadAdmin }: { league: League; isHead
                 onChange={e => { setDeletePassword(e.target.value); setDeleteError('') }}
                 autoFocus
               />
-              {deleteError && <p className="text-sm text-red-600">{deleteError}</p>}
+              {deleteError && <p className="text-sm text-red-400">{deleteError}</p>}
             </div>
           </div>
           <DialogFooter>
